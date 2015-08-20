@@ -141,7 +141,7 @@ class GenericAdapter(PrestaShopCRUDAdapter):
     def create(self, attributes=None):
         """ Create a record on the external system """
         api = self.connect()
-        print unicode(attributes)
+        _logger.debug(unicode(attributes))
         return api.add(self._prestashop_model, {
             self._export_node_name: attributes
         })
