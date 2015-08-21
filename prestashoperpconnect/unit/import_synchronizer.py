@@ -24,6 +24,7 @@
 ##############################################################################
 
 import logging
+import openerp
 from datetime import datetime
 from datetime import timedelta
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
@@ -106,12 +107,10 @@ class PrestashopImportSynchronizer(ImportSynchronizer):
     def _create(self, data):
         """ Create the OpenERP record """
         # special check on data before import
-#        if context is None:
-#            context = self._context()
         self._validate_data(data)
         model = self.model.with_context(connector_no_export=True)
         binding = model.create(data)
-        _logger.debug('%d created from Prestahshop %s', binding, self.prestashop_id)
+        _logger.debug('%d created from Prestashop %s', binding, self.prestashop_id)
         return binding
     
     
@@ -1022,28 +1021,49 @@ def import_product_image(session, model_name, backend_id, product_tmpl_id,
 
 
 @job
-def import_customers_since(session, backend_id, since_date=None):
+def import_customers_since(session, backend_id, since_date=None, filters=None):
     """ Prepare the import of partners modified on Prestashop """
 
     filters = None
     if since_date:
         date_str = since_date.strftime('%Y-%m-%d %H:%M:%S')
         filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (date_str)}
-    now_fmt = datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
-    import_batch(
-        session, 'prestashop.res.partner.category', backend_id, filters
-    )
-    import_batch(
-        session, 'prestashop.res.partner', backend_id, filters, priority=15
-    )
+    now_fmt = openerp.fields.Datetime.now()
+    #datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+    
+    #Manage import for partner category    
+#    import_batch(
+#        session, 'prestashop.res.partner.category', backend_id, filters
+#    )
+    env = get_environment(session, 'prestashop.res.partner.category', backend_id)
+    importer = env.get_connector_unit(BatchImportSynchronizer)
+    importer.run(filters=filters)
+    
+#    import_batch(
+#        session, 'prestashop.res.partner', backend_id, filters, priority=15
+#    )
+#
+#    session.pool.get('prestashop.backend').write(
+#        session.cr,
+#        session.uid,
+#        backend_id,
+#        {'import_partners_since': now_fmt},
+#        context=session.context
+#    )
+#    
+    
+    
+    
+#
+#
+#@job()
+#def import_customers_since(session, model_name, backend_id, filters=None):
+#    """ Prepare a batch import of records from Magento """
+#    env = get_environment(session, model_name, backend_id)
+#    importer = env.get_connector_unit(BatchImportSynchronizer)
+#    importer.run(filters=filters)
 
-    session.pool.get('prestashop.backend').write(
-        session.cr,
-        session.uid,
-        backend_id,
-        {'import_partners_since': now_fmt},
-        context=session.context
-    )
+
 
 
 @job
