@@ -87,32 +87,57 @@ class PrestashopImportSynchronizer(ImportSynchronizer):
     def _context(self, **kwargs):
         return dict(self.session.context, connector_no_export=True, **kwargs)
 
-    def _create(self, data, context=None):
-        """ Create the ERP record """
-        if context is None:
-            context = self._context()
-        erp_id = self.model.create(
-            self.session.cr,
-            self.session.uid,
-            data,
-            context=context
-        )
-        _logger.debug('%s %d created from prestashop %s',
-                      self.model._name, erp_id, self.prestashop_id)
-        return erp_id
+    #TODO: Original code from prestshop
+#    def _createORGPS(self, data, context=None):
+#        """ Create the ERP record """
+#        if context is None:
+#            context = self._context()
+#        erp_id = self.model.create(
+#            self.session.cr,
+#            self.session.uid,
+#            data,
+#            context=context
+#        )
+#        _logger.debug('%s %d created from prestashop %s',
+#                      self.model._name, erp_id, self.prestashop_id)
+#        return erp_id
+    
+    #This part has been copy paste form the magento connector already migrated
+    def _create(self, data):
+        """ Create the OpenERP record """
+        # special check on data before import
+#        if context is None:
+#            context = self._context()
+        self._validate_data(data)
+        model = self.model.with_context(connector_no_export=True)
+        binding = model.create(data)
+        _logger.debug('%d created from Prestahshop %s', binding, self.prestashop_id)
+        return binding
+    
+    
+    #Original code from PS migration
+#    def _updateORG(self, erp_id, data, context=None):
+#        """ Update an ERP record """
+#        if context is None:
+#            context = self._context()
+#        self.model.write(self.session.cr,
+#                         self.session.uid,
+#                         erp_id,
+#                         data,
+#                         context=context)
+#        _logger.debug('%s %d updated from prestashop %s',
+#                      self.model._name, erp_id, self.prestashop_id)
+#        return
 
-    def _update(self, erp_id, data, context=None):
-        """ Update an ERP record """
-        if context is None:
-            context = self._context()
-        self.model.write(self.session.cr,
-                         self.session.uid,
-                         erp_id,
-                         data,
-                         context=context)
-        _logger.debug('%s %d updated from prestashop %s',
-                      self.model._name, erp_id, self.prestashop_id)
+    #Code coming from magento connector as it already had been imported
+    def _update(self, binding, data):
+        """ Update an OpenERP record """
+        # special check on data before import
+        self._validate_data(data)
+        binding.with_context(connector_no_export=True).write(data)
+        _logger.debug('%d updated from Prestashop %s', binding, self.prestashop_id)
         return
+    
 
     def _after_import(self, erp_id):
         """ Hook called at the end of the import """
@@ -657,9 +682,11 @@ class TranslatableRecordImport(PrestashopImportSynchronizer):
         context = self._context()
         context['lang'] = lang_code
         if erp_id:
-            self._update(erp_id, record, context)
+            #self._update(erp_id, record, context)
+            self._update(erp_id, record)
         else:
-            erp_id = self._create(record, context)
+            #erp_id = self._create(record, context)
+            erp_id = self._create(record)
 
         return erp_id
 
@@ -909,7 +936,7 @@ class ProductImageImport(PrestashopImportSynchronizer):
     ]
 
     def _get_prestashop_data(self):
-        """ Return the raw Magento data for ``self.prestashop_id`` """
+        """ Return the raw Prestashop data for ``self.prestashop_id`` """
         return self.backend_adapter.read(self.template_id, self.image_id)
 
     def run(self, template_id, image_id):

@@ -26,6 +26,7 @@ from datetime import datetime
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from openerp.addons.connector.connector import Binder
 from ..backend import prestashop
+import openerp
 
 
 class PrestashopBinder(Binder):
@@ -65,7 +66,7 @@ class PrestashopModelBinder(PrestashopBinder):
         'prestashop.groups.pricelist',
     ]
 
-    def to_openerp(self, external_id, unwrap=False):
+    def to_openerpORG(self, external_id, unwrap=False):
         """ Give the OpenERP ID for an external ID
 
         :param external_id: external ID for which we want the OpenERP ID
@@ -95,6 +96,31 @@ class PrestashopModelBinder(PrestashopBinder):
         else:
             return openerp_id
 
+        
+        
+    def to_openerp(self, external_id, unwrap=False, browse=False):
+        """ Give the OpenERP ID for an external ID
+        :param external_id: external ID for which we want the OpenERP ID
+        :param unwrap: if True, returns the normal record (the one
+                       inherits'ed), else return the binding record
+        :param browse: if True, returns a recordset
+        :return: a recordset of one record, depending on the value of unwrap,
+                 or an empty recordset if no binding is found
+        :rtype: recordset
+        """
+        bindings = self.model.with_context(active_test=False).search(
+            [('prestashop_id', '=', str(external_id)),
+             ('backend_id', '=', self.backend_record.id)]
+        )
+        if not bindings:
+            return self.model.browse() if browse else None
+        assert len(bindings) == 1, "Several records found: %s" % (bindings,)
+        if unwrap:
+            return bindings.openerp_id if browse else bindings.openerp_id.id
+        else:
+            return bindings if browse else bindings.id
+
+
     def to_backend(self, local_id, unwrap=False, wrap=False):
         """ Give the external ID for an OpenERP ID
 
@@ -123,22 +149,46 @@ class PrestashopModelBinder(PrestashopBinder):
             erp_ps_id, ['prestashop_id'])['prestashop_id']
         return prestashop_id
 
-    def bind(self, external_id, openerp_id):
-        """ Create the link between an external ID and an OpenERP ID
+#    Original Code from PS migration
+#    def bindORG(self, external_id, openerp_id):
+#        """ Create the link between an external ID and an OpenERP ID
+#
+#        :param external_id: External ID to bind
+#        :param openerp_id: OpenERP ID to bind
+#        :type openerp_id: int
+#        """
+#        # avoid to trigger the export when we modify the `prestashop_id`
+#        context = dict(self.session.context, connector_no_export=True)
+#        now_fmt = datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+#        self.environment.model.write(
+#            self.session.cr,
+#            self.session.uid,
+#            openerp_id,
+#            {'prestashop_id': str(external_id),
+#             'sync_date': now_fmt},
+#            #{'prestashop_id': external_id},
+#            context=context
+#        )
 
+    #This code has been adapted from the magento connector which has already been migrated to 8
+    def bind(self, external_id, binding_id):
+        """ Create the link between an external ID and an OpenERP ID and
+        update the last synchronization date.
         :param external_id: External ID to bind
-        :param openerp_id: OpenERP ID to bind
-        :type openerp_id: int
+        :param binding_id: OpenERP ID to bind
+        :type binding_id: int
         """
-        # avoid to trigger the export when we modify the `prestashop_id`
-        context = dict(self.session.context, connector_no_export=True)
-        now_fmt = datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
-        self.environment.model.write(
-            self.session.cr,
-            self.session.uid,
-            openerp_id,
-            {'prestashop_id': str(external_id),
-             'sync_date': now_fmt},
-            #{'prestashop_id': external_id},
-            context=context
+        # the external ID can be 0 on Magento! Prevent False values
+        # like False, None, or "", but not 0.
+        assert (external_id or external_id == 0) and binding_id, (
+            "external_id or binding_id missing, "
+            "got: %s, %s" % (external_id, binding_id)
         )
+        # avoid to trigger the export when we modify the `prestashop_id`
+        now_fmt = openerp.fields.Datetime.now()
+        if not isinstance(binding_id, openerp.models.BaseModel):
+            binding_id = self.model.browse(binding_id)
+        binding_id.with_context(connector_no_export=True).write(
+            {'prestashop_id': str(external_id),
+             'sync_date': now_fmt,
+             })
