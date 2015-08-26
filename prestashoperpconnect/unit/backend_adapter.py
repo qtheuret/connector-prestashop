@@ -46,13 +46,14 @@ class PrestaShopWebServiceImage(PrestaShopWebServiceDict):
             self._validate_query_options(options)
             full_url += "?%s" % (self._options_to_querystring(options),)
         response = self._execute(full_url, 'GET')
-        if response.content:
-            image_content = base64.b64encode(response.content)
+        
+        if response[2]:
+            image_content = base64.b64encode(response[2])
         else:
             image_content = ''
 
         return {
-            'type': response.headers['content-type'],
+            'type': response[1]['content-type'],
             'content': image_content,
             'id_' + resource[:-1]: resource_id,
             'id_image': image_id
