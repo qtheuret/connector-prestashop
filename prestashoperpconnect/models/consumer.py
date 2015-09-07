@@ -26,8 +26,8 @@ from openerp.addons.connector.event import (on_record_write,
                                             on_record_unlink
                                             )
 from openerp.addons.connector.connector import Binder
-from .unit.delete_synchronizer import export_delete_record
-from .connector import get_environment
+from openerp.addons.prestashoperpconnect.unit.delete_synchronizer import export_delete_record
+from openerp.addons.prestashoperpconnect.models.connector import get_environment
 
 
 def delay_export(session, model_name, record_id, fields=None):
