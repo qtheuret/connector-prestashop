@@ -30,17 +30,17 @@ from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from openerp.addons.connector.queue.job import job
 from openerp.addons.connector.unit.synchronizer import ImportSynchronizer
 from openerp.addons.connector.connector import ConnectorUnit
-from ..backend import prestashop
-from ..connector import get_environment
+from openerp.addons.prestashoperpconnect.models.backend import prestashop
+from openerp.addons.prestashoperpconnect.models.connector import get_environment
 from backend_adapter import GenericAdapter
-from .exception import OrderImportRuleRetry
+from openerp.addons.prestashoperpconnect.unit.exception import OrderImportRuleRetry
 from openerp.addons.connector.exception import FailedJobError
 from openerp.addons.connector.exception import NothingToDoJob
 from backend_adapter import PrestaShopCRUDAdapter
 from openerp.addons.connector.connector import Binder
 
 from prestapyt import PrestaShopWebServiceError
-from ..connector import add_checkpoint
+from openerp.addons.prestashoperpconnect.models.connector import add_checkpoint
 
 
 _logger = logging.getLogger(__name__)
