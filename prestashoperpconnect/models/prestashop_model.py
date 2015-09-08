@@ -50,7 +50,8 @@ from ..connector import get_environment
 # TODO : If merging product and product_backend in the same file, 
 # the import below failed because it referencing the model that hasn't been created.
 
-from openerp.addons.prestashoperpconnect.models.product_backend import import_inventory
+# from openerp.addons.prestashoperpconnect.models.product_backend import import_inventory
+from openerp.addons.prestashoperpconnect.product import import_inventory
 
 _logger = logging.getLogger(__name__)
 
