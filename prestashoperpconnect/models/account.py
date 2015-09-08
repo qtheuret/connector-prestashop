@@ -23,6 +23,22 @@
 
 from openerp.osv import fields
 from openerp.osv import orm
+from datetime import date
+from datetime import datetime
+from decimal import Decimal
+
+from openerp import netsvc
+from openerp.osv import fields
+from openerp.osv import orm
+
+from openerp.addons.connector.unit.mapper import mapping
+from openerp.addons.connector.unit.mapper import only_create
+
+from .backend import prestashop
+from openerp.addons.prestashoperpconnect.unit.backend_adapter import GenericAdapter
+from openerp.addons.prestashoperpconnect.unit.mapper import PrestashopImportMapper
+from openerp.addons.prestashoperpconnect.unit.import_synchronizer import PrestashopImportSynchronizer
+from openerp.addons.prestashoperpconnect.connector import add_checkpoint
 
 from datetime import date
 from datetime import datetime
@@ -137,8 +153,7 @@ class prestashop_refund(orm.Model):
     }
 
 
-# BACKEND
-
+# Backend 
 
 
 @prestashop
