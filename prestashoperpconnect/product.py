@@ -31,17 +31,17 @@ from openerp.addons.product.product import check_ean
 from openerp.addons.connector.queue.job import job
 from openerp.addons.connector.event import on_record_write
 from openerp.addons.connector.unit.synchronizer import ExportSynchronizer
-from openerp.addons.prestashoperpconnect.unit.import_synchronizer import DelayedBatchImport
-from openerp.addons.prestashoperpconnect.unit.import_synchronizer import PrestashopImportSynchronizer
-from openerp.addons.prestashoperpconnect.unit.import_synchronizer import import_record
+from .unit.import_synchronizer import DelayedBatchImport
+from .unit.import_synchronizer import PrestashopImportSynchronizer
+from .unit.import_synchronizer import import_record
 from openerp.addons.connector.unit.mapper import mapping
 
 from prestapyt import PrestaShopWebServiceError
 
-from openerp.addons.prestashoperpconnect.unit.backend_adapter import GenericAdapter, PrestaShopCRUDAdapter
+from .unit.backend_adapter import GenericAdapter, PrestaShopCRUDAdapter
 
-from openerp.addons.prestashoperpconnect.models.connector import get_environment
-from openerp.addons.prestashoperpconnect.unit.mapper import PrestashopImportMapper
+from .connector import get_environment
+from .unit.mapper import PrestashopImportMapper
 from backend import prestashop
 
 from prestapyt import PrestaShopWebServiceDict

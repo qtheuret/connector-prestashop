@@ -41,9 +41,9 @@ from openerp.addons.prestashoperpconnect.unit.mapper import \
 from openerp.addons.prestashoperpconnect.unit.mapper import \
     PrestashopExportMapper
 
-from openerp.addons.prestashoperpconnect.models.connector import get_environment
-from openerp.addons.prestashoperpconnect.models.backend import prestashop
-from openerp.addons.prestashoperpconnect.models.product_backend import INVENTORY_FIELDS
+from openerp.addons.prestashoperpconnect.connector import get_environment
+from openerp.addons.prestashoperpconnect.backend import prestashop
+from openerp.addons.prestashoperpconnect.product import INVENTORY_FIELDS
 from openerp.addons.prestashoperpconnect_catalog_manager.models.product_combination \
     import product_product_write
 from openerp.osv import fields, orm

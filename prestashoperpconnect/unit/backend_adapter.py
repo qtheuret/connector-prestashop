@@ -28,7 +28,7 @@ import base64
 import logging
 from prestapyt import PrestaShopWebServiceDict
 from openerp.addons.connector.unit.backend_adapter import CRUDAdapter
-from openerp.addons.prestashoperpconnect.models.backend import prestashop
+from ..backend import prestashop
 
 _logger = logging.getLogger(__name__)
 
