@@ -25,7 +25,7 @@
 from datetime import datetime
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from openerp.addons.connector.connector import Binder
-from openerp.addons.prestashoperpconnect.models.backend import prestashop
+from ..backend import prestashop
 
 
 class PrestashopBinder(Binder):

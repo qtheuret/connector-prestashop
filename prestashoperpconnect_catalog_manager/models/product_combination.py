@@ -32,9 +32,9 @@ from openerp.addons.prestashoperpconnect.unit.export_synchronizer import (
 
 from openerp.addons.prestashoperpconnect.unit.mapper import \
     TranslationPrestashopExportMapper
-from openerp.addons.prestashoperpconnect.models.connector import get_environment
-from openerp.addons.prestashoperpconnect.models.backend import prestashop
-from openerp.addons.prestashoperpconnect.models.product_backend import INVENTORY_FIELDS
+from openerp.addons.prestashoperpconnect.connector import get_environment
+from openerp.addons.prestashoperpconnect.backend import prestashop
+from openerp.addons.prestashoperpconnect.product import INVENTORY_FIELDS
 from openerp.osv import fields, orm
 import openerp.addons.decimal_precision as dp
 
