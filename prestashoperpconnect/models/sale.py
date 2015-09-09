@@ -27,11 +27,11 @@ from prestapyt import PrestaShopWebServiceDict
 from openerp.addons.connector.queue.job import job
 from openerp.addons.connector.event import on_record_write
 from openerp.addons.connector.unit.synchronizer import (ExportSynchronizer)
-from .unit.backend_adapter import GenericAdapter
+from openerp.addons.prestashoperpconnect.unit.backend_adapter import GenericAdapter
 
 from openerp.addons.connector_ecommerce.unit.sale_order_onchange import (
     SaleOrderOnChange)
-from .connector import get_environment
+from openerp.addons.prestashoperpconnect.models.connector import get_environment
 from backend import prestashop
 
 

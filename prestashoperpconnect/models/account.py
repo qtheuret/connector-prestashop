@@ -32,11 +32,13 @@ from openerp import netsvc
 from openerp.addons.connector.unit.mapper import mapping
 from openerp.addons.connector.unit.mapper import only_create
 
-from openerp.addons.prestashoperpconnect.backend import prestashop
+from openerp.addons.prestashoperpconnect.models.backend import prestashop
+from openerp.addons.prestashoperpconnect.models.connector import add_checkpoint
+
 from openerp.addons.prestashoperpconnect.unit.backend_adapter import GenericAdapter
 from openerp.addons.prestashoperpconnect.unit.mapper import PrestashopImportMapper
 from openerp.addons.prestashoperpconnect.unit.import_synchronizer import PrestashopImportSynchronizer
-from openerp.addons.prestashoperpconnect.connector import add_checkpoint
+
 
 class account_invoice(orm.Model):
     _inherit = 'account.invoice'

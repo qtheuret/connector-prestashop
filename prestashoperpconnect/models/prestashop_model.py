@@ -33,7 +33,7 @@ from openerp.osv import fields, orm
 
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from openerp.addons.connector.session import ConnectorSession
-from ..unit.import_synchronizer import (
+from openerp.addons.prestashoperpconnect.unit.import_synchronizer import (
     import_batch,
     import_customers_since,
     import_orders_since,
@@ -44,14 +44,13 @@ from ..unit.import_synchronizer import (
     import_record,
     export_product_quantities,
 )
-from ..unit.direct_binder import DirectBinder
-from ..connector import get_environment
+from openerp.addons.prestashoperpconnect.unit.direct_binder import DirectBinder
+from openerp.addons.prestashoperpconnect.models.connector import get_environment
 
 # TODO : If merging product and product_backend in the same file, 
 # the import below failed because it referencing the model that hasn't been created.
+from openerp.addons.prestashoperpconnect.models.product_backend import import_inventory
 
-# from openerp.addons.prestashoperpconnect.models.product_backend import import_inventory
-from openerp.addons.prestashoperpconnect.product import import_inventory
 
 _logger = logging.getLogger(__name__)
 

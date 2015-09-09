@@ -36,7 +36,7 @@ from openerp.osv import fields, orm
 
 from openerp.addons.connector.session import ConnectorSession
 
-from ..unit.import_synchronizer import import_record
+from openerp.addons.prestashoperpconnect.unit.import_synchronizer import import_record
 
 
 from unidecode import unidecode
@@ -44,20 +44,20 @@ import json
 
 from openerp import SUPERUSER_ID
 from backend import prestashop
-from .unit.backend_adapter import GenericAdapter
-from .unit.import_synchronizer import PrestashopImportSynchronizer
-from .unit.import_synchronizer import TranslatableRecordImport
-from .unit.import_synchronizer import import_batch
-from .unit.mapper import PrestashopImportMapper
-from .unit.import_synchronizer import import_record
+from openerp.addons.prestashoperpconnect.unit.backend_adapter import GenericAdapter
+from openerp.addons.prestashoperpconnect.unit.import_synchronizer import PrestashopImportSynchronizer
+from openerp.addons.prestashoperpconnect.unit.import_synchronizer import TranslatableRecordImport
+from openerp.addons.prestashoperpconnect.unit.import_synchronizer import import_batch
+from openerp.addons.prestashoperpconnect.unit.mapper import PrestashopImportMapper
+from openerp.addons.prestashoperpconnect.unit.import_synchronizer import import_record
 from openerp.addons.connector.unit.backend_adapter import BackendAdapter
 from openerp.addons.connector.unit.mapper import mapping
 from openerp.osv.orm import browse_record_list
 
 from openerp.addons.product.product import check_ean
-from .unit.backend_adapter import PrestaShopCRUDAdapter
+from openerp.addons.prestashoperpconnect.unit.backend_adapter import PrestaShopCRUDAdapter
 
-from .product import ProductInventoryExport
+from product_backend import ProductInventoryExport
 
 from prestapyt import PrestaShopWebServiceError
 

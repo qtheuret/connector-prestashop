@@ -25,12 +25,12 @@ from openerp.osv import fields, orm
 from openerp.addons.connector.unit.mapper import (mapping,
                                                   ImportMapper,
                                                   )
-from .unit.backend_adapter import GenericAdapter
-from .unit.mapper import PrestashopImportMapper
-from .unit.import_synchronizer import (DelayedBatchImport,
+from openerp.addons.prestashoperpconnect.unit.backend_adapter import GenericAdapter
+from openerp.addons.prestashoperpconnect.unit.mapper import PrestashopImportMapper
+from openerp.addons.prestashoperpconnect.unit.import_synchronizer import (DelayedBatchImport,
                                        PrestashopImportSynchronizer,
                                        )
-from .backend import prestashop
+from openerp.addons.prestashoperpconnect.models.backend import prestashop
 
 _logger = logging.getLogger(__name__)
 
