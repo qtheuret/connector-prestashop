@@ -31,7 +31,7 @@ from openerp.addons.prestashoperpconnect.unit.mapper import TranslationPrestasho
 from openerp.addons.connector.exception import IDMissingInBackend
 from openerp.addons.prestashoperpconnect.models.connector import get_environment
 
-from openerp.addons.prestashoperpconnect.backend import prestashop
+from openerp.addons.prestashoperpconnect.models.backend import prestashop
 from import_synchronizer import import_record
 
 
