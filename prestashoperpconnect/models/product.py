@@ -23,7 +23,7 @@ from openerp.osv import fields, orm
 
 from openerp.addons.connector.session import ConnectorSession
 
-from ..unit.import_synchronizer import import_record
+from openerp.addons.prestashoperpconnect.unit.import_synchronizer import import_record
 
 
 class product_category(orm.Model):
