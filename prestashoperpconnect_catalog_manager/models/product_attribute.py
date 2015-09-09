@@ -44,7 +44,7 @@ from openerp.addons.prestashoperpconnect.unit.mapper import \
 
 
 
-from openerp.addons.prestashoperpconnect.backend import prestashop
+from openerp.addons.prestashoperpconnect.models.backend import prestashop
 from openerp.addons.prestashoperpconnect.unit.backend_adapter import \
     GenericAdapter
 from openerp.addons.connector.exception import InvalidDataError

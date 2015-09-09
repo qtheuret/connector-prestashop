@@ -29,10 +29,10 @@ from openerp.addons.connector.queue.job import job
 from openerp.addons.connector.unit.synchronizer import ExportSynchronizer
 from openerp.addons.prestashoperpconnect.unit.mapper import TranslationPrestashopExportMapper
 from openerp.addons.connector.exception import IDMissingInBackend
-from .import_synchronizer import import_record
-from ..connector import get_environment
+from openerp.addons.prestashoperpconnect.models.connector import get_environment
 
-from openerp.addons.prestashoperpconnect.backend import prestashop
+from openerp.addons.prestashoperpconnect.models.backend import prestashop
+from import_synchronizer import import_record
 
 
 _logger = logging.getLogger(__name__)
