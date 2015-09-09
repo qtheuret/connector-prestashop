@@ -20,6 +20,7 @@
 #
 ##############################################################################
 
+
 from openerp.osv import fields
 from openerp.osv import orm
 
