@@ -23,7 +23,7 @@
 from openerp.osv import orm, fields
 from openerp.addons.connector.unit.mapper import mapping
 from openerp.addons.prestashoperpconnect.unit.mapper import PartnerImportMapper
-from .backend import prestashop_myversion
+from openerp.addons.prestashoperpconnect.backend import prestashop_myversion
 
 
 class prestashop_res_partner(orm.Model):
