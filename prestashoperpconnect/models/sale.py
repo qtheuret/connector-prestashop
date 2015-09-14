@@ -227,3 +227,19 @@ class prestashop_sale_order_line_discount(orm.Model):
             select=True
         ),
     }
+
+    
+    def create(self, cr, uid, vals, context=None):
+        prestashop_order_id = vals['prestashop_order_id']
+        info = self.pool['prestashop.sale.order'].read(
+            cr, uid,
+            [prestashop_order_id],
+            ['openerp_id'],
+            context=context
+        )
+        order_id = info[0]['openerp_id']
+        _logger.debug("CREATE FROM discount")
+        vals['order_id'] = order_id[0]
+        return super(prestashop_sale_order_line_discount, self).create(
+            cr, uid, vals, context=context
+        )
