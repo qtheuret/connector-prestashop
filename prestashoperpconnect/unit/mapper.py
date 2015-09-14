@@ -22,6 +22,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+
+import logging
 from decimal import Decimal
 
 from openerp.tools.translate import _
@@ -37,8 +39,12 @@ from backend_adapter import PrestaShopCRUDAdapter
 from openerp.addons.connector_ecommerce.unit.sale_order_onchange import (
     SaleOrderOnChange)
 from openerp.addons.connector.connector import Binder
-from openerp.addons.connector.unit.mapper import only_create
+from openerp.addons.connector.unit.mapper import ( \
+    mapping,
+    only_create)
+#from openerp.addons.connector.unit.mapper import only_create
 
+_logger = logging.getLogger(__name__)
 
 
 class PrestashopImportMapper(ImportMapper):
@@ -383,12 +389,31 @@ class SaleOrderMapper(PrestashopImportMapper):
             return [orders]
         return orders
 
+    def _get_discounts_lines(self, record):
+        if record['total_discounts'] == '0.00':
+            return []       
+        adapter = self.get_connector_unit_for_model(GenericAdapter,
+                    'prestashop.sale.order.line.discount')
+        discount_ids = adapter.search({'filter[id_order]': record['id']})
+        _logger.debug(discount_ids)
+        discount_mappers = []
+        for discount_id in discount_ids:
+            discount = adapter.read(discount_id)
+            discount_mappers.append(discount)
+        return discount_mappers
+    
+    
     children = [
         (
             _get_sale_order_lines,
             'prestashop_order_line_ids',
             'prestashop.sale.order.line'
         ),
+        (   _get_discounts_lines,
+            'prestashop_discount_line_ids',
+            'prestashop.sale.order.line.discount'
+        
+        )
     ]
 
     def _map_child(self, map_record, from_attr, to_attr, model_name):
@@ -410,29 +435,9 @@ class SaleOrderMapper(PrestashopImportMapper):
                 [detail_record], map_record, to_attr, options=self.options
             )
             children.extend(items)
-
-        discount_lines = self._get_discounts_lines(source)
-        children.extend(discount_lines)
         return children
 
-    def _get_discounts_lines(self, record):
-        if record['total_discounts'] == '0.00':
-            return []
-        adapter = self.get_connector_unit_for_model(
-            GenericAdapter, 'prestashop.sale.order.line.discount')
-        discount_ids = adapter.search({'filter[id_order]': record['id']})
-        discount_mappers = []
-        for discount_id in discount_ids:
-            discount = adapter.read(discount_id)
-            mapper = self._init_child_mapper(
-                'prestashop.sale.order.line.discount')
-            #map_record = mapper.map_record(discount, parent=record)
-            #map_values = map_record.values()
-            #discount_mappers.append(map_values)
-            mapper.convert_child(discount, parent_values=record)
-            discount_mappers.append(mapper)
-        return discount_mappers
-
+    
     def _sale_order_exists(self, name):
         ids = self.session.search('sale.order', [
             ('name', '=', name),
@@ -535,6 +540,7 @@ class SaleOrderMapper(PrestashopImportMapper):
         return {'total_amount_tax': tax}
 
     def _after_mapping(self, result):
+        _logger.debug("after mapping")
         sess = self.session
         backend = self.backend_record
         order_line_ids = []
