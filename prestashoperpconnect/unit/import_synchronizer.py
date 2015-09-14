@@ -31,7 +31,8 @@ from openerp.addons.connector.queue.job import job
 from openerp.addons.connector.unit.synchronizer import ImportSynchronizer
 from openerp.addons.connector.connector import ConnectorUnit
 from ..models.backend import prestashop
-from ..connector import get_environment
+from ..models.connector import get_environment
+from ..models.connector import add_checkpoint
 from backend_adapter import GenericAdapter
 from .exception import OrderImportRuleRetry
 from openerp.addons.connector.exception import FailedJobError
@@ -40,7 +41,7 @@ from backend_adapter import PrestaShopCRUDAdapter
 from openerp.addons.connector.connector import Binder
 
 from prestapyt import PrestaShopWebServiceError
-from ..connector import add_checkpoint
+
 
 
 _logger = logging.getLogger(__name__)

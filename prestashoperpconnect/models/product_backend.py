@@ -40,9 +40,9 @@ from prestapyt import PrestaShopWebServiceError
 
 from ..unit.backend_adapter import GenericAdapter, PrestaShopCRUDAdapter
 
-from ..connector import get_environment
+from .connector import get_environment
 from ..unit.mapper import PrestashopImportMapper
-from backend import prestashop
+from .backend import prestashop
 
 from prestapyt import PrestaShopWebServiceDict
 

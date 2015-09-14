@@ -45,7 +45,7 @@ from ..unit.import_synchronizer import (
     export_product_quantities,
 )
 from ..unit.direct_binder import DirectBinder
-from ..connector import get_environment
+from .connector import get_environment
 
 # TODO : If merging product and product_backend in the same file, 
 # the import below failed because it referencing the model that hasn't been created.

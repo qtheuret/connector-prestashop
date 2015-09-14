@@ -30,7 +30,7 @@ from openerp.addons.connector.unit.synchronizer import ExportSynchronizer
 from openerp.addons.prestashoperpconnect.unit.mapper import TranslationPrestashopExportMapper
 from openerp.addons.connector.exception import IDMissingInBackend
 from .import_synchronizer import import_record
-from ..connector import get_environment
+from ..models.connector import get_environment
 
 from ..models.backend import prestashop
 
