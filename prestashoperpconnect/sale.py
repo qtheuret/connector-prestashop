@@ -30,7 +30,7 @@ from .unit.backend_adapter import GenericAdapter
 from openerp.addons.connector_ecommerce.unit.sale_order_onchange import (
     SaleOrderOnChange)
 from .connector import get_environment
-from backend import prestashop
+from .models.backend import prestashop
 
 
 @prestashop

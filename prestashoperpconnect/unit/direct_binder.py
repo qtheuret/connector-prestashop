@@ -24,7 +24,7 @@ import logging
 
 from openerp.addons.connector.connector import ConnectorUnit
 from openerp.addons.connector.unit.backend_adapter import BackendAdapter
-from ..backend import prestashop
+from ..models.backend import prestashop
 
 _logger = logging.getLogger(__name__)
 

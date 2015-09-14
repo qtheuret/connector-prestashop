@@ -15,7 +15,7 @@ import json
 
 from openerp import SUPERUSER_ID
 from openerp.osv import fields, orm
-from backend import prestashop
+from .models.backend import prestashop
 from .unit.backend_adapter import GenericAdapter
 from .unit.import_synchronizer import PrestashopImportSynchronizer
 from .unit.import_synchronizer import TranslatableRecordImport
@@ -29,7 +29,7 @@ from openerp.osv.orm import browse_record_list
 from openerp.addons.product.product import check_ean
 from .unit.backend_adapter import PrestaShopCRUDAdapter
 
-from .product import ProductInventoryExport
+from .models.product_backend import ProductInventoryExport
 
 from prestapyt import PrestaShopWebServiceError
 

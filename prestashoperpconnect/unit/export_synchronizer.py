@@ -32,7 +32,7 @@ from openerp.addons.connector.exception import IDMissingInBackend
 from .import_synchronizer import import_record
 from ..connector import get_environment
 
-from openerp.addons.prestashoperpconnect.backend import prestashop
+from ..models.backend import prestashop
 
 
 _logger = logging.getLogger(__name__)

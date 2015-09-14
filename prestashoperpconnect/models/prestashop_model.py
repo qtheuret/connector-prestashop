@@ -47,7 +47,10 @@ from ..unit.import_synchronizer import (
 from ..unit.direct_binder import DirectBinder
 from ..connector import get_environment
 
-from openerp.addons.prestashoperpconnect.product import import_inventory
+# TODO : If merging product and product_backend in the same file, 
+# the import below failed because it referencing the model that hasn't been created.
+# Check import order later
+from .product_backend import import_inventory
 
 _logger = logging.getLogger(__name__)
 

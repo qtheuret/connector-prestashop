@@ -1,12 +1,16 @@
 import prestashop_model
 import account
+import backend
 import connector
+import consumer
 import delivery
 import partner
+import product_backend
 import product
 import product_combination
 import sale
 import setting
 import stock
+import stock_tracking
 import supplier
 import mail_message

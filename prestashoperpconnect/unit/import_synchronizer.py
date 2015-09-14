@@ -30,7 +30,7 @@ from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from openerp.addons.connector.queue.job import job
 from openerp.addons.connector.unit.synchronizer import ImportSynchronizer
 from openerp.addons.connector.connector import ConnectorUnit
-from ..backend import prestashop
+from ..models.backend import prestashop
 from ..connector import get_environment
 from backend_adapter import GenericAdapter
 from .exception import OrderImportRuleRetry

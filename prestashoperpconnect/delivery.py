@@ -30,7 +30,7 @@ from .unit.mapper import PrestashopImportMapper
 from .unit.import_synchronizer import (DelayedBatchImport,
                                        PrestashopImportSynchronizer,
                                        )
-from .backend import prestashop
+from .models.backend import prestashop
 
 _logger = logging.getLogger(__name__)
 

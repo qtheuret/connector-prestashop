@@ -11,7 +11,7 @@ from openerp.osv import orm
 from openerp.addons.connector.unit.mapper import mapping
 from openerp.addons.connector.unit.mapper import only_create
 
-from .backend import prestashop
+from .models.backend import prestashop
 from .unit.backend_adapter import GenericAdapter
 from .unit.mapper import PrestashopImportMapper
 from .unit.import_synchronizer import PrestashopImportSynchronizer

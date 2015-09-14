@@ -30,7 +30,7 @@ from openerp.addons.connector.unit.mapper import (
     ImportMapper,
     ExportMapper
 )
-from ..backend import prestashop
+from ..models.backend import prestashop
 from ..connector import add_checkpoint
 from backend_adapter import GenericAdapter
 from backend_adapter import PrestaShopCRUDAdapter
