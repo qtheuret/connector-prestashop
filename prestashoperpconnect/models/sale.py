@@ -22,7 +22,9 @@
 import openerp.addons.decimal_precision as dp
 
 from openerp.osv import fields, orm
+import logging
 
+_logger = logging.getLogger(__name__)
 
 class sale_order_state(orm.Model):
     _name = 'sale.order.state'

@@ -130,7 +130,7 @@ class GenericAdapter(PrestaShopCRUDAdapter):
 
         :rtype: list
         """
-        _logger.info('method search, model %s, filters ', self._prestashop_model, unicode(filters))
+        _logger.info('method search, model %s, filters %s ', self._prestashop_model, unicode(filters))
         api = self.connect()
         return api.search(self._prestashop_model, filters)
 
