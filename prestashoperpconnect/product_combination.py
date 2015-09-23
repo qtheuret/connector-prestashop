@@ -12,6 +12,7 @@ the main product.
 
 from unidecode import unidecode
 import json
+import logging
 
 from openerp import SUPERUSER_ID
 from openerp.osv import fields, orm
@@ -23,7 +24,7 @@ from .unit.import_synchronizer import import_batch
 from .unit.mapper import PrestashopImportMapper
 from .unit.import_synchronizer import import_record
 from openerp.addons.connector.unit.backend_adapter import BackendAdapter
-from openerp.addons.connector.unit.mapper import mapping
+from openerp.addons.connector.unit.mapper import (mapping, convert)
 from openerp.osv.orm import browse_record_list
 
 from openerp.addons.product.product import check_ean
@@ -38,6 +39,7 @@ try:
 except ImportError, e:
     from xml.etree import ElementTree
 
+_logger = logging.getLogger(__name__)
 
 @prestashop
 class ProductCombinationAdapter(GenericAdapter):
@@ -79,8 +81,24 @@ class ProductCombinationRecordImport(PrestashopImportSynchronizer):
 class ProductCombinationMapper(PrestashopImportMapper):
     _model_name = 'prestashop.product.combination'
 
+    def intToBoolconvert(field, conv_type):
+        ''' Convert the source field to a defined ``conv_type``
+        (ex. str) before returning it'''
+        def modifier(self, record, to_attr):
+            value = record[field]
+
+            if not value:
+                return None
+            if value == '1' :                 
+                converted = True
+            else : 
+                converted = False
+            
+            return converted
+        return modifier
+
     direct = [
-        ('default_on', 'default_on'),
+        (intToBoolconvert('default_on', bool), 'default_on'),
     ]
 
     from_main = []
