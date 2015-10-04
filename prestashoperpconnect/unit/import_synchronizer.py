@@ -272,7 +272,7 @@ class DelayedBatchImport(BatchImportSynchronizer):
         'prestashop.res.partner',
         'prestashop.address',
         'prestashop.product.category',
-        'prestashop.product.product',
+#        'prestashop.product.product',
         'prestashop.product.template',
         'prestashop.sale.order',
         'prestashop.refund',
@@ -741,7 +741,8 @@ class TemplateRecordImport(TranslatableRecordImport):
 
     def _after_import(self, erp_id):
         self.import_images(erp_id.id)
-        self.import_default_image(erp_id.id)
+        # TODO : check what's wrong in this mapper
+#        self.import_default_image(erp_id.id)
         self.import_supplierinfo(erp_id.id)
         self.import_combinations()
         self.attribute_line(erp_id.id)
@@ -759,6 +760,9 @@ class TemplateRecordImport(TranslatableRecordImport):
     def attribute_line(self, erp_id):
         template = self.session.browse(
             'prestashop.product.template', erp_id)
+        attr_line_value_ids = []
+        for attr_line in template.attribute_line_ids:
+            attr_line_value_ids.extend(attr_line.value_ids.ids)
         template_id = template.openerp_id.id
         product_ids = self.session.search('product.product', [
             ('product_tmpl_id', '=', template_id)]
@@ -776,13 +780,16 @@ class TemplateRecordImport(TranslatableRecordImport):
                     value_ids = []
                     for product in products:
                         for attribute_value in product.attribute_value_ids:
-                            if attribute_value.attribute_id.id == attribute_id:
+                           if (attribute_value.attribute_id.id == attribute_id
+                                and attribute_value.id not in
+                                    attr_line_value_ids):
                                 value_ids.append(attribute_value.id)
-                self.session.create('product.attribute.line', {
-                    'attribute_id': attribute_id,
-                    'product_tmpl_id': template_id,
-                    'value_ids': [(6, 0, set(value_ids))]}
-                )
+                if value_ids:
+                    self.session.create('product.attribute.line', {
+                        'attribute_id': attribute_id,
+                        'product_tmpl_id': template_id,
+                        'value_ids': [(6, 0, set(value_ids))]}
+                    )
 
     def import_combinations(self):
         prestashop_record = self._get_prestashop_data()
@@ -856,14 +863,34 @@ class TemplateRecordImport(TranslatableRecordImport):
         )
         binder = self.get_binder_for_model()
         template_id = binder.to_openerp(record['id'])
+        _logger.debug("Template default image")
+        _logger.debug(template_id)
+        
         try:
             image = adapter.read(record['id'],
                                  record['id_default_image']['value'])
-            self.session.write(
-                'prestashop.product.template',
-                [template_id.id],
-                {"image": image['content']}
-            )
+            
+            ctx = self.session.context.copy()
+            ctx['connector_no_export'] = True
+            _logger.debug("Template image")
+            _logger.debug(image)
+                        
+            self.session.pool['prestashop.product.template'].write(
+                self.session.cr, self.session.uid, [template_id],
+                {"image": image['content']},
+                context=ctx
+                )
+#            model = self.env['prestashop.product.template'].with_context(connector_no_export=True)
+#            _logger.debug("Model : %s ", model)
+#            binding = model.search(template_id)
+#            _logger.debug("binding :")
+#            _logger.debug(binding)
+#            template_id.write({'image': image['content']})
+#            self.session.write(
+#                'prestashop.product.template',
+#                [template_id],
+#                {"image": image['content']}
+#            )
         except PrestaShopWebServiceError:
             pass
         except IOError:

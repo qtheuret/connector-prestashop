@@ -23,6 +23,10 @@
 ###############################################################################
 from openerp.addons.connector.event import on_record_create, on_record_write
 from openerp.addons.connector.unit.mapper import mapping
+from openerp.addons.prestashoperpconnect.unit.backend_adapter import (
+    PrestaShopCRUDAdapter,
+    GenericAdapter
+)
 
 from openerp.addons.prestashoperpconnect.unit.export_synchronizer import (
     TranslationPrestashopExporter,
@@ -46,6 +50,8 @@ import openerp.addons.decimal_precision as dp
 from openerp.tools.translate import _
 import unicodedata
 import re
+import base64
+import imghdr
 
 try:
     import slugify as slugify_lib
@@ -120,7 +126,7 @@ class product_image(orm.Model):
 
     _columns = {
         'front_image': fields.boolean(
-            'Fron image',
+            'Front image',
         )}
 
 

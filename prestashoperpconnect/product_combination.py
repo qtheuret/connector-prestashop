@@ -92,12 +92,15 @@ class ProductCombinationRecordImport(PrestashopImportSynchronizer):
 class ProductCombinationMapper(PrestashopImportMapper):
     _model_name = 'prestashop.product.combination'
 
-    direct = [
-        ('default_on', 'default_on'),
-    ]
+    direct = []
 
     from_main = []
 
+
+    @mapping
+    def default_on(self, record):
+        return {'default_on': bool(int(record['default_on']))}
+    
     @mapping
     def image_variant(self, record):
         associations = record.get('associations', {})
@@ -110,7 +113,7 @@ class ProductCombinationMapper(PrestashopImportMapper):
             variant_image = self.session.browse('prestashop.product.image',
                                                 image_id.id)
             if variant_image:
-                if not variant_image.link:
+                if variant_image.type == 'db':
                     return {'image_variant': variant_image.file_db_store}
                 else:
                     adapter = self.get_connector_unit_for_model(
@@ -202,12 +205,15 @@ class ProductCombinationMapper(PrestashopImportMapper):
         return {'main_template_id': self.get_main_template_id(record).id}
 
     def _template_code_exists(self, code):
-        model = self.session.pool.get('product.template')
+        model = self.session.pool.get('product.product')
+        combination_binder = self.get_binder_for_model('prestashop.product.combination')
         template_ids = model.search(self.session.cr, SUPERUSER_ID, [
             ('default_code', '=', code),
             ('company_id', '=', self.backend_record.company_id.id),
         ])
-        return len(template_ids) > 0
+#        return len(template_ids) > 0
+        return template_ids and not combination_binder.to_backend(template_ids,
+                                                                  unwrap=True)
 
     @mapping
     def default_code(self, record):
@@ -376,7 +382,7 @@ class CombinationInventoryExport(ProductInventoryExport):
 
     def get_filter(self, template):
         return {
-            'filter[id_template': template.main_template_id.prestashop_id,
+            'filter[id_product': template.main_template_id.prestashop_id,
             'filter[id_product_attribute]': template.prestashop_id,
         }
 

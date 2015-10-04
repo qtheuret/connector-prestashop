@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
     <data>
-            <record id="product_normal_form_view_default_check" model="ir.ui.view">
-           <field name="model">product.product</field>
-           <field name="inherit_id" ref="product.product_normal_form_view" />
-           <field name="arch" type="xml">
-               <field name="default_code" position="after">
+        <record id="product_normal_form_view_default_check" model="ir.ui.view">
+            <field name="model">product.product</field>
+            <field name="name">product.product.form_default_check</field>
+            <field name="inherit_id" ref="product.product_normal_form_view" />
+            <field name="arch" type="xml">
+                <field name="default_code" position="after">
                     <field name="default_on"/>
-               </field>
+                </field>
                
-           </field>
+            </field>
         </record>
 
         <!--This is a product inherited form that will be dynamically populated-->
         <record id="product_normal_form_view" model="ir.ui.view">
-           <field name="model">product.product</field>
-           <field name="inherit_id" ref="connector_base_product.product_normal_form_view" />
-           <field name="arch" type="xml">
-               <page name="connector" position="attributes">
+            <field name="model">product.product</field>
+            <field name="name">product.product.form_presta_bindings</field>
+            <field name="inherit_id" ref="connector_base_product.product_normal_form_view" />
+            <field name="arch" type="xml">
+                <page name="connector" position="attributes">
                     <attribute name="invisible">0</attribute>
-               </page>
-               <page name="connector" position="inside">
+                </page>
+                <page name="connector" position="inside">
                     <group string="Prestashop Bindings">
                         <field
                             name="prestashop_bind_ids"
@@ -30,7 +32,7 @@
                             name="prestashop_combinations_bind_ids"
                             nolabel="1"
                         />
-<!--                         <field
+                        <!--                         <field
                             name="prestashop_bind_ids"
                             nolabel="1"
                             attrs="{'invisible': [('prestashop_bind_ids', '=', [])]}"
@@ -41,32 +43,32 @@
                             attrs="{'invisible': [('prestashop_combinations_bind_ids', '=', [])]}"
                         />   -->                      
                     </group>
-               </page>
-           </field>
+                </page>
+            </field>
         </record>
         
         <!--This is a product inherited form that will be dynamically populated-->
-        <record id="product_normal_form_view" model="ir.ui.view">
-           <field name="model">product.template</field>
-           <field name="inherit_id" ref="connector_base_product.product_template_common_form" />
-           <field name="arch" type="xml">
-               <page name="connector" position="attributes">
+        <record id="product_template_normal_form_view" model="ir.ui.view">
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="connector_base_product.product_template_common_form" />
+            <field name="arch" type="xml">
+                <page name="connector" position="attributes">
                     <attribute name="invisible">0</attribute>
-               </page>
-               <page name="connector" position="inside">
+                </page>
+                <page name="connector" position="inside">
                     <group string="Prestashop Bindings">
                         <field
                             name="prestashop_bind_ids"
                             nolabel="1"
                         />
                     </group>
-               </page>
-           </field>
+                </page>
+            </field>
         </record>
 
         <record id="product_connector_presta_form_view" model="ir.ui.view">
-           <field name="model">prestashop.product.template</field>
-           <field name="arch" type="xml">
+            <field name="model">prestashop.product.template</field>
+            <field name="arch" type="xml">
                 <form string="prestashop fields">
                     <group col="1">
                         <field name="backend_id"/>
@@ -85,7 +87,7 @@
                         <field name="show_price"/>
                     </group>
                 </form>
-           </field>
+            </field>
         </record>
 
         <record id="product_connector_presta_tree_view" model="ir.ui.view">
@@ -99,26 +101,26 @@
                     <field name="prestashop_id"/>
                     <field name="reference"/>
                     <button name="recompute_prestashop_qty"
-                        class="oe_highlight"
-                        type="object"
-                        string="Export quantity"/>
+                                class="oe_highlight"
+                                type="object"
+                                string="Export quantity"/>
                     <button name="resync"
-                        type="object"
-                        string="Resync" />
+                                type="object"
+                                string="Resync" />
                 </tree>
             </field>
         </record>
 
         <record id="combination_connector_presta_form_view" model="ir.ui.view">
-           <field name="model">prestashop.product.combination</field>
-           <field name="arch" type="xml">
+            <field name="model">prestashop.product.combination</field>
+            <field name="arch" type="xml">
                 <form string="prestashop fields">
                     <group col="2">
                         <field name="backend_id"/>
                         <field name="quantity"/>
                     </group>
                 </form>
-           </field>
+            </field>
         </record>
 
         <record id="combination_connector_presta_tree_view" model="ir.ui.view">
@@ -130,12 +132,12 @@
                     <field name="prestashop_id"/>
                     <field name="reference"/>
                     <button name="recompute_prestashop_qty"
-                        class="oe_highlight"
-                        type="object"
-                        string="Export quantity"/>
+                                class="oe_highlight"
+                                type="object"
+                                string="Export quantity"/>
                     <button name="resync"
-                        type="object"
-                        string="Resync" />
+                                type="object"
+                                string="Resync" />
                 </tree>
             </field>
         </record>

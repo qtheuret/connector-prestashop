@@ -20,9 +20,9 @@
 #                                                                             #
 ###############################################################################
 
-from openerp.osv import fields, orm
 import openerp.addons.decimal_precision as dp
 
+from openerp.osv import fields, orm
 
 class sale_order_state(orm.Model):
     _name = 'sale.order.state'
@@ -227,5 +227,3 @@ class prestashop_sale_order_line_discount(orm.Model):
             select=True
         ),
     }
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

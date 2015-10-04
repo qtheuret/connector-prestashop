@@ -23,6 +23,7 @@
 from prestapyt import PrestaShopWebServiceDict
 import datetime
 import mimetypes
+import logging 
 from .backend import prestashop
 from openerp import SUPERUSER_ID
 from openerp.addons.connector.connector import Binder
@@ -44,6 +45,7 @@ try:
 except ImportError, e:
     from xml.etree import ElementTree
 
+_logger = logging.getLogger(__name__)
 
 # product category
 @prestashop
@@ -58,6 +60,8 @@ class ProductCategoryMapper(PrestashopImportMapper):
         ('meta_keywords', 'meta_keywords'),
         ('meta_title', 'meta_title'),
         ('id_shop_default', 'default_shop_id'),
+        ('active', 'active'),
+        ('position', 'position')
     ]
 
     @mapping
@@ -107,7 +111,7 @@ class ProductImageMapper(PrestashopImportMapper):
     _model_name = 'prestashop.product.image'
 
     direct = [
-        ('content', 'file'),
+        ('content', 'file_db_store'),
     ]
 
     @mapping
@@ -116,7 +120,7 @@ class ProductImageMapper(PrestashopImportMapper):
             'prestashop.product.template',
             record['id_product']
         )
-        return {'product_tmpl_id': res}
+        return {'product_id': res}
 
     @mapping
     def name(self, record):
@@ -163,6 +167,11 @@ class TemplateMapper(PrestashopImportMapper):
     @mapping
     def list_price(self, record):
         taxes = self.taxes_id(record)
+        # Defensive if price is null
+        _logger.debug("Get the price for template")
+        if not record['price'] :
+            _logger.debug("Price was not found in the record. Foced to 0")
+            record['price'] = '0.0'
         if taxes and taxes.get('taxes_id'):
             tax_id = taxes.get('taxes_id')[0][2][0]
             if tax_id:
@@ -172,6 +181,8 @@ class TemplateMapper(PrestashopImportMapper):
                     self.session.uid,
                     tax_id,
                 )
+                _logger.debug("Price from record :%s and tax : %s ",record['price'],tax.amount)
+                
                 return {
                     'list_price': float(record['price']) / (1 + tax.amount),
                     'list_price_tax': float(record['price'])
@@ -238,6 +249,9 @@ class TemplateMapper(PrestashopImportMapper):
 
     @mapping
     def active(self, record):
+        #TODO : check how the active part is set
+        _logger.debug('Active of product_template')
+        _logger.debug(bool(int(record['active'])))
         return {'always_available': bool(int(record['active']))}
 
     @mapping
@@ -581,7 +595,8 @@ class ProductInventoryAdapter(GenericAdapter):
             stock = res[first_key]
             stock['quantity'] = int(quantity)
             try:
-                api.edit(self._prestashop_model, stock['id'], {
+#                api.edit(self._prestashop_model, stock['id'], {
+                api.edit(self._prestashop_model, {
                     self._export_node_name: stock
                 })
             except ElementTree.ParseError:

@@ -25,6 +25,10 @@
 
 from openerp.osv import fields, orm
 
+from openerp.addons.connector.session import ConnectorSession
+
+from ..unit.import_synchronizer import import_record
+
 
 class res_partner(orm.Model):
     _inherit = 'res.partner'
@@ -78,5 +82,3 @@ class prestashop_product_supplierinfo(orm.Model):
             ondelete='cascade'
         ),
     }
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:\

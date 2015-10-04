@@ -33,6 +33,13 @@ from openerp.addons.connector.unit.backend_adapter import CRUDAdapter
 from ..backend import prestashop
 
 _logger = logging.getLogger(__name__)
+# TODO : Fix this part https://github.com/pedrobaeza/connector-prestashop/commit/3226992f1ee3a3c74f388c65d174c96bcd5e14e7#commitcomment-13580782
+#handler = logging.FileHandler('/opt/odoo/v8/adapter_log.log')
+#handler = logging.FileHandler('adapter_log.log')
+#handler.setLevel(logging.INFO)
+#formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+#handler.setFormatter(formatter)
+#_logger.addHandler(handler)
 
 
 class PrestaShopWebServiceImage(PrestaShopWebServiceDict):
@@ -49,11 +56,14 @@ class PrestaShopWebServiceImage(PrestaShopWebServiceDict):
             full_url += "?%s" % (self._options_to_querystring(options),)
         response = self._execute(full_url, 'GET')
         if response:
-            image_content = base64.b64encode(response[2])
+            #INFO : This syntax is used when prestapyt 0.4 from akretion is used
+            image_content = base64.b64encode(response.content)
         else:
             image_content = ''
+            
+        #INFO : This syntax is used when prestapyt 0.4 from akretion is used
         return {
-            'type': response[1].get('content-type'),
+            'type': response.headers['content-type'],
             'content': image_content,
             'id_' + resource[:-1]: resource_id,
             'id_image': image_id
@@ -126,6 +136,7 @@ class GenericAdapter(PrestaShopCRUDAdapter):
 
         :rtype: list
         """
+        _logger.info('method search, model %s, filters %s', self._prestashop_model, unicode(filters))
         api = self.connect()
         return api.search(self._prestashop_model, filters)
 
@@ -134,6 +145,7 @@ class GenericAdapter(PrestaShopCRUDAdapter):
 
         :rtype: dict
         """
+        _logger.info('method read, model %s id %s, attributes %s', self._prestashop_model, str(id),unicode(attributes))
         # TODO rename attributes in something better
         api = self.connect()
         res = api.get(self._prestashop_model, id, options=attributes)
@@ -142,6 +154,8 @@ class GenericAdapter(PrestaShopCRUDAdapter):
 
     def create(self, attributes=None):
         """ Create a record on the external system """
+        _logger.info('method create, model %s, attributes %s', self._prestashop_model, unicode(attributes))
+         
         api = self.connect()
         return api.add(self._prestashop_model, {
             self._export_node_name: attributes
@@ -151,12 +165,16 @@ class GenericAdapter(PrestaShopCRUDAdapter):
         """ Update records on the external system """
         api = self.connect()
         attributes['id'] = id
+        _logger.info('method write, model %s, attributes %s', self._prestashop_model, unicode(attributes))
+         
         return api.edit(self._prestashop_model, {
             self._export_node_name: attributes
         })
 
     def delete(self, ids):
         """ Delete a record(s) on the external system """
+        _logger.info('method delete, model %s, ids %s', self._prestashop_model, unicode(ids))
+         
         api = self.connect()
         return api.delete(self._prestashop_model, ids)
 
@@ -231,12 +249,15 @@ class PartnerAddressAdapter(GenericAdapter):
 class ProductCategoryAdapter(GenericAdapter):
     _model_name = 'prestashop.product.category'
     _prestashop_model = 'categories'
-
+    _export_node_name = 'category'
+    
 
 @prestashop
 class ProductImageAdapter(PrestaShopCRUDAdapter):
     _model_name = 'prestashop.product.image'
     _prestashop_image_model = 'products'
+    _prestashop_model = '/images/products'
+    _export_node_name = '/images/products'
 
     def read(self, product_tmpl_id, image_id, options=None):
         api = PrestaShopWebServiceImage(self.prestashop.api_url,
@@ -247,6 +268,19 @@ class ProductImageAdapter(PrestaShopCRUDAdapter):
             image_id,
             options=options
         )
+    def create(self, attributes=None):
+        api = PrestaShopWebServiceImage(self.prestashop.api_url,
+                                        self.prestashop.webservice_key)
+        template_binder = self.get_binder_for_model(
+            'prestashop.product.template')
+        template = template_binder.to_backend(attributes['id_product'],
+                                              unwrap=True)
+        url = '{}/{}'.format(self._prestashop_model,
+                                template)
+        #content = base64.b64encode(attributes['content'])
+        return api.add(url, attributes['content'],
+                       img_filename='{}.{}'.format(attributes['name'],
+                       attributes['extension']))
 
 
 @prestashop
