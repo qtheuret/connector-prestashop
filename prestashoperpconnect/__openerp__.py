@@ -35,7 +35,7 @@
         "product",
         "product_m2mcategories",
         "connector_ecommerce",
-        "product_images",
+        "product_multi_image",
         "purchase",
     ],
     "external_dependencies": {
@@ -84,18 +84,18 @@ business.
     'data': [
         'data/cron.xml',
         'data/product_decimal_precision.xml',
-
-        'prestashop_model_view.xml',
-        'product_view.xml',
-        'delivery_view.xml',
-        'prestashoperpconnect_menu.xml',
-        'partner_view.xml',
-        'sale_view.xml',
-        'setting_view.xml',
+        'data/ecommerce_data.xml',
+        
+        'views/prestashop_model_view.xml',
+        'views/product_view.xml',
+        'views/delivery_view.xml',
+        'views/prestashoperpconnect_menu.xml',
+        'views/partner_view.xml',
+        'views/sale_view.xml',
+        'views/setting_view.xml',
 
         'security/ir.model.access.csv',
-        'security/prestashop_security.xml',
-        'ecommerce_data.xml',
+        'security/prestashop_security.xml',        
     ],
     "active": True,
     "installable": True,
