@@ -770,7 +770,7 @@ class TemplateRecordImport(TranslatableRecordImport):
         if product_ids:
             products = self.session.browse('product.product',
                                            product_ids)
-            attribute_ids = []
+            attribute_ids = []            
             for product in products:
                 for attribute_value in product.attribute_value_ids:
                     attribute_ids.append(attribute_value.attribute_id.id)
@@ -778,18 +778,18 @@ class TemplateRecordImport(TranslatableRecordImport):
             if attribute_ids:
                 for attribute_id in set(attribute_ids):
                     value_ids = []
-                    for product in products:
-                        for attribute_value in product.attribute_value_ids:
-                           if (attribute_value.attribute_id.id == attribute_id
+                    for product in products:                        
+                        for attribute_value in product.attribute_value_ids:                                                      
+                            if (attribute_value.attribute_id.id == attribute_id
                                 and attribute_value.id not in
                                     attr_line_value_ids):
                                 value_ids.append(attribute_value.id)
-                if value_ids:
-                    self.session.create('product.attribute.line', {
-                        'attribute_id': attribute_id,
-                        'product_tmpl_id': template_id,
-                        'value_ids': [(6, 0, set(value_ids))]}
-                    )
+                    if value_ids:
+                        self.session.create('product.attribute.line', {
+                            'attribute_id': attribute_id,
+                            'product_tmpl_id': template_id,
+                            'value_ids': [(6, 0, set(value_ids))]}
+                        )
 
     def import_combinations(self):
         prestashop_record = self._get_prestashop_data()
@@ -799,7 +799,7 @@ class TemplateRecordImport(TranslatableRecordImport):
             'combinations', [])
         if not isinstance(combinations, list):
             combinations = [combinations]
-        for combination in combinations:
+        for combination in combinations:            
             import_record(
                 self.session,
                 'prestashop.product.combination',
