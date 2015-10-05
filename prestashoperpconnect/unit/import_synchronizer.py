@@ -880,7 +880,8 @@ class TemplateRecordImport(TranslatableRecordImport):
                 {"image": image['content']},
                 context=ctx
                 )
-#            model = self.env['prestashop.product.template'].with_context(connector_no_export=True)
+#            model = self.env['prestashop.product.template']
+#                       .with_context(connector_no_export=True)
 #            _logger.debug("Model : %s ", model)
 #            binding = model.search(template_id)
 #            _logger.debug("binding :")
