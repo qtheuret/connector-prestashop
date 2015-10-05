@@ -101,6 +101,8 @@ class prestashop_backend(orm.Model):
         'shipping_product_id': fields.many2one('product.product',
                                                'Shipping Product', select=1,
                                                required=False),
+        'api_debug': fields.boolean("Debug the API"),
+        'api_timeout': fields.float("Timeout in seconds")
     }
 
     _defaults = {
@@ -108,6 +110,8 @@ class prestashop_backend(orm.Model):
         c: s.pool.get('res.company')._company_default_get(cr, uid,
                                                           'prestashop.backend',
                                                           context=c),
+        'api_debug': False,
+        'api_timeout': 100.0
     }
 
     def synchronize_metadata(self, cr, uid, ids, context=None):

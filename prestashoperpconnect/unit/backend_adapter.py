@@ -72,10 +72,12 @@ class PrestaShopWebServiceImage(PrestaShopWebServiceDict):
 
 class PrestaShopLocation(object):
 
-    def __init__(self, location, webservice_key):
+    def __init__(self, location, webservice_key, api_debug, api_timeout):
         self.location = location
         self.webservice_key = webservice_key
         self.api_url = '%s/api' % location
+        self.api_debug = api_debug
+        self.api_timeout = api_timeout
 
 
 class PrestaShopCRUDAdapter(CRUDAdapter):
@@ -91,7 +93,9 @@ class PrestaShopCRUDAdapter(CRUDAdapter):
         super(PrestaShopCRUDAdapter, self).__init__(environment)
         self.prestashop = PrestaShopLocation(
             self.backend_record.location,
-            self.backend_record.webservice_key
+            self.backend_record.webservice_key,
+            self.backend_record.api_debug,
+            self.backend_record.api_timeout
         )
 
     def search(self, filters=None):
@@ -127,8 +131,20 @@ class GenericAdapter(PrestaShopCRUDAdapter):
     _prestashop_model = None
 
     def connect(self):
+        # Add parameter to debug 
+        # https://github.com/akretion/prestapyt/blob/master/prestapyt/prestapyt.py#L81
+        _logger.info("Connect to %s with apikey %s in debug mode %s and \
+                        timeout %s",
+                        self.prestashop.api_url,
+                        self.prestashop.webservice_key,
+                        str(self.prestashop.api_debug),
+                        str(self.prestashop.api_timeout)
+                        )
         return PrestaShopWebServiceDict(self.prestashop.api_url,
-                                        self.prestashop.webservice_key)
+                                        self.prestashop.webservice_key,
+                                        self.prestashop.api_debug, 
+                                        None, 
+                                        {'timeout': self.prestashop.api_timeout})
 
     def search(self, filters=None):
         """ Search records according to some criterias
