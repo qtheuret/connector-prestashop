@@ -37,6 +37,7 @@ We map that in OpenERP to a product.product with an attribute.set defined for
 the main product.
 '''
 
+import logging
 from prestapyt import PrestaShopWebServiceError
 from .backend import prestashop
 from openerp import SUPERUSER_ID
@@ -51,6 +52,7 @@ from .unit.import_synchronizer import PrestashopImportSynchronizer
 from .unit.import_synchronizer import TranslatableRecordImport
 from .unit.mapper import PrestashopImportMapper
 
+_logger = logging.getLogger(__name__)
 
 @prestashop
 class ProductCombinationAdapter(GenericAdapter):
@@ -84,8 +86,71 @@ class ProductCombinationRecordImport(PrestashopImportSynchronizer):
                 'prestashop.product.combination.option.value'
             )
 
-#     def _after_import(self, erp_id):
-#         self.prestashop_record
+
+    
+    def unit_price_impact(self, erp_id):
+        # TODO manage extra price for a combination? Really possible?  
+#        main_template = self.main_template(record)
+        record = self.prestashop_record
+        _logger.debug("Record pour extra price")
+        _logger.debug(record)
+        _logger.debug(erp_id)
+        unit_price_impact = float(record['unit_price_impact']) or 0.0
+        _logger.debug("Unit price impact : %s ", 
+                                            str(unit_price_impact))
+                                            
+        main_template = erp_id.product_tmpl_id
+        _logger.debug("Template : %s ")
+        _logger.debug(main_template)
+        
+        option_values = record.get('associations', {}).get(
+            'product_option_values', {}).get('product_option_value', [])
+        _logger.debug(option_values)
+        
+        for option_value_object in option_values:
+#        self._get_option_value(record):
+##            results.append(option_value_object.openerp_id.id)
+            _logger.debug(option_value_object)
+#            _logger.debug(option_value_object.name)
+#            _logger.debug("Extra price : %s  "+ str(option_value_object.price_extra))
+
+#            p_ids = self.env['product.attribute.price'].search(
+#                                [('value_id', '=', option_value_object.openerp_id.id), 
+#                                ('product_tmpl_id', '=', main_template.id)], 
+#                                )
+#            _logger.debug("Product attribute price")
+#            _logger.debug(p_ids)
+#            if p_ids:
+#                self.session.write('product.attribute.price', p_ids, {
+#                                        'price_extra': unit_price_impact}
+#                                        )
+#            else:
+#                _logger.debug("Additionnal Price Line found")
+#            
+#                price_id = self.session.create('product.attribute.price', {
+#                                        'product_tmpl_id': main_template.id,
+#                                        'value_id': option_value_object.openerp_id.id,
+#                                        'price_extra': unit_price_impact,
+#                                        })
+#                _logger.debug(price_id)
+            
+#            price_id = self.session.search('product.attribute.value',
+#                                    [('product_tmpl_id', '=', main_template.id),
+#                                     ('value_id', '=', option_value_object.openerp_id.id)   
+#                                    ])
+            
+#            if price_id :
+#                self.session.write(
+#                        'product.attribute.price',
+#                        [price_id.id],
+#                        {'price_extra': float(unit_price_impact) }
+#                )
+        
+        
+
+#    def _after_import(self, erp_id):
+#         self.unit_price_impact(erp_id)
+
 
 
 @prestashop
@@ -132,14 +197,33 @@ class ProductCombinationMapper(PrestashopImportMapper):
     def product_tmpl_id(self, record):
         template = self.main_template(record)
         return {'product_tmpl_id': template.openerp_id.id}
+    
+    @mapping
+    def list_price(self, record):
+        main_template = self.main_template(record)
+        prices_and_taxes = {'list_price' : main_template['list_price']}
+        _logger.debug("DISPLAY TEMPLATE TAXES")
+        
+        prices_and_taxes.update({
+                    "taxes_id": [(6, 0, [t.id for t in main_template['taxes_id']])]
+                    })
+        _logger.debug(prices_and_taxes)
+        _logger.debug(main_template['taxes_id'])
+        return prices_and_taxes
 
     @mapping
-    def from_main_template(self, record):
+    def categ_id(self, record):
         main_template = self.main_template(record)
-        result = {}
-        for attribute in self.from_main:
+        return {'categ_id' : main_template['categ_id'].id}
+            
+    @mapping
+    def from_main_template(self, record):        
+        main_template = self.main_template(record)
+        result = {}           
+        for attribute in record:
+            _logger.debug("Attribute from product to be mapped : %s ", attribute)
             if attribute not in main_template:
-                continue
+                continue                
             if hasattr(main_template[attribute], 'id'):
                 result[attribute] = main_template[attribute].id
             elif type(main_template[attribute]) is browse_record_list:
@@ -148,7 +232,7 @@ class ProductCombinationMapper(PrestashopImportMapper):
                     ids.append(element.id)
                 result[attribute] = [(6, 0, ids)]
             else:
-                result[attribute] = main_template[attribute]
+                result[attribute] = main_template[attribute]            
         return result
 
     def main_template(self, record):
@@ -201,7 +285,7 @@ class ProductCombinationMapper(PrestashopImportMapper):
         return {'attribute_value_ids': [(6, 0, results)]}
 
     @mapping
-    def main_template_id(self, record):
+    def main_template_id(self, record):    
         return {'main_template_id': self.get_main_template_id(record).id}
 
     def _template_code_exists(self, code):
@@ -371,6 +455,20 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
 
         return {'attribute_id': attribute_id.id}
 
+#    @mapping
+#    def price_extra(self, record):
+#        # TODO manage extra price from template        
+##        main_template = self.main_template(record)
+##        unit_price_impact = float(record['unit_price_impact']) or 0.0
+##        _logger.debug("Unit price impact : %s ", 
+##                                            str(unit_price_impact))
+##        _logger.debug("Price from template : %s ", 
+##                                            str(main_template['list_price']))
+#                                            
+#        _logger.debug("Mapping price extra")
+#        _logger.debug(record)
+#        return {}
+    
     @mapping
     def backend_id(self, record):
         return {'backend_id': self.backend_record.id}

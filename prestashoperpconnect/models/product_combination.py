@@ -92,7 +92,7 @@ class prestashop_product_combination(orm.Model):
             'Computed Quantity',
             help="Last computed quantity to send on Prestashop."
         ),
-        'reference': fields.char('Original reference'),
+        'reference': fields.char('Original reference'),        
     }
 
     def recompute_prestashop_qty(self, cr, uid, ids, context=None):

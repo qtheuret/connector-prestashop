@@ -135,7 +135,7 @@ class ProductImageMapper(PrestashopImportMapper):
         return {"extension": mimetypes.guess_extension(record['type'])}
 
 
-# product template
+########  product template ########
 @prestashop
 class TemplateMapper(PrestashopImportMapper):
     _model_name = 'prestashop.product.template'
@@ -168,12 +168,18 @@ class TemplateMapper(PrestashopImportMapper):
     def list_price(self, record):
         taxes = self.taxes_id(record)
         # Defensive if price is null
-        _logger.debug("Get the price for template")
         if not record['price'] :
-            _logger.debug("Price was not found in the record. Foced to 0")
+            _logger.debug("Price was not found in the record. Forced to 0")
             record['price'] = '0.0'
+        
+        prices_and_taxes = taxes
+        prices_and_taxes.update({                    
+                    'list_price_tax': float(record['price'])
+                })
+        
         if taxes and taxes.get('taxes_id'):
             tax_id = taxes.get('taxes_id')[0][2][0]
+            
             if tax_id:
                 tax_model = self.session.pool.get('account.tax')
                 tax = tax_model.browse(
@@ -182,18 +188,23 @@ class TemplateMapper(PrestashopImportMapper):
                     tax_id,
                 )
                 _logger.debug("Price from record :%s and tax : %s ",record['price'],tax.amount)
-                
-                return {
-                    'list_price': float(record['price']) / (1 + tax.amount),
-                    'list_price_tax': float(record['price'])
-                }
-            return {}
+                if not self.backend_record.taxes_included:
+                    prices_and_taxes.update({
+                        'list_price': float(record['price']) / (1 + tax.amount),
+                    })
+                else :
+                    prices_and_taxes.update({
+                        'list_price': float(record['price']),
+                    })
+            
         elif record['price']:
-            return {
-                'list_price': float(record['price']),
-                'list_price_tax': float(record['price'])
-            }
-        return {}
+            prices_and_taxes.update({
+                'list_price': float(record['price']),                
+            })
+        
+#        _logger.debug("Return prices_and_taxes")
+#        _logger.debug(prices_and_taxes)
+        return prices_and_taxes
 
     @mapping
     def date_add(self, record):
@@ -325,25 +336,31 @@ class TemplateMapper(PrestashopImportMapper):
             return {'ean13': record['ean13']}
         return {}
 
+
     @mapping
     def taxes_id(self, record):
-        if self.backend_record.taxes_included:
-            if record['id_tax_rules_group'] == '0':
-                return {}
-            tax_group_id = self.get_openerp_id(
-                'prestashop.account.tax.group',
-                record['id_tax_rules_group']
+        """
+        Always return a tax when it's set in PS, 
+        """
+        if record['id_tax_rules_group'] == '0':
+            return {}
+        tax_group_id = self.get_openerp_id(
+            'prestashop.account.tax.group',
+            record['id_tax_rules_group']
+        )
+        if tax_group_id:
+            tax_group_model = self.session.pool.get('account.tax.group')
+            tax_ids = tax_group_model.read(
+                self.session.cr,
+                self.session.uid,
+                tax_group_id,
+                ['tax_ids']
             )
-            if tax_group_id:
-                tax_group_model = self.session.pool.get('account.tax.group')
-                tax_ids = tax_group_model.read(
-                    self.session.cr,
-                    self.session.uid,
-                    tax_group_id,
-                    ['tax_ids']
-                )
-            return {"taxes_id": [(6, 0, tax_ids['tax_ids'])]}
-        return {}
+        result = {"taxes_id": [(6, 0, tax_ids['tax_ids'])]}
+        _logger.debug("GET THE TAXES")
+        _logger.debug(result)
+        return result
+
 
     @mapping
     def type(self, record):
@@ -351,8 +368,9 @@ class TemplateMapper(PrestashopImportMapper):
         # product. So it is set to a 'service' kind of product. Should better
         # be a 'virtual' product... but it does not exist...
         # The same if the product is a virtual one in prestashop.
+        _logger.debug("Compute the product type : %s ", record['type']['value'])
         if record['type']['value'] and record['type']['value'] == 'virtual':
-            return {"type": 'service'}
+            return {"type": 'service'}        
         return {"type": 'product'}
 
     @mapping
