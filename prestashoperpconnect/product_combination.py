@@ -89,7 +89,8 @@ class ProductCombinationRecordImport(PrestashopImportSynchronizer):
 
     
     def unit_price_impact(self, erp_id):
-        # TODO manage extra price for a combination? Really possible?  
+        # TODO manage extra price for a combination? 
+        # Really possible? https://github.com/OCA/connector-prestashop/pull/16#issuecomment-145768033 
 #        main_template = self.main_template(record)
         record = self.prestashop_record
         _logger.debug("Record pour extra price")
@@ -332,7 +333,33 @@ class ProductCombinationMapper(PrestashopImportMapper):
             return {'ean13': record['ean13']}
         return {}
 
-
+    # DIMENSION PART, depends on product dimension
+    
+    @mapping
+    def length(self, record):
+        _logger.debug("LENGTH")   
+        backend_adapter = self.get_connector_unit_for_model(
+                GenericAdapter, 'prestashop.product.template')
+        main_template = backend_adapter.read(record['id_product'])
+        return {'length': main_template['depth']}
+    
+    @mapping
+    def height (self, record):
+        _logger.debug("height ")        
+        backend_adapter = self.get_connector_unit_for_model(
+                GenericAdapter, 'prestashop.product.template')
+        main_template = backend_adapter.read(record['id_product'])
+        return {'height': main_template['height']}
+    
+    @mapping
+    def width(self, record):
+        _logger.debug("Width")  
+        backend_adapter = self.get_connector_unit_for_model(
+                GenericAdapter, 'prestashop.product.template')
+        main_template = backend_adapter.read(record['id_product'])
+        return {'width': main_template['width']}
+    
+    
 @prestashop
 class ProductCombinationOptionAdapter(GenericAdapter):
     _model_name = 'prestashop.product.combination.option'

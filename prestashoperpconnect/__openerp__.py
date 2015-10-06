@@ -37,6 +37,7 @@
         "connector_ecommerce",
         "product_multi_image",
         "purchase",
+        "product_dimension"
     ],
     "external_dependencies": {
         'python': ["unidecode"],
