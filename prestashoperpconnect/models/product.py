@@ -237,6 +237,10 @@ class product_product(orm.Model):
             'openerp_id',
             string='PrestaShop Bindings'
         ),
+        # This one is useful in order to override the template price. 
+        # In PS it's not possible to find extra price from combination so we have to compute it on the fly
+#        'final_price': fields.float('Final Price'),
+#        'list_price_tax': fields.float('Sale Price Including Tax'),
     }
 
     def copy(self, cr, uid, id, default=None, context=None):

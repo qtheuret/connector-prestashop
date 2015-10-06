@@ -203,10 +203,14 @@ class ProductCombinationMapper(PrestashopImportMapper):
         main_template = self.main_template(record)
         prices_and_taxes = {'list_price' : main_template['list_price']}
         _logger.debug("DISPLAY TEMPLATE TAXES")
+#        record['unit_price_impact']        
+#        'final_price': fields.float('Final Price'),
+#        'list_price_tax': fields.float('Sale Price Including Tax'),
         
         prices_and_taxes.update({
                     "taxes_id": [(6, 0, [t.id for t in main_template['taxes_id']])]
                     })
+                    
         _logger.debug(prices_and_taxes)
         _logger.debug(main_template['taxes_id'])
         return prices_and_taxes

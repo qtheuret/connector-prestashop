@@ -191,15 +191,18 @@ class TemplateMapper(PrestashopImportMapper):
                 if not self.backend_record.taxes_included:
                     prices_and_taxes.update({
                         'list_price': float(record['price']) / (1 + tax.amount),
+                        'final_price': float(record['price']) / (1 + tax.amount),
                     })
                 else :
                     prices_and_taxes.update({
                         'list_price': float(record['price']),
+                        'final_price': float(record['price']),
                     })
             
         elif record['price']:
             prices_and_taxes.update({
                 'list_price': float(record['price']),                
+                'final_price': float(record['price']),
             })
         
 #        _logger.debug("Return prices_and_taxes")
