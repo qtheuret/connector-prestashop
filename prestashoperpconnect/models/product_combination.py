@@ -37,12 +37,14 @@ We map that in OpenERP to a product.product with an attribute.set defined for
 the main product.
 '''
 
+import logging
 from openerp.osv import fields, orm
 
 from openerp.addons.connector.session import ConnectorSession
 
 from ..unit.import_synchronizer import import_record
 
+_logger = logging.getLogger(__name__)
 
 class product_product(orm.Model):
     _inherit = 'product.product'
