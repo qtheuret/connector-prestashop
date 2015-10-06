@@ -172,7 +172,7 @@ class sale_order_line(orm.Model):
             string="PrestaShop Discount Bindings"
         ),
     }
-
+    
 
 class prestashop_sale_order_line(orm.Model):
     _name = 'prestashop.sale.order.line'

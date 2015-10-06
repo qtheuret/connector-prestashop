@@ -21,6 +21,7 @@
 #                                                                             #
 ###############################################################################
 
+import logging
 from prestapyt import PrestaShopWebServiceDict
 from .backend import prestashop
 from openerp.addons.connector.event import on_record_write
@@ -44,6 +45,7 @@ ORDER_STATUS_MAPPING = {
     'waiting_date': ""
 }
 
+_logger = logging.getLogger(__name__)
 
 @prestashop
 class PrestaShopSaleOrderOnChange(SaleOrderOnChange):

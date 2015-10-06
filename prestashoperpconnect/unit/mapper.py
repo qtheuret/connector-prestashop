@@ -463,7 +463,9 @@ class SaleOrderMapper(PrestashopImportMapper):
         orders = record['associations'].get(
             'order_rows', {}).get('order_row', [])
         if isinstance(orders, dict):
-            return [orders]
+            orders = [orders]
+        _logger.debug("ORDER LINES")
+        _logger.debug(orders)
         return orders
 
     def _get_discounts_lines(self, record):
@@ -748,18 +750,23 @@ class SaleOrderLineMapper(PrestashopImportMapper):
 
     @mapping
     def tax_id(self, record):
-        if self.backend_record.taxes_included:
-            taxes = record.get('associations', {}).get(
-                'taxes', {}).get('tax', [])
-            if not isinstance(taxes, list):
-                taxes = [taxes]
-            result = []
-            for tax in taxes:
-                openerp_id = self._find_tax(tax['id'])
-                if openerp_id:
-                    result.append(openerp_id.id)
-            if result:
-                return {'tax_id': [(6, 0, result)]}
+        """
+        Always return the tax. 
+        The principle is that the account.tax will be cconfigured with taxes 
+        included or excluded so that everywhere you need taxes and Odoo will
+        compute the amount VAT included or excluded
+        """
+        taxes = record.get('associations', {}).get(
+            'taxes', {}).get('tax', [])
+        if not isinstance(taxes, list):
+            taxes = [taxes]
+        result = []
+        for tax in taxes:
+            openerp_id = self._find_tax(tax['id'])
+            if openerp_id:
+                result.append(openerp_id.id)
+        if result:
+            return {'tax_id': [(6, 0, result)]}
         return {}
 
     @mapping
