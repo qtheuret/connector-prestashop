@@ -351,6 +351,7 @@ class AddressImportMapper(PrestashopImportMapper):
         ('date_add', 'date_add'),
         ('date_upd', 'date_upd'),
         ('id_customer', 'prestashop_partner_id'),
+        ('alias', 'address_alias')
     ]
 
     @mapping
@@ -389,16 +390,18 @@ class AddressImportMapper(PrestashopImportMapper):
     @mapping
     def name(self, record):
         name = ""
+        alias = ""
         if record['firstname']:
             name += record['firstname']
         if record['lastname']:
             if name:
                 name += " "
             name += record['lastname']
-        if record['alias']:
-            if name:
-                name += " "
-            name += '(' + record['alias'] + ')'
+#        if record['alias']:
+##            if name:
+##                name += " "
+##            name += '(' + record['alias'] + ')'
+#            alias += record['alias']
         return {'name': name}
 
     @mapping

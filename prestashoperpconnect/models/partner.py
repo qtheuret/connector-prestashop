@@ -37,6 +37,7 @@ class res_partner(orm.Model):
             'prestashop.address', 'openerp_id',
             string="PrestaShop Address Bindings"
         ),
+        'address_alias': fields.char('Alias in prestashop'),
     }
 
 
