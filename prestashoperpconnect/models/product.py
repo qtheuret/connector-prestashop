@@ -25,33 +25,6 @@ from openerp.osv import fields, orm
 _logger = logging.getLogger(__name__)
 
 
-class product_image(orm.Model):
-    _inherit = 'product.image'
-
-    _columns = {
-        'prestashop_bind_ids': fields.one2many(
-            'prestashop.product.image',
-            'openerp_id',
-            string='PrestaShop Bindings'
-        ),
-    }
-
-
-class prestashop_product_image(orm.Model):
-    _name = 'prestashop.product.image'
-    _inherit = 'prestashop.binding'
-    _inherits = {'product.image': 'openerp_id'}
-
-    _columns = {
-        'openerp_id': fields.many2one(
-            'product.image',
-            string='Product image',
-            required=True,
-            ondelete='cascade'
-        )
-    }
-
-
 class product_template(orm.Model):
     _inherit = 'product.template'
 

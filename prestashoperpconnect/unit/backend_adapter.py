@@ -26,9 +26,10 @@
 #
 ##############################################################################
 
-from prestapyt import PrestaShopWebServiceDict
+
 import base64
 import logging
+from prestapyt import PrestaShopWebServiceDict
 from openerp.addons.connector.unit.backend_adapter import CRUDAdapter
 from ..backend import prestashop
 
@@ -260,36 +261,6 @@ class PartnerAddressAdapter(GenericAdapter):
     _model_name = 'prestashop.address'
     _prestashop_model = 'addresses'
 
-
-@prestashop
-class ProductImageAdapter(PrestaShopCRUDAdapter):
-    _model_name = 'prestashop.product.image'
-    _prestashop_image_model = 'products'
-    _prestashop_model = '/images/products'
-    _export_node_name = '/images/products'
-
-    def read(self, product_tmpl_id, image_id, options=None):
-        api = PrestaShopWebServiceImage(self.prestashop.api_url,
-                                        self.prestashop.webservice_key)
-        return api.get_image(
-            self._prestashop_image_model,
-            product_tmpl_id,
-            image_id,
-            options=options
-        )
-    def create(self, attributes=None):
-        api = PrestaShopWebServiceImage(self.prestashop.api_url,
-                                        self.prestashop.webservice_key)
-        template_binder = self.get_binder_for_model(
-            'prestashop.product.template')
-        template = template_binder.to_backend(attributes['id_product'],
-                                              unwrap=True)
-        url = '{}/{}'.format(self._prestashop_model,
-                                template)
-        #content = base64.b64encode(attributes['content'])
-        return api.add(url, attributes['content'],
-                       img_filename='{}.{}'.format(attributes['name'],
-                       attributes['extension']))
 
 
 @prestashop

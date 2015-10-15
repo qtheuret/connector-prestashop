@@ -47,37 +47,6 @@ except ImportError, e:
 
 _logger = logging.getLogger(__name__)
 
-
-# Product image connector parts
-@prestashop
-class ProductImageMapper(PrestashopImportMapper):
-    _model_name = 'prestashop.product.image'
-
-    direct = [
-        ('content', 'file_db_store'),
-    ]
-
-    @mapping
-    def template_id(self, record):
-        res = self.get_openerp_id(
-            'prestashop.product.template',
-            record['id_product']
-        )
-        return {'product_id': res}
-
-    @mapping
-    def name(self, record):
-        return {'name': record['id_product'] + '_' + record['id_image']}
-
-    @mapping
-    def backend_id(self, record):
-        return {'backend_id': self.backend_record.id}
-
-    @mapping
-    def extension(self, record):
-        return {"extension": mimetypes.guess_extension(record['type'])}
-
-
 ########  product template ########
 @prestashop
 class TemplateMapper(PrestashopImportMapper):
@@ -182,10 +151,10 @@ class TemplateMapper(PrestashopImportMapper):
         """ Implements different strategies for default_code of the template """
         
 #        if self.backend_record.use_variant_default_code :
-            
+        _logger.debug('Use variant default code %s', self.backend_record.use_variant_default_code)
         if self.has_combinations(record)  :
-            record = record.prestashop_record
-            _logger.debug("%s has variant so skip the code", record.get(name))
+#            record = record.prestashop_record
+            _logger.debug("has variant so skip the code", )
             return {}
         
         code = record.get('reference')

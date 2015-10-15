@@ -33,6 +33,7 @@ from . import delivery
 from . import partner
 from . import product
 from . import product_category
+from . import product_image
 from . import product_combination
 from . import sale
 from . import setting

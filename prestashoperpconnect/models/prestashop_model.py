@@ -104,8 +104,8 @@ class prestashop_backend(orm.Model):
         'api_debug': fields.boolean("Debug the API"),
         'api_timeout': fields.float("Timeout in seconds"),
         'image_store_type' : fields.selection(
-                                [('db','database'),], string='Stockage type for image',
-                                required=True
+                                [('db','Database'),('file','File'),('url', 'URL')], string='Stockage type for image',
+                                required=True, default='db'
                             ),
         'use_variant_default_code': fields.boolean(string='', help="""Allow to choose wether the default_code of the default variant is used"""),
     }
@@ -117,7 +117,6 @@ class prestashop_backend(orm.Model):
                                                           context=c),
         'api_debug': False,
         'api_timeout': 100.0,
-        'image_store_type' : 'database',
         'use_variant_default_code': True,
     }
 
