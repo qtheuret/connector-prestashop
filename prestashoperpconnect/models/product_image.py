@@ -95,10 +95,11 @@ class ProductImageMapper(PrestashopImportMapper):
         if self.backend_record.image_store_type == 'db' :        
             type = {'file_db_store' : record['content']}
         if self.backend_record.image_store_type == 'file' :        
-                        #TODO : implements the correct persistence
+            #TODO : implements the correct persistence
+            _logger.info("Not yet Implemented")
         if self.backend_record.image_store_type == 'url' :        
             #TODO : implements the correct persistence     
-        
+            _logger.info("Not yet Implemented")
         return type
     
     @mapping
