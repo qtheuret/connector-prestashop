@@ -136,27 +136,28 @@ class ProductCategoryImport(TranslatableRecordImport):
         ],
     }        
             
-    def _import_dependenciesORG(self):
-        record = self.prestashop_record
-        if record['id_parent'] != '0':
-            try:
-                self._check_dependency(record['id_parent'],
-                                       'prestashop.product.category')
-            except PrestaShopWebServiceError:
-                pass
-      
-
-    def _import_dependenciesMGTO(self):
-        """ Import the dependencies for the record"""
-        record = self.prestashop_record
-        # import parent category
-        # the root category has a 0 parent_id
-        if int(record.get('id_parent')) != 0 :
-            _logger.debug("Parent found")
-            parent_id = record['id_parent']
-            if self.binder.to_openerp(parent_id) is None:
-                importer = self.unit_for(PrestashopImportSynchronizer)
-                importer.run(parent_id)
+#            TODO : CHECK if really useless since the update of the strategy in def tree
+#    def _import_dependenciesORG(self):
+#        record = self.prestashop_record
+#        if record['id_parent'] != '0':
+#            try:
+#                self._check_dependency(record['id_parent'],
+#                                       'prestashop.product.category')
+#            except PrestaShopWebServiceError:
+#                pass
+#      
+#
+#    def _import_dependenciesMGTO(self):
+#        """ Import the dependencies for the record"""
+#        record = self.prestashop_record
+#        # import parent category
+#        # the root category has a 0 parent_id
+#        if int(record.get('id_parent')) != 0 :
+#            _logger.debug("Parent found")
+#            parent_id = record['id_parent']
+#            if self.binder.to_openerp(parent_id) is None:
+#                importer = self.unit_for(PrestashopImportSynchronizer)
+#                importer.run(parent_id)
 
 @prestashop
 class ProductCategoryAdapter(GenericAdapter):
