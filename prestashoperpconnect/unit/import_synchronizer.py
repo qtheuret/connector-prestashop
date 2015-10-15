@@ -271,7 +271,7 @@ class DelayedBatchImport(BatchImportSynchronizer):
         'prestashop.res.partner.category',
         'prestashop.res.partner',
         'prestashop.address',
-        #'prestashop.product.category',
+#        'prestashop.product.category',
 #        'prestashop.product.product',
         'prestashop.product.template',
         'prestashop.sale.order',
@@ -1173,15 +1173,15 @@ def import_products(session, backend_id, since_date):
         'prestashop.product.category',
         backend_id,
         filters,
-        priority=15
+#        priority=15
     )
-    import_batch(
-        session,
-        'prestashop.product.template',
-        backend_id,
-        filters,
-        priority=15
-    )
+#    import_batch(
+#        session,
+#        'prestashop.product.template',
+#        backend_id,
+#        filters,
+#        priority=15
+#    )
     session.pool.get('prestashop.backend').write(
         session.cr,
         session.uid,

@@ -24,52 +24,6 @@ from openerp.osv import fields, orm
 
 _logger = logging.getLogger(__name__)
 
-#class product_category(orm.Model):
-#    _inherit = 'product.category'
-#
-#    _columns = {
-#        'prestashop_bind_ids': fields.one2many(
-#            'prestashop.product.category',
-#            'openerp_id',
-#            string="PrestaShop Bindings"
-#        ),
-#    }
-#
-#
-#class prestashop_product_category(orm.Model):
-#    _name = 'prestashop.product.category'
-#    _inherit = 'prestashop.binding'
-#    _inherits = {'product.category': 'openerp_id'}
-#
-#    _columns = {
-#        'openerp_id': fields.many2one(
-#            'product.category',
-#            string='Product Category',
-#            required=True,
-#            ondelete='cascade'
-#        ),
-#        'default_shop_id': fields.many2one('prestashop.shop'),
-#        'date_add': fields.datetime(
-#            'Created At (on PrestaShop)',
-#            readonly=True
-#        ),
-#        'date_upd': fields.datetime(
-#            'Updated At (on PrestaShop)',
-#            readonly=True
-#        ),
-#        'description': fields.char('Description', translate=True),
-#        'link_rewrite': fields.char('Friendly URL', translate=True),
-#        'meta_description': fields.char('Meta description', translate=True),
-#        'meta_keywords': fields.char('Meta keywords', translate=True),
-#        'meta_title': fields.char('Meta title', translate=True),
-#        'active': fields.boolean('Active'),
-#        'position': fields.integer('Position')
-#    }
-#
-#    _defaults = {
-#        'active': True
-#    }
-
 
 class product_image(orm.Model):
     _inherit = 'product.image'

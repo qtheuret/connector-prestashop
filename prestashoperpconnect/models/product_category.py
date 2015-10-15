@@ -22,6 +22,7 @@
 import datetime
 import mimetypes
 import logging 
+import xmlrpclib
 
 from openerp.osv import fields, orm
 from openerp import SUPERUSER_ID
@@ -47,9 +48,6 @@ from ..connector import add_checkpoint
 from ..connector import get_environment
 from ..unit.exception import OrderImportRuleRetry
 
-
-
-
 from openerp.addons.connector.connector import Binder
 from openerp.addons.connector.connector import ConnectorEnvironment
 from openerp.addons.connector.deprecate import log_deprecate
@@ -59,11 +57,10 @@ from openerp.addons.connector.unit.mapper import mapping
 from openerp.addons.connector.unit.synchronizer import ExportSynchronizer
 from openerp.addons.product.product import check_ean
 from ..connector import get_environment
-from ..unit.backend_adapter import GenericAdapter  # , PrestaShopCRUDAdapter
 from ..unit.import_synchronizer import DelayedBatchImport
 from ..unit.import_synchronizer import PrestashopImportSynchronizer
 from ..unit.import_synchronizer import import_record
-from ..unit.mapper import PrestashopImportMapper
+
 try:
     from xml.etree import cElementTree as ElementTree
 except ImportError, e:
@@ -119,7 +116,7 @@ class prestashop_product_category(orm.Model):
         'active': True
     }
 
-
+#PrestashopImportSynchronizer
 
 
 @prestashop
@@ -137,9 +134,9 @@ class ProductCategoryImport(TranslatableRecordImport):
             'meta_keywords',
             'meta_title'
         ],
-    }
-
-    def _import_dependencies(self):
+    }        
+            
+    def _import_dependenciesORG(self):
         record = self.prestashop_record
         if record['id_parent'] != '0':
             try:
@@ -147,24 +144,63 @@ class ProductCategoryImport(TranslatableRecordImport):
                                        'prestashop.product.category')
             except PrestaShopWebServiceError:
                 pass
-            
-    def tree(self, parent_id=None, storeview_id=None):
+      
+
+    def _import_dependenciesMGTO(self):
+        """ Import the dependencies for the record"""
+        record = self.prestashop_record
+        # import parent category
+        # the root category has a 0 parent_id
+        if int(record.get('id_parent')) != 0 :
+            _logger.debug("Parent found")
+            parent_id = record['id_parent']
+            if self.binder.to_openerp(parent_id) is None:
+                importer = self.unit_for(PrestashopImportSynchronizer)
+                importer.run(parent_id)
+
+@prestashop
+class ProductCategoryAdapter(GenericAdapter):
+    _model_name = 'prestashop.product.category'
+    _prestashop_model = 'categories'
+    _export_node_name = 'category'
+    
+    def tree(self, parent_id=None, default_shop_id=None):
         """ Returns a tree of product categories
 
         :rtype: dict
+        node_id : {children}
         """
-        def filter_ids(tree):
-            children = {}
-            if tree['children']:
-                for node in tree['children']:
-                    children.update(filter_ids(node))
-            category_id = {tree['category_id']: children}
-            return category_id
+        filters = {}
+        tree = {}
+        root = {}
+                
         if parent_id:
             parent_id = int(parent_id)
-        tree = self._call('%s.tree' % self._magento_model,
-                          [parent_id, storeview_id])
-        return filter_ids(tree)
+            record = self.read(parent_id)
+            root = {
+                'category_id' : record.get('id'),
+                'parent_id' : record.get('id_parent'),
+                'level_depth' : record.get('level_depth'),
+                'children' : []       
+            }
+        else :
+            parent_id = 0 
+            root = {
+                'category_id' : 0,
+                'parent_id' : None,
+                'level_depth' : 0,
+                'children' : []       
+            }
+        filters={'filter[id_parent]': '%d' % (parent_id)}
+        
+        for children in self.search(filters):
+            record = self.read(children)
+            node_id = record.get('id')
+            node = {node_id : {}} 
+            _logger.debug("Before node update")
+            node[node_id].update(self.tree(node_id))
+            tree.update(node)
+        return tree
 
 @prestashop
 class ProductCategoryBatchImporter(DelayedBatchImport):
@@ -176,36 +212,53 @@ class ProductCategoryBatchImporter(DelayedBatchImport):
     """
     _model_name = ['prestashop.product.category']
 
-    def _import_record(self, magento_id, priority=None):
+
+#    def _check_dependency(self, prestashop_id, model_name):
+#        """ Use of level_depth for categories in order to prevent 
+#            unsynchronized imports """
+#        record = self.prestashop_record
+#        prestashop_id = int(prestashop_id)
+#        binder = self.get_binder_for_model(model_name)
+#        priority = 0
+#        if int(record['level_depth']) > 0 :
+#            priority = int(record['level_depth']) -1
+#        if not binder.to_openerp(prestashop_id):
+#            super(ProductCategoryImport, self)._import_record(
+#                                        prestashop_id, priority=priority)
+
+
+    def _import_record(self, prestashop_id, priority=None):
         """ Delay a job for the import """
-        _logger.debug("Delay a job for the import")
         super(ProductCategoryBatchImporter, self)._import_record(
             prestashop_id, priority=priority)
 
-    def run(self, filters=None):
+    def run(self, filters=None, priority=None):
         """ Run the synchronization """
-        _logger.debug("RUN SYNCHRO")
-        from_date = filters.pop('from_date', None)
-        to_date = filters.pop('to_date', None)
-        if from_date or to_date:
-            updated_ids = self.backend_adapter.search(filters,
-                                                      from_date=from_date,
-                                                      to_date=to_date)
+        
+        if filters is None:
+            filters = {}
+        
+        filter_date = filters.pop('filter[date_upd]', None)        
+        if filter_date :
+            updated_ids = self.backend_adapter.search(filters)
         else:
             updated_ids = None
-
+             
         base_priority = 10
-
+        tree = {}               
+        tree = self.backend_adapter.tree()
+        
         def import_nodes(tree, level=0):
             for node_id, children in tree.iteritems():
                 # By changing the priority, the top level category has
                 # more chance to be imported before the childrens.
                 # However, importers have to ensure that their parent is
                 # there and import it if it doesn't exist
-                if updated_ids is None or node_id in updated_ids:
+                node_id = int(node_id)                   
+                if updated_ids is None or node_id in updated_ids :
+                    _logger.debug("INSIDE IMPORT NODES : %s", node_id)
                     self._import_record(node_id, priority=base_priority+level)
-                import_nodes(children, level=level+1)
-        tree = self.backend_adapter.tree()
+                import_nodes(children, level=level+1)        
         import_nodes(tree)
 
 

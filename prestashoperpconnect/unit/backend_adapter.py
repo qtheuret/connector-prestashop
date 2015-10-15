@@ -262,13 +262,6 @@ class PartnerAddressAdapter(GenericAdapter):
 
 
 @prestashop
-class ProductCategoryAdapter(GenericAdapter):
-    _model_name = 'prestashop.product.category'
-    _prestashop_model = 'categories'
-    _export_node_name = 'category'
-    
-
-@prestashop
 class ProductImageAdapter(PrestaShopCRUDAdapter):
     _model_name = 'prestashop.product.image'
     _prestashop_image_model = 'products'

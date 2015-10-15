@@ -47,63 +47,6 @@ except ImportError, e:
 
 _logger = logging.getLogger(__name__)
 
-# product category
-#@prestashop
-#class ProductCategoryMapper(PrestashopImportMapper):
-#    _model_name = 'prestashop.product.category'
-#
-#    direct = [
-#        ('position', 'sequence'),
-#        ('description', 'description'),
-#        ('link_rewrite', 'link_rewrite'),
-#        ('meta_description', 'meta_description'),
-#        ('meta_keywords', 'meta_keywords'),
-#        ('meta_title', 'meta_title'),
-#        ('id_shop_default', 'default_shop_id'),
-#        ('active', 'active'),
-#        ('position', 'position')
-#    ]
-#
-#    @mapping
-#    def name(self, record):
-#        if record['name'] is None:
-#            return {'name': ''}
-#        return {'name': record['name']}
-#
-#    @mapping
-#    def backend_id(self, record):
-#        return {'backend_id': self.backend_record.id}
-#
-#    @mapping
-#    def parent_id(self, record):
-#        if record['id_parent'] == '0':
-#            return {}
-#        return {'parent_id': self.get_openerp_id(
-#            'prestashop.product.category',
-#            record['id_parent']
-#        )}
-#
-#    @mapping
-#    def data_add(self, record):
-#        if record['date_add'] == '0000-00-00 00:00:00':
-#            return {'date_add': datetime.datetime.now()}
-#        return {'date_add': record['date_add']}
-#
-#    @mapping
-#    def data_upd(self, record):
-#        if record['date_upd'] == '0000-00-00 00:00:00':
-#            return {'date_upd': datetime.datetime.now()}
-#        return {'date_upd': record['date_upd']}
-#
-#    @mapping
-#    def default_shop_id(self, record):
-#        shop_group_binder = self.get_binder_for_model('prestashop.shop.group')
-#        default_shop_id = shop_group_binder.to_openerp(
-#            record['id_shop_default'])
-#        if not default_shop_id:
-#            return {}
-#        return {'default_shop_id': default_shop_id.id}
-
 
 # Product image connector parts
 @prestashop
