@@ -91,7 +91,7 @@ class ProductImageMapper(PrestashopImportMapper):
 
     @mapping
     def type(self, record):
-        record = record.prestashop_record
+#        record = record.prestashop_record
         if self.backend_record.image_store_type == 'db' :        
             type = {'file_db_store' : record['content']}
         if self.backend_record.image_store_type == 'file' :        
