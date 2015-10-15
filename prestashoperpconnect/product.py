@@ -179,8 +179,15 @@ class TemplateMapper(PrestashopImportMapper):
 
     @mapping
     def default_code(self, record):
-        if self.has_combinations(record):
+        """ Implements different strategies for default_code of the template """
+        
+#        if self.backend_record.use_variant_default_code :
+            
+        if self.has_combinations(record)  :
+            record = record.prestashop_record
+            _logger.debug("%s has variant so skip the code", record.get(name))
             return {}
+        
         code = record.get('reference')
         if not code:
             code = "backend_%d_product_%s" % (

@@ -195,6 +195,13 @@ class ProductCombinationMapper(PrestashopImportMapper):
                         pass
 
     @mapping
+    def type(self, record):
+        main_template = self.main_template(record)
+        
+        return {'type':main_template['type']}
+    
+    
+    @mapping
     def product_tmpl_id(self, record):
         template = self.main_template(record)
         return {'product_tmpl_id': template.openerp_id.id}
