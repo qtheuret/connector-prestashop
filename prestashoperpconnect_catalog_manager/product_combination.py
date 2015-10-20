@@ -191,7 +191,7 @@ class ProductCombinationExportMapper(TranslationPrestashopExportMapper):
         images = []
         image_binder = self.get_binder_for_model(
             'prestashop.product.image')
-        for image in record.images:
+        for image in record.image_ids:
             image_ext_id = image_binder.to_backend(image.id, unwrap=True)
             if image_ext_id:
                 images.append({'id': image_ext_id})

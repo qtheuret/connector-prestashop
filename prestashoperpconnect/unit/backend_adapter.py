@@ -58,13 +58,18 @@ class PrestaShopWebServiceImage(PrestaShopWebServiceDict):
         response = self._execute(full_url, 'GET')
         if response:
             #INFO : This syntax is used when prestapyt 0.4 from akretion is used
-            image_content = base64.b64encode(response.content)
+#            image_content = base64.b64encode(response.content)
+            #INFO : This syntax is used when prestapyt 0.6.2 is used
+            image_content = base64.b64encode(response[2])
         else:
             image_content = ''
             
-        #INFO : This syntax is used when prestapyt 0.4 from akretion is used
+        
         return {
-            'type': response.headers['content-type'],
+            #INFO : This syntax is used when prestapyt 0.4 from akretion is used
+#            'type': response.headers['content-type'],
+            #INFO : This syntax is used when prestapyt 0.6.2 is used
+            'type': response[1].get('content-type'),
             'content': image_content,
             'id_' + resource[:-1]: resource_id,
             'id_image': image_id
