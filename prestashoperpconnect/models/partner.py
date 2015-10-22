@@ -32,7 +32,11 @@ from openerp.addons.connector.exception import FailedJobError
 from openerp.addons.connector.exception import NothingToDoJob
 from openerp.addons.connector.queue.job import job
 from openerp.addons.connector.unit.synchronizer import ImportSynchronizer
-from ..unit.import_synchronizer import PrestashopImportSynchronizer
+from ..unit.import_synchronizer import (PrestashopImportSynchronizer
+                                        , import_batch)
+from openerp.addons.connector.unit.backend_adapter import BackendAdapter
+from ..unit.import_synchronizer import import_record
+                                        
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from ..backend import prestashop
 from ..connector import add_checkpoint
@@ -243,10 +247,23 @@ class ResPartnerRecordImport(PrestashopImportSynchronizer):
             .get('groups', {}).get('group', [])
         if not isinstance(groups, list):
             groups = [groups]
-#        for group in groups:
+        
+        backend_adapter = self.get_connector_unit_for_model(
+            BackendAdapter,
+            'prestashop.product.combination.option.value'
+        )
+        for group in groups:
 #            self._import_dependency(group['id'],
 #                                   'prestashop.res.partner.category')
+            import_record.delay(
+                self.session,
+                'prestashop.res.partner.category',
+                self.backend_record.id,
+                group['id']
+            )
 
+                                
+                                
     def _after_import(self, erp_id):
         binder = self.get_binder_for_model(self._model_name)
         ps_id = binder.to_backend(erp_id.id)
