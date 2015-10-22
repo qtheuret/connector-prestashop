@@ -22,7 +22,24 @@
 #                                                                             #
 ###############################################################################
 
+import logging
 from openerp.osv import fields, orm
+from prestapyt import PrestaShopWebServiceError
+from ..unit.backend_adapter import GenericAdapter
+from ..unit.backend_adapter import PrestaShopCRUDAdapter
+from openerp.addons.connector.connector import ConnectorUnit
+from openerp.addons.connector.exception import FailedJobError
+from openerp.addons.connector.exception import NothingToDoJob
+from openerp.addons.connector.queue.job import job
+from openerp.addons.connector.unit.synchronizer import ImportSynchronizer
+from ..unit.import_synchronizer import PrestashopImportSynchronizer
+from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
+from ..backend import prestashop
+from ..connector import add_checkpoint
+from ..connector import get_environment
+from ..unit.exception import OrderImportRuleRetry
+
+_logger = logging.getLogger(__name__)
 
 
 class res_partner(orm.Model):
@@ -217,44 +234,26 @@ class prestashop_address(orm.Model):
     ]
 
 
-class res_partner_category(orm.Model):
-    _inherit = 'res.partner.category'
+@prestashop
+class ResPartnerRecordImport(PrestashopImportSynchronizer):
+    _model_name = 'prestashop.res.partner'
 
-    _columns = {
-        'prestashop_bind_ids': fields.one2many(
-            'prestashop.res.partner.category',
-            'openerp_id',
-            string='PrestaShop Bindings',
-            readonly=True),
-    }
+    def _import_dependencies(self):
+        groups = self.prestashop_record.get('associations', {}) \
+            .get('groups', {}).get('group', [])
+        if not isinstance(groups, list):
+            groups = [groups]
+#        for group in groups:
+#            self._import_dependency(group['id'],
+#                                   'prestashop.res.partner.category')
 
-
-class prestashop_res_partner_category(orm.Model):
-    _name = 'prestashop.res.partner.category'
-    _inherit = 'prestashop.binding'
-    _inherits = {'res.partner.category': 'openerp_id'}
-
-    _columns = {
-        'openerp_id': fields.many2one(
-            'res.partner.category',
-            string='Partner Category',
-            required=True,
-            ondelete='cascade'
-        ),
-        'date_add': fields.datetime(
-            'Created At (on Prestashop)',
-            readonly=True
-        ),
-        'date_upd': fields.datetime(
-            'Updated At (on Prestashop)',
-            readonly=True
-        ),
-        # TODO add prestashop shop when the field will be available in the api.
-        # we have reported the bug for it
-        # see http://forge.prestashop.com/browse/PSCFV-8284
-    }
-
-    _sql_constraints = [
-        ('prestashop_uniq', 'unique(backend_id, prestashop_id)',
-         'A partner group with the same ID on PrestaShop already exists.'),
-    ]
+    def _after_import(self, erp_id):
+        binder = self.get_binder_for_model(self._model_name)
+        ps_id = binder.to_backend(erp_id.id)
+        import_batch.delay(
+            self.session,
+            'prestashop.address',
+            self.backend_record.id,
+            filters={'filter[id_customer]': '%d' % (ps_id)},
+            priority=20,
+        )

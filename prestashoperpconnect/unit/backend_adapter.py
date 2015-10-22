@@ -249,10 +249,10 @@ class TaxRuleAdapter(GenericAdapter):
     _prestashop_model = 'tax_rules'
 
 
-@prestashop
-class PartnerCategoryAdapter(GenericAdapter):
-    _model_name = 'prestashop.res.partner.category'
-    _prestashop_model = 'groups'
+#@prestashop
+#class PartnerCategoryAdapter(GenericAdapter):
+#    _model_name = 'prestashop.res.partner.category'
+#    _prestashop_model = 'groups'
 
 
 @prestashop

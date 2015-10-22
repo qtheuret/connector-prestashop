@@ -121,52 +121,53 @@ class ShopImportMapper(PrestashopImportMapper):
             return {}
         return {'shop_group_id': shop_group_id.id}
 
-
-@prestashop
-class PartnerCategoryImportMapper(PrestashopImportMapper):
-    _model_name = 'prestashop.res.partner.category'
-
-    direct = [
-        ('name', 'name'),
-        ('date_add', 'date_add'),
-        ('date_upd', 'date_upd'),
-    ]
-
-    @mapping
-    def prestashop_id(self, record):
-        return {'prestashop_id': record['id']}
-
-    @mapping
-    def backend_id(self, record):
-        return {'backend_id': self.backend_record.id}
-
-    @mapping
-    def name(self, record):
-        name = None
-        if 'language' in record['name']:
-            language_binder = self.get_binder_for_model('prestashop.res.lang')
-            languages = record['name']['language']
-            if not isinstance(languages, list):
-                languages = [languages]
-            for lang in languages:
-                erp_language_id = language_binder.to_openerp(
-                    lang['attrs']['id'])
-                if not erp_language_id:
-                    continue
-                erp_lang = self.session.read(
-                    'prestashop.res.lang',
-                    erp_language_id.id,
-                    []
-                )
-                if erp_lang['code'] == 'en_US':
-                    name = lang['value']
-                    break
-            if name is None:
-                name = languages[0]['value']
-        else:
-            name = record['name']
-
-        return {'name': name}
+#
+#@prestashop
+#class PartnerCategoryImportMapper(PrestashopImportMapper):
+#    _model_name = 'prestashop.res.partner.category'
+#
+#    direct = [
+#        ('name', 'name'),
+#        ('date_add', 'date_add'),
+#        ('date_upd', 'date_upd'),
+#    ]
+#
+#    @mapping
+#    def prestashop_id(self, record):
+#        return {'prestashop_id': record['id']}
+#
+#    @mapping
+#    def backend_id(self, record):
+#        return {'backend_id': self.backend_record.id}
+#
+#    @mapping
+#    def name(self, record):
+#        _logger.debug("PARTNER CATEGORY MAPPING")
+#        name = None
+#        if 'language' in record['name']:
+#            language_binder = self.get_binder_for_model('prestashop.res.lang')
+#            languages = record['name']['language']
+#            if not isinstance(languages, list):
+#                languages = [languages]
+#            for lang in languages:
+#                erp_language_id = language_binder.to_openerp(
+#                    lang['attrs']['id'])
+#                if not erp_language_id:
+#                    continue
+#                erp_lang = self.session.read(
+#                    'prestashop.res.lang',
+#                    erp_language_id.id,
+#                    []
+#                )
+#                if erp_lang['code'] == 'en_US':
+#                    name = lang['value']
+#                    break
+#            if name is None:
+#                name = languages[0]['value']
+#        else:
+#            name = record['name']
+#
+#        return {'name': name}
 
 
 @prestashop

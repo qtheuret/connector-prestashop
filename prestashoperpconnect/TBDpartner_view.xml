@@ -32,7 +32,7 @@
                     <group>
                         <field name="shop_group_id"/>
                         <field name="backend_id"/>
-                        <field name="prestashop_id"/>
+                        <field name="presashop_id"/>
                         <field name="date_add"/>
                         <field name="date_upd"/>
                         <field name="group_ids"/>
