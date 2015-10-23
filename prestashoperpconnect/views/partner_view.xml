@@ -14,7 +14,9 @@
             <field name="inherit_id" ref="connector.view_partner_connector_form" />
             <field name="arch" type="xml">
                 <field name="name" position="after">
-                    <field name="address_alias" attrs="{'readonly':1, 'invisible':[('address_alias','=', False)]}"/>
+                    <h3>
+                    <field nolabel="1" name="address_alias" attrs="{'readonly':1, 'invisible':[('address_alias','=', False)]}"/>
+                    </h3>
                 </field>
                 <page name="connector" position="attributes">
                     <attribute name="invisible">0</attribute>

@@ -82,7 +82,8 @@ class prestashop_backend(orm.Model):
             help='Warehouse used to compute the stock quantities.'
         ),
         'taxes_included': fields.boolean("Use tax included prices",
-                                         readonly=True),
+#                                         readonly=True
+                                         ),
         'import_partners_since': fields.datetime('Import partners since'),
         'import_orders_since': fields.datetime('Import Orders since'),
         'import_products_since': fields.datetime('Import Products since'),

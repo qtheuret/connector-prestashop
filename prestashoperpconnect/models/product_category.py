@@ -198,7 +198,7 @@ class ProductCategoryAdapter(GenericAdapter):
             record = self.read(children)
             node_id = record.get('id')
             node = {node_id : {}} 
-            _logger.debug("Before node update")
+#            _logger.debug("Before node update")
             node[node_id].update(self.tree(node_id))
             tree.update(node)
         return tree

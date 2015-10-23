@@ -272,6 +272,7 @@ class DelayedBatchImport(BatchImportSynchronizer):
         'prestashop.res.partner',
         'prestashop.address',
 #        'prestashop.product.product',
+        'prestashop.product.combination',
         'prestashop.product.template',
         'prestashop.sale.order',
         'prestashop.refund',
@@ -291,29 +292,6 @@ class DelayedBatchImport(BatchImportSynchronizer):
         )
 
 
-@prestashop
-class ResPartnerRecordImport(PrestashopImportSynchronizer):
-    _model_name = 'prestashop.res.partner'
-
-    def _import_dependencies(self):
-        groups = self.prestashop_record.get('associations', {}) \
-            .get('groups', {}).get('group', [])
-        if not isinstance(groups, list):
-            groups = [groups]
-        for group in groups:
-            self._check_dependency(group['id'],
-                                   'prestashop.res.partner.category')
-
-    def _after_import(self, erp_id):
-        binder = self.get_binder_for_model(self._model_name)
-        ps_id = binder.to_backend(erp_id.id)
-        import_batch.delay(
-            self.session,
-            'prestashop.address',
-            self.backend_record.id,
-            filters={'filter[id_customer]': '%d' % (ps_id)},
-            priority=20,
-        )
 
 
 @prestashop
@@ -670,30 +648,6 @@ class TranslatableRecordImport(PrestashopImportSynchronizer):
 
         return erp_id
 
-
-@prestashop
-class PartnerCategoryRecordImport(PrestashopImportSynchronizer):
-
-    """ Import one translatable record """
-    _model_name = [
-        'prestashop.res.partner.category',
-    ]
-
-    _translatable_fields = {
-        'prestashop.res.partner.category': ['name'],
-    }
-
-    def _after_import(self, erp_id):
-        record = self._get_prestashop_data()
-        if float(record['reduction']):
-            import_record(
-                self.session,
-                'prestashop.groups.pricelist',
-                self.backend_record.id,
-                record['id']
-            )
-#
-#
 #@prestashop
 #class ProductCategoryImport(TranslatableRecordImport):
 #    _model_name = [
@@ -784,211 +738,221 @@ class PartnerCategoryRecordImport(PrestashopImportSynchronizer):
 #ProductCategoryBatchImport = ProductCategoryBatchImporter  # deprecated
 #
 
-
-@prestashop
-class TemplateRecordImport(TranslatableRecordImport):
-
-    """ Import one translatable record """
-    _model_name = [
-        'prestashop.product.template',
-    ]
-
-    _translatable_fields = {
-        'prestashop.product.template': [
-            'name',
-            'description',
-            'link_rewrite',
-            'description_short',
-        ],
-    }
-
-    def _after_import(self, erp_id):
-        self.import_images(erp_id.id)
-        # TODO : check what's wrong in this mapper
-#        self.import_default_image(erp_id.id)
-        self.import_supplierinfo(erp_id.id)
-        self.import_combinations()
-        self.attribute_line(erp_id.id)
-        self.deactivate_default_product(erp_id.id)
-
-    def deactivate_default_product(self, erp_id):
-        template = self.session.browse(
-            'prestashop.product.template', erp_id)
-        if template.product_variant_count != 1:
-            for product in template.product_variant_ids:
-                if not product.attribute_value_ids:
-                    self.session.write('product.product', [product.id],
-                                       {'active': False})
-
-    def attribute_line(self, erp_id):
-        template = self.session.browse(
-            'prestashop.product.template', erp_id)
-        attr_line_value_ids = []
-        for attr_line in template.attribute_line_ids:
-            attr_line_value_ids.extend(attr_line.value_ids.ids)
-        template_id = template.openerp_id.id
-        product_ids = self.session.search('product.product', [
-            ('product_tmpl_id', '=', template_id)]
-        )
-        if product_ids:
-            products = self.session.browse('product.product',
-                                           product_ids)
-            attribute_ids = []            
-            for product in products:
-                for attribute_value in product.attribute_value_ids:
-                    attribute_ids.append(attribute_value.attribute_id.id)
-                    # filter unique id for create relation
-            if attribute_ids:
-                for attribute_id in set(attribute_ids):
-                    value_ids = []
-                    for product in products:                        
-                        for attribute_value in product.attribute_value_ids:                                                      
-                            if (attribute_value.attribute_id.id == attribute_id
-                                and attribute_value.id not in
-                                    attr_line_value_ids):
-                                value_ids.append(attribute_value.id)
-                    if value_ids:
-                        self.session.create('product.attribute.line', {
-                            'attribute_id': attribute_id,
-                            'product_tmpl_id': template_id,
-                            'value_ids': [(6, 0, set(value_ids))]}
-                        )
-
-    def import_combinations(self):
-        prestashop_record = self._get_prestashop_data()
-        associations = prestashop_record.get('associations', {})
-
-        combinations = associations.get('combinations', {}).get(
-            'combinations', [])
-        if not isinstance(combinations, list):
-            combinations = [combinations]
-        for combination in combinations:            
-            import_record(
-                self.session,
-                'prestashop.product.combination',
-                self.backend_record.id,
-                combination['id']
-            )
-
-    def import_images(self, erp_id):
-        prestashop_record = self._get_prestashop_data()
-        associations = prestashop_record.get('associations', {})
-        images = associations.get('images', {}).get('image', {})
-
-        if not isinstance(images, list):
-            images = [images]
-        for image in images:
-            if image.get('id'):
-                import_product_image.delay(
-                    self.session,
-                    'prestashop.product.image',
-                    self.backend_record.id,
-                    prestashop_record['id'],
-                    image['id'],
-                    priority=10,
-                )
-
-    def import_supplierinfo(self, erp_id):
-        ps_id = self._get_prestashop_data()['id']
-        filters = {
-            'filter[id_product]': ps_id,
-            'filter[id_product_attribute]': 0
-        }
-        import_batch(
-            self.session,
-            'prestashop.product.supplierinfo',
-            self.backend_record.id,
-            filters=filters
-        )
-        template = self.session.browse(
-            'prestashop.product.template', erp_id)
-        template_id = template.openerp_id.id
-        ps_supplierinfo_ids = self.session.search(
-            'prestashop.product.supplierinfo',
-            [('product_tmpl_id', '=', template_id)]
-        )
-        ps_supplierinfos = self.session.browse(
-            'prestashop.product.supplierinfo', ps_supplierinfo_ids
-        )
-        for ps_supplierinfo in ps_supplierinfos:
-            try:
-                ps_supplierinfo.resync()
-            except PrestaShopWebServiceError:
-                ps_supplierinfo.openerp_id.unlink()
-
-    def import_default_image(self, erp_id):
-        record = self._get_prestashop_data()
-        if record['id_default_image']['value'] == '':
-            return
-        adapter = self.get_connector_unit_for_model(
-            PrestaShopCRUDAdapter,
-            'prestashop.product.image'
-        )
-        binder = self.get_binder_for_model()
-        template_id = binder.to_openerp(record['id'])
-        _logger.debug("Template default image")
-        _logger.debug(template_id)
-        
-        try:
-            image = adapter.read(record['id'],
-                                 record['id_default_image']['value'])
-            
-            ctx = self.session.context.copy()
-            ctx['connector_no_export'] = True
-            _logger.debug("Template image")
-            _logger.debug(image)
-                        
-            self.session.pool['prestashop.product.template'].write(
-                self.session.cr, self.session.uid, [template_id],
-                {"image": image['content']},
-                context=ctx
-                )
-#            model = self.env['prestashop.product.template']
-#                       .with_context(connector_no_export=True)
-#            _logger.debug("Model : %s ", model)
-#            binding = model.search(template_id)
-#            _logger.debug("binding :")
-#            _logger.debug(binding)
-#            template_id.write({'image': image['content']})
-#            self.session.write(
-#                'prestashop.product.template',
-#                [template_id],
-#                {"image": image['content']}
+#
+#@prestashop
+#class TemplateRecordImport(TranslatableRecordImport):
+#
+#    """ Import one translatable record """
+#    _model_name = [
+#        'prestashop.product.template',
+#    ]
+#
+#    _translatable_fields = {
+#        'prestashop.product.template': [
+#            'name',
+#            'description',
+#            'link_rewrite',
+#            'description_short',
+#        ],
+#    }
+#
+#    def _after_import(self, erp_id):
+#        self.import_images(erp_id.id)
+#        # TODO : check what's wrong in this mapper
+##        self.import_default_image(erp_id.id)
+#        self.import_supplierinfo(erp_id.id)
+#        self.import_combinations()
+#        self.attribute_line(erp_id.id)
+#        self.deactivate_default_product(erp_id.id)
+#
+#    def deactivate_default_product(self, erp_id):
+#        template = self.session.browse(
+#            'prestashop.product.template', erp_id)
+#        _logger.debug("DEACTIVATE template and variant count")
+#        _logger.debug(template)
+#        _logger.debug(template.product_variant_count )
+#        
+#        
+#        if template.product_variant_count != 1:
+#            _logger.debug("DEACTIVATE : IN")
+#            for product in template.product_variant_ids:
+#                _logger.debug("Product : %s ", str(product.id))
+#                if not product.attribute_value_ids:
+#                    self.session.write('product.product', [product.id],
+#                                       {'active': False})
+#
+#    def attribute_line(self, erp_id):
+#        _logger.debug("GET ATTRIBUTES LINE")
+#        template = self.session.browse(
+#            'prestashop.product.template', erp_id)
+#        attr_line_value_ids = []
+#        for attr_line in template.attribute_line_ids:
+#            attr_line_value_ids.extend(attr_line.value_ids.ids)
+#        template_id = template.openerp_id.id
+#        product_ids = self.session.search('product.product', [
+#            ('product_tmpl_id', '=', template_id)]
+#        )
+#        if product_ids:
+#            products = self.session.browse('product.product',
+#                                           product_ids)
+#            attribute_ids = []            
+#            for product in products:
+#                for attribute_value in product.attribute_value_ids:
+#                    attribute_ids.append(attribute_value.attribute_id.id)
+#                    # filter unique id for create relation
+#            _logger.debug("Attributes to ADD")
+#            _logger.debug(attribute_ids)
+#            if attribute_ids:
+#                for attribute_id in set(attribute_ids):
+#                    value_ids = []
+#                    for product in products:                        
+#                        for attribute_value in product.attribute_value_ids:                                                      
+#                            if (attribute_value.attribute_id.id == attribute_id
+#                                and attribute_value.id not in
+#                                    attr_line_value_ids):
+#                                value_ids.append(attribute_value.id)
+#                    if value_ids:
+#                        self.session.create('product.attribute.line', {
+#                            'attribute_id': attribute_id,
+#                            'product_tmpl_id': template_id,
+#                            'value_ids': [(6, 0, set(value_ids))]}
+#                        )
+#
+#    def import_combinations(self):
+#        prestashop_record = self._get_prestashop_data()
+#        associations = prestashop_record.get('associations', {})
+#
+#        combinations = associations.get('combinations', {}).get(
+#            'combinations', [])
+#        if not isinstance(combinations, list):
+#            combinations = [combinations]
+#        for combination in combinations:            
+#            import_record.delay(
+#                self.session,
+#                'prestashop.product.combination',
+#                self.backend_record.id,
+#                combination['id']
 #            )
-        except PrestaShopWebServiceError:
-            pass
-        except IOError:
-            pass
-
-    def _import_dependencies(self):
-        self._import_default_category()
-        self._import_categories()
-
-    def get_template_model_id(self):
-        ids = self.session.search('ir.model', [
-            ('model', '=', 'product.template')]
-        )
-        assert len(ids) == 1
-        return ids[0]
-
-    def _import_default_category(self):
-        record = self.prestashop_record
-        if int(record['id_category_default']):
-            try:
-                self._check_dependency(record['id_category_default'],
-                                       'prestashop.product.category')
-            except PrestaShopWebServiceError:
-                pass
-
-    def _import_categories(self):
-        record = self.prestashop_record
-        associations = record.get('associations', {})
-        categories = associations.get('categories', {}).get('category', [])
-        if not isinstance(categories, list):
-            categories = [categories]
-        for category in categories:
-            self._check_dependency(category['id'],
-                                   'prestashop.product.category')
+#
+#    def import_images(self, erp_id):
+#        prestashop_record = self._get_prestashop_data()
+#        associations = prestashop_record.get('associations', {})
+#        images = associations.get('images', {}).get('image', {})
+#
+#        if not isinstance(images, list):
+#            images = [images]
+#        for image in images:
+#            if image.get('id'):
+#                import_product_image.delay(
+#                    self.session,
+#                    'prestashop.product.image',
+#                    self.backend_record.id,
+#                    prestashop_record['id'],
+#                    image['id'],
+#                    priority=10,
+#                )
+#
+#    def import_supplierinfo(self, erp_id):
+#        ps_id = self._get_prestashop_data()['id']
+#        filters = {
+#            'filter[id_product]': ps_id,
+#            'filter[id_product_attribute]': 0
+#        }
+#        import_batch(
+#            self.session,
+#            'prestashop.product.supplierinfo',
+#            self.backend_record.id,
+#            filters=filters
+#        )
+#        template = self.session.browse(
+#            'prestashop.product.template', erp_id)
+#        template_id = template.openerp_id.id
+#        ps_supplierinfo_ids = self.session.search(
+#            'prestashop.product.supplierinfo',
+#            [('product_tmpl_id', '=', template_id)]
+#        )
+#        ps_supplierinfos = self.session.browse(
+#            'prestashop.product.supplierinfo', ps_supplierinfo_ids
+#        )
+#        for ps_supplierinfo in ps_supplierinfos:
+#            try:
+#                ps_supplierinfo.resync()
+#            except PrestaShopWebServiceError:
+#                ps_supplierinfo.openerp_id.unlink()
+#
+#    def import_default_image(self, erp_id):
+#        record = self._get_prestashop_data()
+#        if record['id_default_image']['value'] == '':
+#            return
+#        adapter = self.get_connector_unit_for_model(
+#            PrestaShopCRUDAdapter,
+#            'prestashop.product.image'
+#        )
+#        binder = self.get_binder_for_model()
+#        template_id = binder.to_openerp(record['id'])
+#        _logger.debug("Template default image")
+#        _logger.debug(template_id)
+#        
+#        try:
+#            image = adapter.read(record['id'],
+#                                 record['id_default_image']['value'])
+#            
+#            ctx = self.session.context.copy()
+#            ctx['connector_no_export'] = True
+#            _logger.debug("Template image")
+#            _logger.debug(image)
+#                        
+#            self.session.pool['prestashop.product.template'].write(
+#                self.session.cr, self.session.uid, [template_id],
+#                {"image": image['content']},
+#                context=ctx
+#                )
+##            model = self.env['prestashop.product.template']
+##                       .with_context(connector_no_export=True)
+##            _logger.debug("Model : %s ", model)
+##            binding = model.search(template_id)
+##            _logger.debug("binding :")
+##            _logger.debug(binding)
+##            template_id.write({'image': image['content']})
+##            self.session.write(
+##                'prestashop.product.template',
+##                [template_id],
+##                {"image": image['content']}
+##            )
+#        except PrestaShopWebServiceError:
+#            pass
+#        except IOError:
+#            pass
+#
+#    def _import_dependencies(self):
+#        self._import_default_category()
+#        self._import_categories()
+#
+#    def get_template_model_id(self):
+#        ids = self.session.search('ir.model', [
+#            ('model', '=', 'product.template')]
+#        )
+#        assert len(ids) == 1
+#        return ids[0]
+#
+#    def _import_default_category(self):
+#        record = self.prestashop_record
+#        if int(record['id_category_default']):
+#            try:
+#                self._check_dependency(record['id_category_default'],
+#                                       'prestashop.product.category')
+#            except PrestaShopWebServiceError:
+#                pass
+#
+#    def _import_categories(self):
+#        record = self.prestashop_record
+#        associations = record.get('associations', {})
+#        categories = associations.get('categories', {}).get('category', [])
+#        if not isinstance(categories, list):
+#            categories = [categories]
+#        for category in categories:
+#            self._check_dependency(category['id'],
+#                                   'prestashop.product.category')
 
 
 @prestashop
@@ -1107,10 +1071,12 @@ def import_customers_since(session, backend_id, since_date=None):
         date_str = since_date.strftime('%Y-%m-%d %H:%M:%S')
         filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (date_str)}
     now_fmt = datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
-    import_batch(
+    
+    import_batch.delay(
         session, 'prestashop.res.partner.category', backend_id, filters
+        , priority = 10
     )
-    import_batch(
+    import_batch.delay(
         session, 'prestashop.res.partner', backend_id, filters, priority=15
     )
 #     import_batch(
@@ -1172,7 +1138,7 @@ def import_products(session, backend_id, since_date):
         'prestashop.product.category',
         backend_id,
         filters,
-#        priority=15
+        priority=15
     )
     import_batch(
         session,
