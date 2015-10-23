@@ -518,8 +518,7 @@ class ProductCombinationMapper(PrestashopImportMapper):
                                                                   unwrap=True)
 
     @mapping
-    def default_code(self, record):
-        _logger.debug("CODE CHECK MAPPING")
+    def default_code(self, record):        
         code = record.get('reference')
         if not code:
             code = "%s_%s" % (record['id_product'], record['id'])
@@ -537,19 +536,14 @@ class ProductCombinationMapper(PrestashopImportMapper):
         return {'backend_id': self.backend_record.id}
 
     @mapping
-    def ean13(self, record):
-        _logger.debug("EAN13 CHECK MAPPING")
-        _logger.debug(record['ean13'])
+    def ean13(self, record):        
         if record['ean13'] in ['', '0']:
             backend_adapter = self.get_connector_unit_for_model(
                 GenericAdapter, 'prestashop.product.template')
             template = backend_adapter.read(record['id_product'])
             return template['ean13'] and {}
-        _logger.debug("PAS 1")
-        if check_ean(record['ean13']):
-            _logger.debug("PAS 2")
-            return {'ean13': record['ean13']}
-        _logger.debug("PAS 3")
+        if check_ean(record['ean13']):        
+            return {'ean13': record['ean13']}        
         return {}
 
     # DIMENSION PART, depends on product dimension
