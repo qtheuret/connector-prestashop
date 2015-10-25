@@ -818,11 +818,8 @@ class SaleOrderLineDiscount(PrestashopImportMapper):
         price_unit = record['value_tax_excl']
         if price_unit[0] != '-':
             price_unit  = float(price_unit)
-        if self.backend_record.taxes_included :
-            tax = self.backend_record.discount_product_id.taxes_id[0] 
-            _logger.debug("Taxes discount")
-            _logger.debug(tax)
-            
+        if self.backend_record.taxes_included and self.backend_record.discount_product_id.taxes_id[0]:
+            tax = self.backend_record.discount_product_id.taxes_id[0]                      
             price_unit = float(price_unit) * (1.0 + tax.amount)
             
         _logger.debug(price_unit)
@@ -847,7 +844,6 @@ class SaleOrderLineDiscount(PrestashopImportMapper):
             )
             product_id = product
         
-        _logger.debug("Get the taxes for the discount")
         product_rec = self.env['product.product'].browse(product_id)
         
         result = {'product_id': product_id,

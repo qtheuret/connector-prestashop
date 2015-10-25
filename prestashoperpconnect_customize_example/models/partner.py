@@ -22,7 +22,7 @@
 
 from openerp.osv import orm, fields
 from openerp.addons.connector.unit.mapper import mapping
-from openerp.addons.prestashoperpconnect.unit.mapper import PartnerImportMapper
+from openerp.addons.prestashoperpconnect.models.partner import PartnerImportMapper
 from .backend import prestashop_myversion
 
 
@@ -41,11 +41,11 @@ class prestashop_res_partner(orm.Model):
 class MyPartnerImportMapper(PartnerImportMapper):
     _model_name = 'prestashop.res.partner'
 
-    direct = PartnerImportMapper.direct + [('prestashop_created_date',
-                                            'date_add')]
+    direct = PartnerImportMapper.direct + [('prestashop_created_date', 'date_add')]
 
     @mapping
     def name(self, record):
         res = super(MyPartnerImportMapper, self).name(record)
-        res['name'] = "Il est pit ton nom : %s" % res['name']
+        res['name'] = "Il est pit ton nom : %s"%res['name']
         return res
+

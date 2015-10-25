@@ -1,8 +1,10 @@
 # -*- encoding: utf-8 -*-
 
-from openerp.osv import fields
-from openerp.osv import orm
+import logging
+from openerp.osv import fields, orm
 
+
+_logger = logging.getLogger(__name__)
 
 class account_invoice(orm.Model):
     _inherit = 'account.invoice'
@@ -14,7 +16,7 @@ class account_invoice(orm.Model):
             string="Prestashop Bindings"
         ),
     }
-
+   
     def action_move_create(self, cr, uid, ids, context=None):
         so_obj = self.pool.get('prestashop.sale.order')
         line_replacement = {}
@@ -23,8 +25,7 @@ class account_invoice(orm.Model):
             if not so_ids:
                 continue
             sale_order = so_obj.browse(cr, uid, so_ids[0])
-            discount_product_id = sale_order.backend_id.discount_product_id.id
-
+            discount_product_id = sale_order.backend_id.discount_product_id.id            
             for invoice_line in invoice.invoice_line:
                 if invoice_line.product_id.id != discount_product_id:
                     continue
