@@ -416,7 +416,6 @@ class ProductCombinationMapper(PrestashopImportMapper):
     def list_price(self, record):
         main_template = self.main_template(record)
         prices_and_taxes = {'list_price' : main_template['list_price']}
-        _logger.debug("DISPLAY TEMPLATE TAXES")
 #        record['unit_price_impact']        
 #        'final_price': fields.float('Final Price'),
 #        'list_price_tax': fields.float('Sale Price Including Tax'),
@@ -549,8 +548,7 @@ class ProductCombinationMapper(PrestashopImportMapper):
     # DIMENSION PART, depends on product dimension
     
     @mapping
-    def length(self, record):
-        _logger.debug("LENGTH")   
+    def length(self, record):          
         backend_adapter = self.get_connector_unit_for_model(
                 GenericAdapter, 'prestashop.product.template')
         main_template = backend_adapter.read(record['id_product'])
@@ -558,15 +556,13 @@ class ProductCombinationMapper(PrestashopImportMapper):
     
     @mapping
     def height (self, record):
-        _logger.debug("height ")        
         backend_adapter = self.get_connector_unit_for_model(
                 GenericAdapter, 'prestashop.product.template')
         main_template = backend_adapter.read(record['id_product'])
         return {'height': main_template['height']}
     
     @mapping
-    def width(self, record):
-        _logger.debug("Width")  
+    def width(self, record):  
         backend_adapter = self.get_connector_unit_for_model(
                 GenericAdapter, 'prestashop.product.template')
         main_template = backend_adapter.read(record['id_product'])

@@ -202,15 +202,9 @@ class TemplateRecordImport(TranslatableRecordImport):
     def deactivate_default_product(self, erp_id):
         template = self.session.browse(
             'prestashop.product.template', erp_id)
-        _logger.debug("DEACTIVATE template and variant count")
-        _logger.debug(template)
-        _logger.debug(template.product_variant_count )
-        
-        
+                
         if template.product_variant_count != 1:
-            _logger.debug("DEACTIVATE : IN")
-            for product in template.product_variant_ids:
-                _logger.debug("Product : %s ", str(product.id))
+            for product in template.product_variant_ids:                
                 if not product.attribute_value_ids:
                     self.session.write('product.product', [product.id],
                                        {'active': False})
