@@ -25,8 +25,8 @@
 import logging
 from openerp.osv import fields, orm
 from prestapyt import PrestaShopWebServiceError
-from ..unit.backend_adapter import GenericAdapter
-from ..unit.backend_adapter import PrestaShopCRUDAdapter
+from ..unit.backend_adapter import (GenericAdapter ,PrestaShopCRUDAdapter)
+from ..unit.mapper import PrestashopImportMapper
 from openerp.addons.connector.connector import ConnectorUnit
 from openerp.addons.connector.exception import FailedJobError
 from openerp.addons.connector.exception import NothingToDoJob

@@ -25,18 +25,24 @@
 import logging
 from openerp.osv import fields, orm
 from prestapyt import PrestaShopWebServiceError
-from ..unit.backend_adapter import GenericAdapter
-from ..unit.backend_adapter import PrestaShopCRUDAdapter
+from ..unit.backend_adapter import (GenericAdapter, PrestaShopCRUDAdapter)
+from ..unit.mapper import PrestashopImportMapper
+from ..unit.import_synchronizer import import_record
+from ..unit.import_synchronizer import (PrestashopImportSynchronizer
+                                        , import_batch)
+from openerp.addons.connector.connector import Binder
+
 from openerp.addons.connector.connector import ConnectorUnit
 from openerp.addons.connector.exception import FailedJobError
 from openerp.addons.connector.exception import NothingToDoJob
 from openerp.addons.connector.queue.job import job
 from openerp.addons.connector.unit.synchronizer import ImportSynchronizer
-from ..unit.import_synchronizer import (PrestashopImportSynchronizer
-                                        , import_batch)
 from openerp.addons.connector.unit.backend_adapter import BackendAdapter
-from ..unit.import_synchronizer import import_record
-                                        
+
+from openerp.addons.connector.unit.mapper import (mapping,
+                                                  only_create,
+                                                  ImportMapper
+                                                  )                                        
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from ..backend import prestashop
 from ..connector import add_checkpoint
@@ -241,27 +247,42 @@ class prestashop_address(orm.Model):
 @prestashop
 class ResPartnerRecordImport(PrestashopImportSynchronizer):
     _model_name = 'prestashop.res.partner'
-
+ 
+    #TODO : find the problem with synchronous call of category
+    # For the moment, it's reported to the _after_import
     def _import_dependencies(self):
+        #Get the default category
+        record = self.prestashop_record
+        _logger.debug("PRESTASHOP id_default_group")
+        _logger.debug(record['id_default_group'])
+        self._import_dependency(record['id_default_group'],
+                                   'prestashop.res.partner.category')
+        # Get the list of groups
         groups = self.prestashop_record.get('associations', {}) \
             .get('groups', {}).get('group', [])
         if not isinstance(groups, list):
             groups = [groups]
+        _logger.debug("IMPORT TAGS PARTNERS")
         
-        backend_adapter = self.get_connector_unit_for_model(
-            BackendAdapter,
-            'prestashop.product.combination.option.value'
-        )
+        
         for group in groups:
-#            self._import_dependency(group['id'],
-#                                   'prestashop.res.partner.category')
-            import_record.delay(
-                self.session,
-                'prestashop.res.partner.category',
-                self.backend_record.id,
-                group['id']
-            )
-
+            self._import_dependency(group['id'],
+                                   'prestashop.res.partner.category')
+       
+#            import_record(
+#                self.session,
+#                'prestashop.res.partner.category',
+#                self.backend_record.id,
+#                group['id']
+#            )
+#            ps_id = binder.to_backend(erp_id.id)
+#            import_record.delay(
+#                    self.session,
+#                    'res.partner.category',
+#                    self.backend_record.id,
+#                    filters={'filter[id]': '%d' % (group['id'])},
+#                    priority=20,
+#                )
                                 
                                 
     def _after_import(self, erp_id):
@@ -274,3 +295,170 @@ class ResPartnerRecordImport(PrestashopImportSynchronizer):
             filters={'filter[id_customer]': '%d' % (ps_id)},
             priority=20,
         )
+        self._set_groups_on_customer()
+        
+    #TODO : find the problem with synchronous call orf category    
+    def _set_groups_on_customer(self):        
+        partner_categories = []
+        binder = self.get_binder_for_model(
+                'prestashop.res.partner.category'
+            )
+        record = self.prestashop_record
+
+        #Get the default category
+        default_category_id = binder.to_openerp(record['id_default_group'])
+        partner_categories.append(default_category_id.id)
+        
+        #Get the groups
+        groups = record.get('associations', {}).get(
+            'groups', {}).get('group', [])
+        if not isinstance(groups, list):
+            groups = [groups]
+                
+        for group in groups:
+            category_id = binder.to_openerp(group['id'])
+            partner_categories.append(category_id.id)
+
+        partner_categories = list(set(partner_categories))
+        #TODO [FIX]: dont seems to work in this context 
+        self.env['res.partner'].write({'category_id': [(6, 0, partner_categories)]})
+        
+        
+@prestashop
+class PartnerImportMapper(PrestashopImportMapper):
+    _model_name = 'prestashop.res.partner'
+
+    direct = [
+        ('date_add', 'date_add'),
+        ('date_upd', 'date_upd'),
+        ('email', 'email'),
+        ('newsletter', 'newsletter'),
+        ('company', 'company'),
+        ('active', 'active'),
+        ('note', 'comment'),
+        ('id_shop_group', 'shop_group_id'),
+        ('id_shop', 'shop_id'),
+#        ('id_default_group', 'default_category_id'),
+    ]
+
+    @mapping
+    def pricelist(self, record):
+        binder = self.get_connector_unit_for_model(
+            Binder, 'prestashop.groups.pricelist')
+        pricelist_id = binder.to_openerp(
+            record['id_default_group'], unwrap=True)
+        if not pricelist_id:
+            return {}
+        return {'property_product_pricelist': pricelist_id.id}
+
+    @mapping
+    def birthday(self, record):
+        if record['birthday'] in ['0000-00-00', '']:
+            return {}
+        return {'birthday': record['birthday']}
+
+    @mapping
+    def name(self, record):
+        name = ""
+        if record['firstname']:
+            name += record['firstname']
+        if record['lastname']:
+            if len(name) != 0:
+                name += " "
+            name += record['lastname']
+        return {'name': name}
+
+    #TODO : find the problem with synchronous call orf category   
+#    @mapping
+#    def groups(self, record):
+#        partner_categories = []
+#        binder = self.get_binder_for_model(
+#                'prestashop.res.partner.category'
+#            )
+#        
+#        #Get the default category
+#        default_category_id = binder.to_openerp(record['id_default_group'])
+#        partner_categories.append(default_category_id.id)
+#        
+#        #Get the groups
+#        groups = record.get('associations', {}).get(
+#            'groups', {}).get('group', [])
+#        if not isinstance(groups, list):
+#            groups = [groups]
+#                
+#        for group in groups:
+#            category_id = binder.to_openerp(group['id'])
+#            partner_categories.append(category_id.id)
+#
+#        _logger.debug("partner_categories")
+#        _logger.debug(partner_categories)
+#        return {'category_id': [(6, 0, partner_categories)]}
+
+    @mapping
+    def backend_id(self, record):
+        return {'backend_id': self.backend_record.id}
+
+    @mapping
+    def lang(self, record):
+        binder = self.get_binder_for_model('prestashop.res.lang')
+        erp_lang_id = None
+        if record.get('id_lang'):
+            erp_lang_id = binder.to_openerp(record['id_lang'])
+        if erp_lang_id is None:
+            data_obj = self.session.pool.get('ir.model.data')
+            erp_lang_id = data_obj.get_object_reference(
+                self.session.cr,
+                self.session.uid,
+                'base',
+                'lang_en')[1]
+        model = self.environment.session.pool.get('prestashop.res.lang')
+
+        erp_lang = model.read(
+            self.session.cr,
+            self.session.uid,
+            erp_lang_id.id,
+        )
+        return {'lang': erp_lang['code']}
+
+    @mapping
+    def customer(self, record):
+        return {'customer': True}
+
+    @mapping
+    def is_company(self, record):
+        # This is sad because we _have_ to have a company partner if we want to
+        # store multiple adresses... but... well... we have customers who want
+        # to be billed at home and be delivered at work... (...)...
+        return {'is_company': True}
+
+    @mapping
+    def company_id(self, record):
+        return {'company_id': self.backend_record.company_id.id}
+
+    @mapping
+    def shop_id(self, record):
+        shop_binder = self.get_binder_for_model('prestashop.shop')
+        shop_id = shop_binder.to_openerp(
+            record['id_shop'])
+        if not shop_id:
+            return {}
+        return {'shop_id': shop_id.id}
+
+    @mapping
+    def shop_group_id(self, record):
+        shop_group_binder = self.get_binder_for_model('prestashop.shop.group')
+        shop_group_id = shop_group_binder.to_openerp(
+            record['id_shop_group'])
+        if not shop_group_id:
+            return {}
+        return {'shop_group_id': shop_group_id.id}
+
+    @mapping
+    def default_category_id(self, record):
+        category_binder = self.get_binder_for_model(
+            'prestashop.res.partner.category')
+        default_category_id = category_binder.to_openerp(
+            record['id_default_group'])
+        if not default_category_id:
+            return {}
+        return {'default_category_id': default_category_id.id}
