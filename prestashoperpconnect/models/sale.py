@@ -134,10 +134,17 @@ class sale_order(models.Model):
         """
         res = super(sale_order,self).action_invoice_create(grouped=grouped, states=states, date_invoice = date_invoice, context=context)
         
+            
         if isinstance(res, int):       
             #it can't be a grouped invoice creation so deal with that
             inv_ids = self.env['account.invoice'].browse([res])
-            inv_ids.write({'internal_number' :self.prestashop_invoice_number})
+            new_name = self.name
+            if self.prestashop_order_id and self.prestashop_order_id > 0 :
+                new_name = `self.prestashop_order_id` + '-'+  new_name                    
+            inv_ids.write({'internal_number' :self.prestashop_invoice_number,
+                            'origin' : new_name,
+                            })
+            
         if self.prestashop_bind_ids[0].backend_id.journal_id.id :
             #we also have to set the journal for the invoicing
             inv_ids.write({'journal_id':
