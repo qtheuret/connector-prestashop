@@ -102,6 +102,9 @@ class prestashop_backend(orm.Model):
         'shipping_product_id': fields.many2one('product.product',
                                                'Shipping Product', select=1,
                                                required=False),
+        'journal_id': fields.many2one('account.journal',
+                                               'Main Journal for invoices', select=1,
+                                               required=False),                                        
         'api_debug': fields.boolean("Debug the API"),
         'api_timeout': fields.float("Timeout in seconds"),
         'image_store_type' : fields.selection(
