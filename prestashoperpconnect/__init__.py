@@ -29,7 +29,7 @@ from . import backend
 from . import connector
 from . import product
 #from . import product_combination
-from . import sale
+#from . import sale
 from . import delivery
 from . import consumer
 from . import account

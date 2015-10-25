@@ -22,50 +22,59 @@
 
 import logging
 import openerp.addons.decimal_precision as dp
+import logging
+from prestapyt import PrestaShopWebServiceDict
+from ..backend import prestashop
+from openerp.addons.connector.event import on_record_write
+from openerp.addons.connector.queue.job import job
+from openerp.addons.connector.unit.synchronizer import (ExportSynchronizer)
+from openerp.addons.connector_ecommerce.unit.sale_order_onchange import (
+    SaleOrderOnChange)
+from ..connector import get_environment
+from ..unit.backend_adapter import GenericAdapter
 
-from openerp.osv import fields, orm
+#from openerp.osv import fields, orm
+from openerp import models, fields, api, _
 
 _logger = logging.getLogger(__name__)
 
-class sale_order_state(orm.Model):
+class sale_order_state(models.Model):
     _name = 'sale.order.state'
+    
+    name = fields.Char('Name', size=128, translate=True)
+    company_id = fields.Many2one(comodel_name='res.company', 
+                                string='Company', required=True)
+    prestashop_bind_ids = fields.One2many(
+                                comodel_name='prestashop.sale.order.state',
+                                inverse_name='openerp_id',
+                                string="Prestashop Bindings"
+                                )
 
-    _columns = {
-        'name': fields.char('Name', size=128, translate=True),
-        'company_id': fields.many2one('res.company', 'Company', required=True),
-        'prestashop_bind_ids': fields.one2many(
-            'prestashop.sale.order.state',
-            'openerp_id',
-            string="Prestashop Bindings"
-        ),
-    }
+    
 
 
-class prestashop_sale_order_state(orm.Model):
+class prestashop_sale_order_state(models.Model):
     _name = 'prestashop.sale.order.state'
     _inherit = 'prestashop.binding'
     _inherits = {'sale.order.state': 'openerp_id'}
 
-    _columns = {
-        'openerp_state_ids': fields.one2many(
-            'sale.order.state.list',
-            'prestashop_state_id',
-            'OpenERP States'
-        ),
-        'openerp_id': fields.many2one(
-            'sale.order.state',
+    openerp_state_ids=fields.One2many(
+            comodel_name='sale.order.state.list',
+            inverse_name='prestashop_state_id',
+            string='OpenERP States'
+        )
+    openerp_id = fields.Many2one(
+            comodel_name='sale.order.state',
             string='Sale Order State',
             required=True,
             ondelete='cascade'
-        ),
-    }
+        )
+    
 
-
-class sale_order_state_list(orm.Model):
+class sale_order_state_list(models.Model):
     _name = 'sale.order.state.list'
 
-    _columns = {
-        'name': fields.selection(
+    name = fields.Selection(
             [
                 ('draft', 'Draft Quotation'),
                 ('sent', 'Quotation Sent'),
@@ -76,126 +85,176 @@ class sale_order_state_list(orm.Model):
                 ('invoice_except', 'Invoice Exception'),
                 ('done', 'Done'),
             ],
-            'OpenERP State',
+            string='OpenERP State',
             required=True
-        ),
-        'prestashop_state_id': fields.many2one(
-            'prestashop.sale.order.state',
-            'Prestashop State'
-        ),
-        'prestashop_id': fields.related(
-            'prestashop_state_id',
-            'prestashop_id',
-            string='Prestashop ID',
-            type='integer',
+        )
+    prestashop_state_id = fields.Many2one(
+            comodel_name='prestashop.sale.order.state',
+            string='Prestashop State'
+        )
+    prestashop_id = fields.Integer(
+            related='prestashop_state_id.prestashop_id',
+            string='Prestashop ID',            
             readonly=True,
             store=True
-        ),
-    }
+        )
+    
 
-
-class sale_order(orm.Model):
+class sale_order(models.Model):
     _inherit = 'sale.order'
 
-    _columns = {
-        'prestashop_bind_ids': fields.one2many(
-            'prestashop.sale.order',
-            'openerp_id',
+    prestashop_bind_ids = fields.One2many(
+            comodel_name='prestashop.sale.order', 
+            inverse_name='openerp_id',            
             string="Prestashop Bindings"
-        ),
-    }
+        )
+    
+    prestashop_order_id = fields.Integer(
+                    related="prestashop_bind_ids.prestashop_id", 
+                    store=True, 
+                    string="Order_id On prestashop",
+                    default=False,
+                    index=True)
+    
+    prestashop_invoice_number = fields.Char(
+                    related="prestashop_bind_ids.prestashop_invoice_number",
+                    store=False,
+                    string="Invoice Number",
+        
+                    )
+    
+    @api.multi
+    def action_invoice_create(self, grouped=False, states=['confirmed', 'done', 'exception'], date_invoice = False, context=None):
+        """In order to follow the invoice number of prestashop, 
+        all the invoices generated from this workflow have to be tagged 
+        with the prestashop_invoice_number
+        In case of the invoice is not generated mainly from PS (eg : workflow accept invoice unpaid)
+        the prestashop_invoice_number will be empty and won't cause troubles, 
+        the usual invoice number associated to the journl will be used.
+        """
+        res = super(sale_order,self).action_invoice_create(grouped=grouped, states=states, date_invoice = date_invoice, context=context)
+        
+        if isinstance(res, int):       
+            #it can't be a grouped invoice creation so deal with that
+            inv_ids = self.env['account.invoice'].browse([res])
+            inv_ids.write({'internal_number' :self.prestashop_invoice_number})
+        if self.prestashop_bind_ids[0].backend_id.journal_id.id :
+            #we also have to set the journal for the invoicing
+            inv_ids.write({'journal_id':
+                        self.prestashop_bind_ids[0].backend_id.journal_id.id })
+            
+            
+        return res
+    
+    @api.v7
+    def _prepare_procurement_group(self, cr, uid, order, context=None):   
+        #Improve the origin of shipping and name of the procurement group for better tracability
+        new_name = order.name 
+        if order.prestashop_order_id > 0 :
+            new_name = `order.prestashop_order_id` + '-' + new_name        
+        return {'name': new_name , 'partner_id': order.partner_shipping_id.id}
+    
+    @api.v7
+    def _prepare_order_line_procurement(self, cr, uid, order, line, group_id=False, context=None):
+        #Improve the origin of shipping and name of the procurement group for better tracability
+        new_name = order.name
+        if order.prestashop_order_id > 0 :
+            new_name = `order.prestashop_order_id` + '-'+  new_name
+        vals = super(sale_order, self)._prepare_order_line_procurement(cr, uid, order, line, group_id=group_id, context=context)        
+        vals['origin'] = new_name
+        _logger.debug("SHIP!")
+        _logger.debug(vals)
+        return vals
+        
 
-
-class prestashop_sale_order(orm.Model):
+class prestashop_sale_order(models.Model):
     _name = 'prestashop.sale.order'
     _inherit = 'prestashop.binding'
     _inherits = {'sale.order': 'openerp_id'}
 
-    _columns = {
-        'openerp_id': fields.many2one(
-            'sale.order',
+   
+    openerp_id = fields.Many2one(
+            comodel_name = 'sale.order',
             string='Sale Order',
             required=True,
             ondelete='cascade'
-        ),
-        'prestashop_order_line_ids': fields.one2many(
-            'prestashop.sale.order.line',
-            'prestashop_order_id',
-            'Prestashop Order Lines'
-        ),
-        'prestashop_discount_line_ids': fields.one2many(
-            'prestashop.sale.order.line.discount',
-            'prestashop_order_id',
-            'Prestashop Discount Lines'
-        ),
-        'prestashop_invoice_number': fields.char(
-            'PrestaShop Invoice Number', size=64
-        ),
-        'prestashop_delivery_number': fields.char(
-            'PrestaShop Delivery Number', size=64
-        ),
-        'total_amount': fields.float(
-            'Total amount in Prestashop',
+            )
+    prestashop_order_line_ids = fields.One2many(
+            comodel_name = 'prestashop.sale.order.line',
+            inverse_name = 'prestashop_order_id',
+            string = 'Prestashop Order Lines'
+        )
+    prestashop_discount_line_ids = fields.One2many(
+            comodel_name = 'prestashop.sale.order.line.discount',
+            inverse_name = 'prestashop_order_id',
+            string = 'Prestashop Discount Lines'
+            )
+    prestashop_invoice_number = fields.Char(
+            string = 'PrestaShop Invoice Number', size=64
+            )
+    prestashop_delivery_number = fields.Char(
+            string = 'PrestaShop Delivery Number', size=64
+        )
+    total_amount = fields.Float(
+            string = 'Total amount in Prestashop',
             digits_compute=dp.get_precision('Account'),
             readonly=True
-        ),
-        'total_amount_tax': fields.float(
-            'Total tax in Prestashop',
+        )
+    total_amount_tax = fields.Float(
+            string = 'Total tax in Prestashop',
             digits_compute=dp.get_precision('Account'),
             readonly=True
-        ),
-        'total_shipping_tax_included': fields.float(
-            'Total shipping in Prestashop',
+        )
+    total_shipping_tax_included = fields.Float(
+            string = 'Total shipping in Prestashop',
             digits_compute=dp.get_precision('Account'),
             readonly=True
-        ),
-        'total_shipping_tax_excluded': fields.float(
-            'Total shipping in Prestashop',
+        )
+    total_shipping_tax_excluded = fields.Float(
+            string = 'Total shipping in Prestashop',
             digits_compute=dp.get_precision('Account'),
             readonly=True
-        ),
-    }
-
-
-class sale_order_line(orm.Model):
-    _inherit = 'sale.order.line'
-
-    _columns = {
-        'prestashop_bind_ids': fields.one2many(
-            'prestashop.sale.order.line',
-            'openerp_id',
-            string="PrestaShop Bindings"
-        ),
-        'prestashop_discount_bind_ids': fields.one2many(
-            'prestashop.sale.order.line.discount',
-            'openerp_id',
-            string="PrestaShop Discount Bindings"
-        ),
-    }
+        )
     
 
-class prestashop_sale_order_line(orm.Model):
+
+class sale_order_line(models.Model):
+    _inherit = 'sale.order.line'
+   
+    prestashop_bind_ids = fields.One2many(
+            comodel_name = 'prestashop.sale.order.line',
+            inverse_name = 'openerp_id',
+            string="PrestaShop Bindings"
+        )
+    prestashop_discount_bind_ids = fields.One2many(
+            comodel_name = 'prestashop.sale.order.line.discount',
+            inverse_name = 'openerp_id',
+            string="PrestaShop Discount Bindings"
+        )
+    
+
+class prestashop_sale_order_line(models.Model):
     _name = 'prestashop.sale.order.line'
     _inherit = 'prestashop.binding'
     _inherits = {'sale.order.line': 'openerp_id'}
 
-    _columns = {
-        'openerp_id': fields.many2one(
-            'sale.order.line',
+    openerp_id = fields.Many2one(
+            comodel_name = 'sale.order.line',
             string='Sale Order line',
             required=True,
             ondelete='cascade'
-        ),
-        'prestashop_order_id': fields.many2one(
-            'prestashop.sale.order',
-            'Prestashop Sale Order',
+        )
+    prestashop_order_id = fields.Many2one(
+            comodel_name = 'prestashop.sale.order',
+            string = 'Prestashop Sale Order',
             required=True,
             ondelete='cascade',
             select=True
-        ),
-    }
+        )
+    
 
-    def create(self, cr, uid, vals, context=None):
+    @api.v7
+    def create(self, cr, uid, vals, context=None):      
         prestashop_order_id = vals['prestashop_order_id']
         info = self.pool['prestashop.sale.order'].read(
             cr, uid,
@@ -210,27 +269,26 @@ class prestashop_sale_order_line(orm.Model):
         )
 
 
-class prestashop_sale_order_line_discount(orm.Model):
+class prestashop_sale_order_line_discount(models.Model):
     _name = 'prestashop.sale.order.line.discount'
     _inherit = 'prestashop.binding'
     _inherits = {'sale.order.line': 'openerp_id'}
 
-    _columns = {
-        'openerp_id': fields.many2one(
-            'sale.order.line',
+    openerp_id = fields.Many2one(
+            comodel_name = 'sale.order.line',
             string='Sale Order line',
             required=True,
             ondelete='cascade'
-        ),
-        'prestashop_order_id': fields.many2one(
-            'prestashop.sale.order',
-            'Prestashop Sale Order',
+        )
+    prestashop_order_id = fields.Many2one(
+            comodel_name = 'prestashop.sale.order',
+            string = 'Prestashop Sale Order',
             required=True,
             ondelete='cascade',
             select=True
-        ),
-    }
+        )
     
+    @api.v7
     def create(self, cr, uid, vals, context=None):
         prestashop_order_id = vals['prestashop_order_id']
         info = self.pool['prestashop.sale.order'].read(
@@ -245,129 +303,131 @@ class prestashop_sale_order_line_discount(orm.Model):
         return super(prestashop_sale_order_line_discount, self).create(
             cr, uid, vals, context=context
         )
-#
-## BACKEND
-#
-#@prestashop
-#class PrestaShopSaleOrderOnChange(SaleOrderOnChange):
-#    _model_name = 'prestashop.sale.order'
-#
-#
-#@prestashop
-#class SaleOrderStateAdapter(GenericAdapter):
-#    _model_name = 'prestashop.sale.order.state'
-#    _prestashop_model = 'order_states'
-#
-#
-#@prestashop
-#class SaleOrderAdapter(GenericAdapter):
-#    _model_name = 'prestashop.sale.order'
-#    _prestashop_model = 'orders'
-#    _export_node_name = 'order'
-#
-#    def update_sale_state(self, prestashop_id, datas):
-#        api = self.connect()
-#        return api.add('order_histories', datas)
-#
-#    def search(self, filters=None):
-#        result = super(SaleOrderAdapter, self).search(filters=filters)
-#
-#        shop_ids = self.session.search('prestashop.shop', [
-#            ('backend_id', '=', self.backend_record.id)
-#        ])
-#        shops = self.session.browse('prestashop.shop', shop_ids)
-#        for shop in shops:
-#            if not shop.default_url:
-#                continue
-#
-#            api = PrestaShopWebServiceDict(
-#                '%s/api' % shop.default_url, self.prestashop.webservice_key
-#            )
-#            result += api.search(self._prestashop_model, filters)
-#        return result
-#
-#@prestashop
-#class OrderCarriers(GenericAdapter):
-#    _model_name = '__not_exit_prestashop.order_carrier'
-#    _prestashop_model = 'order_carriers'
-#    _export_node_name = 'order_carrier'
-# 
-#
-#@prestashop
-#class PaymentMethodAdapter(GenericAdapter):
-#    _model_name = 'payment.method'
-#    _prestashop_model = 'orders'
-#    _export_node_name = 'order'
-#    
-#    def search(self, filters=None):
-#        api = self.connect()
-#        res = api.get(self._prestashop_model, options=filters)
-#        methods = res[self._prestashop_model][self._export_node_name]
-#        if isinstance(methods, dict):
-#            return [methods]
-#        return methods
-#
-#@prestashop
-#class SaleOrderLineAdapter(GenericAdapter):
-#    _model_name = 'prestashop.sale.order.line'
-#    _prestashop_model = 'order_details'
-#
-#
-#@prestashop
-#class SaleStateExport(ExportSynchronizer):
-#    _model_name = ['prestashop.sale.order']
-#
-#    def run(self, prestashop_id, state):
-#        datas = {
-#            'order_history': {
-#                'id_order': prestashop_id,
-#                'id_order_state': state,
-#            }
-#        }
-#        self.backend_adapter.update_sale_state(prestashop_id, datas)
-#
-#
-## TODO improve me, don't try to export state if the sale order does not come
-##      from a prestashop connector
-## TODO improve me, make the search on the sale order backend only
-#@on_record_write(model_names='sale.order')
-#def prestashop_sale_state_modified(session, model_name, record_id,
-#                                   fields=None):
-#    if 'state' in fields:
-#        sale = session.browse(model_name, record_id)
-#        # a quick test to see if it is worth trying to export sale state
-#        states = session.search(
-#            'sale.order.state.list',
-#            [('name', '=', sale.state)]
-#        )
-#        if states:
-#            export_sale_state.delay(session, record_id, priority=20)
-#    return True
-#
-#
-#def find_prestashop_state(session, sale_state, backend_id):
-#    state_list_model = 'sale.order.state.list'
-#    state_list_ids = session.search(
-#        state_list_model,
-#        [('name', '=', sale_state)]
-#    )
-#    for state_list in session.browse(state_list_model, state_list_ids):
-#        if state_list.prestashop_state_id.backend_id.id == backend_id:
-#            return state_list.prestashop_state_id.prestashop_id
-#    return None
-#
-#
-#@job
-#def export_sale_state(session, record_id):
-#    inherit_model = 'prestashop.sale.order'
-#    sale_ids = session.search(inherit_model, [('openerp_id', '=', record_id)])
-#    if not isinstance(sale_ids, list):
-#        sale_ids = [sale_ids]
-#    for sale in session.browse(inherit_model, sale_ids):
-#        backend_id = sale.backend_id.id
-#        new_state = find_prestashop_state(session, sale.state, backend_id)
-#        if new_state is None:
-#            continue
-#        env = get_environment(session, inherit_model, backend_id)
-#        sale_exporter = env.get_connector_unit(SaleStateExport)
-#        sale_exporter.run(sale.prestashop_id, new_state)
+
+
+
+# BACKEND
+
+@prestashop
+class PrestaShopSaleOrderOnChange(SaleOrderOnChange):
+    _model_name = 'prestashop.sale.order'
+
+
+@prestashop
+class SaleOrderStateAdapter(GenericAdapter):
+    _model_name = 'prestashop.sale.order.state'
+    _prestashop_model = 'order_states'
+
+
+@prestashop
+class SaleOrderAdapter(GenericAdapter):
+    _model_name = 'prestashop.sale.order'
+    _prestashop_model = 'orders'
+    _export_node_name = 'order'
+
+    def update_sale_state(self, prestashop_id, datas):
+        api = self.connect()
+        return api.add('order_histories', datas)
+
+    def search(self, filters=None):
+        result = super(SaleOrderAdapter, self).search(filters=filters)
+
+        shop_ids = self.session.search('prestashop.shop', [
+            ('backend_id', '=', self.backend_record.id)
+        ])
+        shops = self.session.browse('prestashop.shop', shop_ids)
+        for shop in shops:
+            if not shop.default_url:
+                continue
+
+            api = PrestaShopWebServiceDict(
+                '%s/api' % shop.default_url, self.prestashop.webservice_key
+            )
+            result += api.search(self._prestashop_model, filters)
+        return result
+
+@prestashop
+class OrderCarriers(GenericAdapter):
+    _model_name = '__not_exit_prestashop.order_carrier'
+    _prestashop_model = 'order_carriers'
+    _export_node_name = 'order_carrier'
+ 
+
+@prestashop
+class PaymentMethodAdapter(GenericAdapter):
+    _model_name = 'payment.method'
+    _prestashop_model = 'orders'
+    _export_node_name = 'order'
+    
+    def search(self, filters=None):
+        api = self.connect()
+        res = api.get(self._prestashop_model, options=filters)
+        methods = res[self._prestashop_model][self._export_node_name]
+        if isinstance(methods, dict):
+            return [methods]
+        return methods
+
+@prestashop
+class SaleOrderLineAdapter(GenericAdapter):
+    _model_name = 'prestashop.sale.order.line'
+    _prestashop_model = 'order_details'
+
+
+@prestashop
+class SaleStateExport(ExportSynchronizer):
+    _model_name = ['prestashop.sale.order']
+
+    def run(self, prestashop_id, state):
+        datas = {
+            'order_history': {
+                'id_order': prestashop_id,
+                'id_order_state': state,
+            }
+        }
+        self.backend_adapter.update_sale_state(prestashop_id, datas)
+
+
+# TODO improve me, don't try to export state if the sale order does not come
+#      from a prestashop connector
+# TODO improve me, make the search on the sale order backend only
+@on_record_write(model_names='sale.order')
+def prestashop_sale_state_modified(session, model_name, record_id,
+                                   fields=None):
+    if 'state' in fields:
+        sale = session.browse(model_name, record_id)
+        # a quick test to see if it is worth trying to export sale state
+        states = session.search(
+            'sale.order.state.list',
+            [('name', '=', sale.state)]
+        )
+        if states:
+            export_sale_state.delay(session, record_id, priority=20)
+    return True
+
+
+def find_prestashop_state(session, sale_state, backend_id):
+    state_list_model = 'sale.order.state.list'
+    state_list_ids = session.search(
+        state_list_model,
+        [('name', '=', sale_state)]
+    )
+    for state_list in session.browse(state_list_model, state_list_ids):
+        if state_list.prestashop_state_id.backend_id.id == backend_id:
+            return state_list.prestashop_state_id.prestashop_id
+    return None
+
+
+@job
+def export_sale_state(session, record_id):
+    inherit_model = 'prestashop.sale.order'
+    sale_ids = session.search(inherit_model, [('openerp_id', '=', record_id)])
+    if not isinstance(sale_ids, list):
+        sale_ids = [sale_ids]
+    for sale in session.browse(inherit_model, sale_ids):
+        backend_id = sale.backend_id.id
+        new_state = find_prestashop_state(session, sale.state, backend_id)
+        if new_state is None:
+            continue
+        env = get_environment(session, inherit_model, backend_id)
+        sale_exporter = env.get_connector_unit(SaleStateExport)
+        sale_exporter.run(sale.prestashop_id, new_state)

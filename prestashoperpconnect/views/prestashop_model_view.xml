@@ -38,8 +38,6 @@
                         <group col="4">
                             <field name="location" colspan="4"/>
                             <field name="webservice_key" colspan="4"/>
-                            <field name="api_debug" colspan="4"/>
-                            <field name="api_timeout" colspan="4"/>
                         </group>
                         <group name="main_configuration" string="Main Configuration">
                             <field name="warehouse_id"/>
@@ -95,10 +93,7 @@
                                     
                                                                  
                                 </group>
-                                <group>
-                                    <field name="image_store_type"/>
-                                    <field name="use_variant_default_code"/>
-                                </group>
+                               
                                 <group>
                                     <div>
                                         <label string="Import sale orders since" class="oe_inline"/>
@@ -176,6 +171,18 @@
                                         <field name="name"/>
                                     </tree>
                                 </field>
+                            </page>
+                            <page string="Options">
+                                <group string="Debug Options" col="4">
+                                    <field name="api_debug" colspan="4"/>
+                                    <field name="api_timeout" colspan="4"/>
+                                </group>
+                                <group string="Product Options" col="4">
+                                     
+                                    <field name="image_store_type"/>
+                                    <field name="use_variant_default_code"/>
+                                
+                                </group>
                             </page>
                         </notebook>
                     </sheet>

@@ -169,135 +169,135 @@ class ShopImportMapper(PrestashopImportMapper):
 #
 #        return {'name': name}
 
-
-@prestashop
-class PartnerImportMapper(PrestashopImportMapper):
-    _model_name = 'prestashop.res.partner'
-
-    direct = [
-        ('date_add', 'date_add'),
-        ('date_upd', 'date_upd'),
-        ('email', 'email'),
-        ('newsletter', 'newsletter'),
-        ('company', 'company'),
-        ('active', 'active'),
-        ('note', 'comment'),
-        ('id_shop_group', 'shop_group_id'),
-        ('id_shop', 'shop_id'),
-        ('id_default_group', 'default_category_id'),
-    ]
-
-    @mapping
-    def pricelist(self, record):
-        binder = self.get_connector_unit_for_model(
-            Binder, 'prestashop.groups.pricelist')
-        pricelist_id = binder.to_openerp(
-            record['id_default_group'], unwrap=True)
-        if not pricelist_id:
-            return {}
-        return {'property_product_pricelist': pricelist_id.id}
-
-    @mapping
-    def birthday(self, record):
-        if record['birthday'] in ['0000-00-00', '']:
-            return {}
-        return {'birthday': record['birthday']}
-
-    @mapping
-    def name(self, record):
-        name = ""
-        if record['firstname']:
-            name += record['firstname']
-        if record['lastname']:
-            if len(name) != 0:
-                name += " "
-            name += record['lastname']
-        return {'name': name}
-
-    @mapping
-    def groups(self, record):
-        groups = record.get('associations', {}).get(
-            'groups', {}).get('group', [])
-        if not isinstance(groups, list):
-            groups = [groups]
-        partner_categories = []
-        for group in groups:
-            binder = self.get_binder_for_model(
-                'prestashop.res.partner.category'
-            )
-            category_id = binder.to_openerp(group['id'])
-            partner_categories.append(category_id.id)
-
-        return {'category_id': [(6, 0, partner_categories)]}
-
-    @mapping
-    def backend_id(self, record):
-        return {'backend_id': self.backend_record.id}
-
-    @mapping
-    def lang(self, record):
-        binder = self.get_binder_for_model('prestashop.res.lang')
-        erp_lang_id = None
-        if record.get('id_lang'):
-            erp_lang_id = binder.to_openerp(record['id_lang'])
-        if erp_lang_id is None:
-            data_obj = self.session.pool.get('ir.model.data')
-            erp_lang_id = data_obj.get_object_reference(
-                self.session.cr,
-                self.session.uid,
-                'base',
-                'lang_en')[1]
-        model = self.environment.session.pool.get('prestashop.res.lang')
-
-        erp_lang = model.read(
-            self.session.cr,
-            self.session.uid,
-            erp_lang_id.id,
-        )
-        return {'lang': erp_lang['code']}
-
-    @mapping
-    def customer(self, record):
-        return {'customer': True}
-
-    @mapping
-    def is_company(self, record):
-        # This is sad because we _have_ to have a company partner if we want to
-        # store multiple adresses... but... well... we have customers who want
-        # to be billed at home and be delivered at work... (...)...
-        return {'is_company': True}
-
-    @mapping
-    def company_id(self, record):
-        return {'company_id': self.backend_record.company_id.id}
-
-    @mapping
-    def shop_id(self, record):
-        shop_binder = self.get_binder_for_model('prestashop.shop')
-        shop_id = shop_binder.to_openerp(
-            record['id_shop'])
-        if not shop_id:
-            return {}
-        return {'shop_id': shop_id.id}
-
-    @mapping
-    def shop_group_id(self, record):
-        shop_group_binder = self.get_binder_for_model('prestashop.shop.group')
-        shop_group_id = shop_group_binder.to_openerp(
-            record['id_shop_group'])
-        if not shop_group_id:
-            return {}
-        return {'shop_group_id': shop_group_id.id}
-
-    @mapping
-    def default_category_id(self, record):
-        category_binder = self.get_binder_for_model(
-            'prestashop.res.partner.category')
-        default_category_id = category_binder.to_openerp(
-            record['id_default_group'])
-        if not default_category_id:
-            return {}
-        return {'default_category_id': default_category_id.id}
+#
+#@prestashop
+#class PartnerImportMapper(PrestashopImportMapper):
+#    _model_name = 'prestashop.res.partner'
+#
+#    direct = [
+#        ('date_add', 'date_add'),
+#        ('date_upd', 'date_upd'),
+#        ('email', 'email'),
+#        ('newsletter', 'newsletter'),
+#        ('company', 'company'),
+#        ('active', 'active'),
+#        ('note', 'comment'),
+#        ('id_shop_group', 'shop_group_id'),
+#        ('id_shop', 'shop_id'),
+#        ('id_default_group', 'default_category_id'),
+#    ]
+#
+#    @mapping
+#    def pricelist(self, record):
+#        binder = self.get_connector_unit_for_model(
+#            Binder, 'prestashop.groups.pricelist')
+#        pricelist_id = binder.to_openerp(
+#            record['id_default_group'], unwrap=True)
+#        if not pricelist_id:
+#            return {}
+#        return {'property_product_pricelist': pricelist_id.id}
+#
+#    @mapping
+#    def birthday(self, record):
+#        if record['birthday'] in ['0000-00-00', '']:
+#            return {}
+#        return {'birthday': record['birthday']}
+#
+#    @mapping
+#    def name(self, record):
+#        name = ""
+#        if record['firstname']:
+#            name += record['firstname']
+#        if record['lastname']:
+#            if len(name) != 0:
+#                name += " "
+#            name += record['lastname']
+#        return {'name': name}
+#
+#    @mapping
+#    def groups(self, record):
+#        groups = record.get('associations', {}).get(
+#            'groups', {}).get('group', [])
+#        if not isinstance(groups, list):
+#            groups = [groups]
+#        partner_categories = []
+#        for group in groups:
+#            binder = self.get_binder_for_model(
+#                'prestashop.res.partner.category'
+#            )
+#            category_id = binder.to_openerp(group['id'])
+#            partner_categories.append(category_id.id)
+#
+#        return {'category_id': [(6, 0, partner_categories)]}
+#
+#    @mapping
+#    def backend_id(self, record):
+#        return {'backend_id': self.backend_record.id}
+#
+#    @mapping
+#    def lang(self, record):
+#        binder = self.get_binder_for_model('prestashop.res.lang')
+#        erp_lang_id = None
+#        if record.get('id_lang'):
+#            erp_lang_id = binder.to_openerp(record['id_lang'])
+#        if erp_lang_id is None:
+#            data_obj = self.session.pool.get('ir.model.data')
+#            erp_lang_id = data_obj.get_object_reference(
+#                self.session.cr,
+#                self.session.uid,
+#                'base',
+#                'lang_en')[1]
+#        model = self.environment.session.pool.get('prestashop.res.lang')
+#
+#        erp_lang = model.read(
+#            self.session.cr,
+#            self.session.uid,
+#            erp_lang_id.id,
+#        )
+#        return {'lang': erp_lang['code']}
+#
+#    @mapping
+#    def customer(self, record):
+#        return {'customer': True}
+#
+#    @mapping
+#    def is_company(self, record):
+#        # This is sad because we _have_ to have a company partner if we want to
+#        # store multiple adresses... but... well... we have customers who want
+#        # to be billed at home and be delivered at work... (...)...
+#        return {'is_company': True}
+#
+#    @mapping
+#    def company_id(self, record):
+#        return {'company_id': self.backend_record.company_id.id}
+#
+#    @mapping
+#    def shop_id(self, record):
+#        shop_binder = self.get_binder_for_model('prestashop.shop')
+#        shop_id = shop_binder.to_openerp(
+#            record['id_shop'])
+#        if not shop_id:
+#            return {}
+#        return {'shop_id': shop_id.id}
+#
+#    @mapping
+#    def shop_group_id(self, record):
+#        shop_group_binder = self.get_binder_for_model('prestashop.shop.group')
+#        shop_group_id = shop_group_binder.to_openerp(
+#            record['id_shop_group'])
+#        if not shop_group_id:
+#            return {}
+#        return {'shop_group_id': shop_group_id.id}
+#
+#    @mapping
+#    def default_category_id(self, record):
+#        category_binder = self.get_binder_for_model(
+#            'prestashop.res.partner.category')
+#        default_category_id = category_binder.to_openerp(
+#            record['id_default_group'])
+#        if not default_category_id:
+#            return {}
+#        return {'default_category_id': default_category_id.id}
 
 
 @prestashop
@@ -671,6 +671,25 @@ class SaleOrderMapper(PrestashopImportMapper):
             order_line_ids = result['prestashop_order_line_ids']
         return onchange.play(result, order_line_ids)
 
+    @mapping
+    def get_workflow_datas(self, record):
+        payment = self.payment(record)
+        
+        payment = self.env['payment.method'].browse(payment['payment_method_id'])
+        _logger.debug("display payment_method_id")
+        _logger.debug(payment)
+        
+        automation_vals = {
+                'workflow_process_id' : payment.workflow_process_id.id,
+                'payment_term' : payment.payment_term_id.id,
+                'picking_policy' : payment.workflow_process_id.picking_policy,
+                'order_policy' : payment.workflow_process_id.order_policy
+        }
+        
+        _logger.debug("AUTOMATION")
+        _logger.debug(automation_vals)
+        
+        return automation_vals
 
 @prestashop
 class SaleOrderLineMapper(PrestashopImportMapper):
@@ -734,6 +753,8 @@ class SaleOrderLineMapper(PrestashopImportMapper):
             product_id = self.session.search('product.product', [
                 ('product_tmpl_id', '=', template_id),
                 ('company_id', '=', self.backend_record.company_id.id)])[0]
+            if isinstance(product_id, int):
+                product_id= [product_id]    
             if product_id:
                 product_id = product_id[0]
             if product_id is None:
@@ -796,21 +817,44 @@ class SaleOrderLineDiscount(PrestashopImportMapper):
     def price_unit(self, record):
         price_unit = record['value_tax_excl']
         if price_unit[0] != '-':
-            price_unit = '-' + price_unit
+            price_unit  = float(price_unit)
+        if self.backend_record.taxes_included :
+            tax = self.backend_record.discount_product_id.taxes_id[0] 
+            _logger.debug("Taxes discount")
+            _logger.debug(tax)
+            
+            price_unit = float(price_unit) * (1.0 + tax.amount)
+            
+        _logger.debug(price_unit)
+        price_unit = - price_unit
         return {'price_unit': price_unit}
 
     @mapping
     def product_id(self, record):
+        
+        product_id = None
+        result = {}
         if self.backend_record.discount_product_id:
-            return {'product_id': self.backend_record.discount_product_id.id}
-        data_obj = self.session.pool.get('ir.model.data')
-        model_name, product_id = data_obj.get_object_reference(
-            self.session.cr,
-            self.session.uid,
-            'connector_ecommerce',
-            'product_product_discount'
-        )
-        return {'product_id': product_id}
+#            result = {'product_id': self.backend_record.discount_product_id.id}
+            product_id = self.backend_record.discount_product_id.id
+        else:
+            data_obj = self.session.pool.get('ir.model.data')
+            model_name, product = data_obj.get_object_reference(
+                self.session.cr,
+                self.session.uid,
+                'connector_ecommerce',
+                'product_product_discount'
+            )
+            product_id = product
+        
+        _logger.debug("Get the taxes for the discount")
+        product_rec = self.env['product.product'].browse(product_id)
+        
+        result = {'product_id': product_id,
+                'tax_id':[(6, 0, [t.id for t in product_rec.taxes_id])]
+        }
+        
+        return result
 
     @mapping
     def backend_id(self, record):
