@@ -279,8 +279,6 @@ class TemplateMapper(PrestashopImportMapper):
                 ['tax_ids']
             )
         result = {"taxes_id": [(6, 0, tax_ids['tax_ids'])]}
-        _logger.debug("GET THE TAXES")
-        _logger.debug(result)
         return result
 
 
