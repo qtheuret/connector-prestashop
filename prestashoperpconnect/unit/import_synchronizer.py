@@ -34,7 +34,7 @@ from openerp.addons.connector.connector import ConnectorUnit
 from openerp.addons.connector.exception import FailedJobError
 from openerp.addons.connector.exception import NothingToDoJob
 from openerp.addons.connector.queue.job import job
-from openerp.addons.connector.unit.synchronizer import ImportSynchronizer
+from openerp.addons.connector.unit.synchronizer import (ImportSynchronizer, Importer)
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from ..backend import prestashop
 from ..connector import add_checkpoint
@@ -153,7 +153,39 @@ class PrestashopImportSynchronizer(ImportSynchronizer):
                 self.backend_record.id,
                 ext_id
             )
+    
+    def _import_dependency(self, prestashop_id, binding_model,
+                           importer_class=None, always=False):
+        """ Import a dependency.
 
+        The importer class is a class or subclass of
+        :class:`MagentoImporter`. A specific class can be defined.
+
+        :param magento_id: id of the related binding to import
+        :param binding_model: name of the binding model for the relation
+        :type binding_model: str | unicode
+        :param importer_cls: :class:`openerp.addons.connector.\
+                                     connector.ConnectorUnit`
+                             class or parent class to use for the export.
+                             By default: MagentoImporter
+        :type importer_cls: :class:`openerp.addons.connector.\
+                                    connector.MetaConnectorUnit`
+        :param always: if True, the record is updated even if it already
+                       exists, note that it is still skipped if it has
+                       not been modified on Magento since the last
+                       update. When False, it will import it only when
+                       it does not yet exist.
+        :type always: boolean
+        """
+        if not prestashop_id:
+            return
+        if importer_class is None:
+            importer_class = PrestashopImportSynchronizer
+        binder = self.binder_for(binding_model)
+
+        if always or len(binder.to_openerp(prestashop_id)) == 0:
+            importer = self.unit_for(importer_class, model=binding_model)
+            importer.run(prestashop_id)
 
 class BatchImportSynchronizer(ImportSynchronizer):
 
@@ -467,16 +499,14 @@ class SaleOrderImport(PrestashopImportSynchronizer):
 
     def _import_dependencies(self):
         record = self.prestashop_record
-        self._check_dependency(record['id_customer'], 'prestashop.res.partner')
-        self._check_dependency(
-            record['id_address_invoice'], 'prestashop.address'
-        )
-        self._check_dependency(
-            record['id_address_delivery'], 'prestashop.address'
-        )
-
+        
+        self._import_dependency(record['id_customer'], 'prestashop.res.partner')
+        self._import_dependency(
+            record['id_address_invoice'], 'prestashop.address')
+        self._import_dependency(
+            record['id_address_delivery'], 'prestashop.address')
         if record['id_carrier'] != '0':
-            self._check_dependency(record['id_carrier'],
+            self._import_dependency(record['id_carrier'],
                                    'prestashop.delivery.carrier')
 
         orders = record['associations'] \
