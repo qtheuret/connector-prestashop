@@ -182,7 +182,7 @@ class PrestashopImportSynchronizer(ImportSynchronizer):
         if importer_class is None:
             importer_class = PrestashopImportSynchronizer
         binder = self.binder_for(binding_model)
-
+        _logger.debug("Import dependency for model %s, prestashop_id ", (binding_model,prestashop_id))        
         if always or len(binder.to_openerp(prestashop_id)) == 0:
             importer = self.unit_for(importer_class, model=binding_model)
             importer.run(prestashop_id)
