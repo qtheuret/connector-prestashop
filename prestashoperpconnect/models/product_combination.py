@@ -158,79 +158,6 @@ class prestashop_product_combination(orm.Model):
         return product.qty_available
 
 
-class product_attribute(orm.Model):
-    _inherit = 'product.attribute'
-
-    _columns = {
-        'prestashop_bind_ids': fields.one2many(
-            'prestashop.product.combination.option',
-            'openerp_id',
-            string='PrestaShop Bindings (combinations)'
-        ),
-    }
-
-
-class prestashop_product_combination_option(orm.Model):
-    _name = 'prestashop.product.combination.option'
-    _inherit = 'prestashop.binding'
-    _inherits = {'product.attribute': 'openerp_id'}
-
-    _columns = {
-        'openerp_id': fields.many2one(
-            'product.attribute',
-            string='Attribute',
-            required=True,
-            ondelete='cascade'
-        ),
-        'prestashop_position': fields.integer('Prestashop Position'),
-        'group_type': fields.selection([('color', 'Color'),
-                                        ('radio', 'Radio'),
-                                        ('select', 'Select')], 'Type'),
-        'public_name': fields.char(
-            'Public Name',
-            translate=True
-        ),
-
-    }
-
-    _defaults = {
-        'group_type': 'select',
-    }
-
-
-class product_attribute_value(orm.Model):
-    _inherit = 'product.attribute.value'
-
-    _columns = {
-        'prestashop_bind_ids': fields.one2many(
-            'prestashop.product.combination.option.value',
-            'openerp_id',
-            string='PrestaShop Bindings'
-        ),
-    }
-
-
-class prestashop_product_combination_option_value(orm.Model):
-    _name = 'prestashop.product.combination.option.value'
-    _inherit = 'prestashop.binding'
-    _inherits = {'product.attribute.value': 'openerp_id'}
-
-    _columns = {
-        'openerp_id': fields.many2one(
-            'product.attribute.value',
-            string='Attribute',
-            required=True,
-            ondelete='cascade'
-        ),
-        'prestashop_position': fields.integer('Prestashop Position'),
-        'id_attribute_group': fields.many2one(
-            'prestashop.product.combination.option')
-    }
-
-    _defaults = {
-        'prestashop_position': 1
-    }
-
 
 @prestashop
 class ProductCombinationAdapter(GenericAdapter):
@@ -249,16 +176,16 @@ class ProductCombinationAdapter(GenericAdapter):
 #    """
 #    _model_name = ['prestashop.product.product']
 #
-#
 #    def _import_record(self, prestashop_id, priority=None):
 #        """ Delay a job for the import """
 #        super(ProductCombinationBatchImporter, self)._import_record(
 #            prestashop_id, priority=priority)
 
+
 @prestashop
 class ProductCombinationRecordImport(PrestashopImportSynchronizer):
     _model_name = 'prestashop.product.combination'
-
+      
     def _import_dependencies(self):
         record = self.prestashop_record
         option_values = record.get('associations', {}).get(
@@ -271,19 +198,19 @@ class ProductCombinationRecordImport(PrestashopImportSynchronizer):
         )
         for option_value in option_values:
             option_value = backend_adapter.read(option_value['id'])
-            _logger.debug("OPTION VALUE")
-            _logger.debug(option_value)
-            self._check_dependency(
-                option_value['id_attribute_group'],
-                'prestashop.product.combination.option',
-            )
-            self._check_dependency(
+            _logger.debug("OPTION VALUE in COMBINATION: " + str(option_value['id']))
+#            _logger.debug(option_value)
+#            self._import_dependency(
+#                option_value['id_attribute_group'],
+#                'prestashop.product.combination.option',
+#            )
+            self._import_dependency(
                 option_value['id'],
                 'prestashop.product.combination.option.value'
             )
 
-
-    
+                        
+                        
     def unit_price_impact(self, erp_id):
         # TODO manage extra price for a combination? 
         # Really possible? https://github.com/OCA/connector-prestashop/pull/16#issuecomment-145768033 
@@ -574,7 +501,101 @@ class ProductCombinationMapper(PrestashopImportMapper):
         main_template = backend_adapter.read(record['id_product'])
         return {'width': main_template['width']}
     
+
+# COMBINATION OPTIONS AND VALUES    
     
+class product_attribute(orm.Model):
+    _inherit = 'product.attribute'
+
+    _columns = {
+        'prestashop_bind_ids': fields.one2many(
+            'prestashop.product.combination.option',
+            'openerp_id',
+            string='PrestaShop Bindings (combinations)'
+        ),
+    }
+
+
+class prestashop_product_combination_option(orm.Model):
+    _name = 'prestashop.product.combination.option'
+    _inherit = 'prestashop.binding'
+    _inherits = {'product.attribute': 'openerp_id'}
+
+    _columns = {
+        'openerp_id': fields.many2one(
+            'product.attribute',
+            string='Attribute',
+            required=True,
+            ondelete='cascade'
+        ),
+        'prestashop_position': fields.integer('Prestashop Position'),
+        'group_type': fields.selection([('color', 'Color'),
+                                        ('radio', 'Radio'),
+                                        ('select', 'Select')], 'Type'),
+        'public_name': fields.char(
+            'Public Name',
+            translate=True
+        ),
+
+    }
+    
+    _sql_constraints = [
+        ('prestashop_uniq_option', 'unique(backend_id, prestashop_id)',
+         'An attribute with the same ID on PrestaShop already exists.'),
+    ]
+
+    _defaults = {
+        'group_type': 'select',
+    }
+
+
+class product_attribute_value(orm.Model):
+    _inherit = 'product.attribute.value'
+
+    _columns = {
+        'prestashop_bind_ids': fields.one2many(
+            'prestashop.product.combination.option.value',
+            'openerp_id',
+            string='PrestaShop Bindings'
+        ),
+    }
+
+
+class prestashop_product_combination_option_value(orm.Model):
+    _name = 'prestashop.product.combination.option.value'
+    _inherit = 'prestashop.binding'
+    _inherits = {'product.attribute.value': 'openerp_id'}
+
+    _columns = {
+        'openerp_id': fields.many2one(
+            'product.attribute.value',
+            string='Attribute',
+            required=True,
+            ondelete='cascade'
+        ),
+        'prestashop_position': fields.integer('Prestashop Position'),
+#        'id_attribute_group': fields.many2one(
+#            'prestashop.product.combination.option', required=True)
+        'id_attribute_group': fields.many2one(
+            'product.attribute',
+            string='Attribute',
+            required=True,   
+            ondelete='cascade'
+        ),
+    }
+
+    _defaults = {
+        'prestashop_position': 1
+    }
+
+    def create(self, cr, uid, vals, context=None):      
+        _logger.debug("VALUES TO INSERT")
+        _logger.debug(vals)
+        return super(prestashop_product_combination_option_value, self).create(
+            cr, uid, vals, context=context
+        )
+
+
 @prestashop
 class ProductCombinationOptionAdapter(GenericAdapter):
     _model_name = 'prestashop.product.combination.option'
@@ -593,18 +614,42 @@ class ProductCombinationOptionRecordImport(PrestashopImportSynchronizer):
         if not isinstance(option_values, list):
             option_values = [option_values]
         for option_value in option_values:
-            self._check_dependency(
+#            self._check_dependency(
+#                option_value['id'],
+#                'prestashop.product.combination.option.value'
+#            )
+            _logger.debug("IMPORT VALUE : ")
+            _logger.debug(option_value)
+            self._import_dependency(
                 option_value['id'],
                 'prestashop.product.combination.option.value'
             )
-
+    
+#    def _after_import(self, ext_id):
+#        _logger.debug("AFTER IMPORT")
+#        self._import_values()
+        
     def run(self, ext_id):
         # looking for an product.attribute with the same name
+        # TODO : improve the searche because there are some duplicate values
         self.prestashop_id = ext_id
         self.prestashop_record = self._get_prestashop_data()
+        
+        _logger.debug("OPTION IMPORT")
+        #Check wether the option is already in db
+        binder = self.get_binder_for_model(
+            'prestashop.product.combination.option')
+        attribute_id = binder.to_openerp(ext_id, unwrap=True)
+        
+        if len(attribute_id) == 1:
+            _logger.debug("Attribute %s already exists ", (attribute_id))
+            return self.prestashop_record
+        
+        #Search on name if there wasn't already an option
         name = self.mapper.name(self.prestashop_record)['name']
         attribute_ids = self.session.search('product.attribute',
                                             [('name', '=', name)])
+        
         if len(attribute_ids) == 0:
             # if we don't find it, we create a prestashop_product_combination
             super(ProductCombinationOptionRecordImport, self).run(ext_id)
@@ -617,9 +662,9 @@ class ProductCombinationOptionRecordImport(PrestashopImportSynchronizer):
             erp_id = self.model.create(data)
             self.binder.bind(self.prestashop_id, erp_id)
 
-        self._import_values()
-
-
+#        self._import_values()
+             
+             
 @prestashop
 class ProductCombinationOptionMapper(PrestashopImportMapper):
     _model_name = 'prestashop.product.combination.option'
@@ -673,6 +718,18 @@ class ProductCombinationOptionValueRecordImport(TranslatableRecordImport):
     _translatable_fields = {
         'prestashop.product.combination.option.value': ['name'],
     }
+    
+#@prestashop
+#class ProductCombinationOptionValueRecordImport(PrestashopImportSynchronizer):
+#    _model_name = 'prestashop.product.combination.option.value'
+#    
+    def _import_dependencies(self):
+        _logger.debug("Option value dependency")
+        #Get the default category
+        record = self.prestashop_record
+        _logger.debug(record)
+        self._import_dependency(record['id_attribute_group'],
+                                   'prestashop.product.combination.option')
 
 
 @prestashop
@@ -683,13 +740,29 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
 
     @mapping
     def name(self, record):
+        #TODO : improve the search to prevent duplicates
         name = None
+        binder = self.get_binder_for_model(
+            'prestashop.product.combination.option')
+        attribute_id = binder.to_openerp(record['id_attribute_group'],
+                                         unwrap=True)
+        _logger.debug("ATRIBUTE ID to filter on : ")
+        _logger.debug(attribute_id)
+        #Precise the filter so that the name searched appears for a specific attribute
+        search_params = [('name', '=', record['name'])
+                        ,('attribute_id', '=', attribute_id.id)]
         duplicate_name = self.session.search('product.attribute.value',
-                                             [('name', '=', record['name'])])
+                                            search_params)
+        name = record['name']
+        
+        
         if duplicate_name:
             name = "%s-%s" % (record['name'], record['id'])
         else:
             name = record['name']
+        _logger.debug("Duplicate name")
+        _logger.debug(duplicate_name)
+        _logger.debug(name)
         return {'name': name}
 
     @mapping
@@ -698,8 +771,11 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
             'prestashop.product.combination.option')
         attribute_id = binder.to_openerp(record['id_attribute_group'],
                                          unwrap=True)
-
-        return {'attribute_id': attribute_id.id}
+        _logger.debug("ATRIBUTE ID FIND : ")
+        _logger.debug(attribute_id)
+        return {'attribute_id': attribute_id.id,
+               'id_attribute_group': attribute_id.id 
+               }
 
 #    @mapping
 #    def price_extra(self, record):
@@ -729,7 +805,7 @@ class CombinationInventoryExport(ProductInventoryExport):
 
     def get_filter(self, template):
         return {
-            'filter[id_product': template.main_template_id.prestashop_id,
+            'filter[id_product]': template.main_template_id.prestashop_id,
             'filter[id_product_attribute]': template.prestashop_id,
         }
 

@@ -24,8 +24,10 @@ from openerp.osv import fields, orm
 from datetime import datetime
 from datetime import timedelta
 from prestapyt import PrestaShopWebServiceError
-from ..unit.backend_adapter import GenericAdapter
-from ..unit.backend_adapter import PrestaShopCRUDAdapter
+from ..unit.backend_adapter import (
+                            GenericAdapter, 
+                            PrestaShopCRUDAdapter)
+from openerp.addons.connector.unit.backend_adapter import BackendAdapter                            
 from openerp.addons.connector.connector import ConnectorUnit
 from openerp.addons.connector.exception import FailedJobError
 from openerp.addons.connector.exception import NothingToDoJob
@@ -41,6 +43,10 @@ from ..backend import prestashop
 from ..connector import add_checkpoint
 from ..connector import get_environment
 from ..unit.exception import OrderImportRuleRetry
+from .product_combination import (
+                #ProductCombinationBatchImporter, 
+                ProductCombinationRecordImport)
+
 _logger = logging.getLogger(__name__)
 
 class product_template(orm.Model):
@@ -190,6 +196,11 @@ class TemplateRecordImport(TranslatableRecordImport):
         ],
     }
 
+    def _import_dependencies(self):
+        self._import_default_category()
+        self._import_categories()
+        self.import_product_options()
+        
     def _after_import(self, erp_id):
         self.import_images(erp_id.id)
         # TODO : check what's wrong in this mapper
@@ -246,6 +257,33 @@ class TemplateRecordImport(TranslatableRecordImport):
                             'value_ids': [(6, 0, set(value_ids))]}
                         )
 
+    def import_product_options(self):
+        prestashop_record = self._get_prestashop_data()
+        associations = prestashop_record.get('associations', {})
+
+        option_values = associations.get('product_option_values', {}).get(
+            'product_options_values', [])
+        if not isinstance(option_values, list):
+            option_values = [option_values]
+        
+        _logger.debug("OPTIONS in TEMPLATE")
+        _logger.debug(prestashop_record)
+        _logger.debug(associations)
+        _logger.debug(option_values)
+        backend_adapter = self.get_connector_unit_for_model(
+            BackendAdapter,
+            'prestashop.product.combination.option.value'
+        )
+        for option_value in option_values:
+            option = backend_adapter.read(option_value['id'])
+
+            import_record(
+                self.session,
+                'prestashop.product.combination.option.value',
+                self.backend_record.id,
+                option_value['id'],                                       
+            )
+    
     def import_combinations(self):
         prestashop_record = self._get_prestashop_data()
         associations = prestashop_record.get('associations', {})
@@ -254,12 +292,22 @@ class TemplateRecordImport(TranslatableRecordImport):
             'combinations', [])
         if not isinstance(combinations, list):
             combinations = [combinations]
+        
+        priority = 15
+#        variant_adapter = self.get_connector_unit_for_model(
+#                ProductCombinationRecordImport, 'prestashop.product.combination')
+#        importer = self.unit_for(ProductCombinationBatchImporter, model='prestashop.product.combination')
+        
         for combination in combinations:            
+#            variant_adapter._import_record(
+#                        combination['id'], priority
+#                        )
+#            priority += 15
             import_record(
                 self.session,
                 'prestashop.product.combination',
                 self.backend_record.id,
-                combination['id']
+                combination['id'],                                       
             )
 
     def import_images(self, erp_id):
@@ -351,10 +399,6 @@ class TemplateRecordImport(TranslatableRecordImport):
             pass
         except IOError:
             pass
-
-    def _import_dependencies(self):
-        self._import_default_category()
-        self._import_categories()
 
     def get_template_model_id(self):
         ids = self.session.search('ir.model', [
