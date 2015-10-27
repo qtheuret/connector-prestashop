@@ -164,11 +164,15 @@ class TemplateMapper(PrestashopImportMapper):
             )
         if not self._template_code_exists(code):
             return {'default_code': code}
-        i = 1
-        current_code = '%s_%d' % (code, i)
-        while self._template_code_exists(current_code):
-            i += 1
-            current_code = '%s_%d' % (code, i)
+        i = 0
+#        current_code = '%s_%d' % (code, i)
+        #In case of a single variant, allow to keep the default code
+        current_code = '%s' % (code)
+#        while self._template_code_exists(current_code):            
+#            i += 1
+#            if i == 1 :
+#                continue
+#            current_code = '%s_%d' % (code, i)
         return {'default_code': current_code}
 
     @mapping
@@ -253,7 +257,7 @@ class TemplateMapper(PrestashopImportMapper):
         if self.has_combinations(record):
             return {}
         if record['ean13'] in ['', '0']:
-            return {}
+            return {'ean13': False}
         if check_ean(record['ean13']):
             return {'ean13': record['ean13']}
         return {}
