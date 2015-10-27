@@ -441,6 +441,12 @@ class ProductCombinationMapper(PrestashopImportMapper):
             _logger.debug("Attribute from product to be mapped : %s ", attribute)
             if attribute not in main_template:
                 continue                
+            if attribute == 'ean13' :
+                # DOn't map the ean13 because of product_attribute
+                # EAN13 and default code displayed on template are now those
+                # of the default_on product
+                _logger.debug("Attribute ean 13 from product won't be mapped from template")
+                continue                
             if hasattr(main_template[attribute], 'id'):
                 result[attribute] = main_template[attribute].id
             elif type(main_template[attribute]) is browse_record_list:
@@ -535,14 +541,14 @@ class ProductCombinationMapper(PrestashopImportMapper):
         return {'backend_id': self.backend_record.id}
 
     @mapping
-    def ean13(self, record):        
+    def ean13(self, record): 
         if record['ean13'] in ['', '0']:
             backend_adapter = self.get_connector_unit_for_model(
                 GenericAdapter, 'prestashop.product.template')
             template = backend_adapter.read(record['id_product'])
             return template['ean13'] and {}
-        if check_ean(record['ean13']):        
-            return {'ean13': record['ean13']}        
+        if check_ean(record['ean13']):   
+            return {'ean13': record['ean13']}                
         return {}
 
     # DIMENSION PART, depends on product dimension
