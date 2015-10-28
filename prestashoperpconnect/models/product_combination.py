@@ -540,7 +540,7 @@ class prestashop_product_combination_option(orm.Model):
     }
     
     _sql_constraints = [
-        ('prestashop_uniq_option', 'unique(backend_id, prestashop_id)',
+        ('prestashop_unique_option', 'unique(backend_id, prestashop_id)',
          'An attribute with the same ID on PrestaShop already exists.'),
     ]
 
@@ -584,6 +584,11 @@ class prestashop_product_combination_option_value(orm.Model):
         ),
     }
 
+    _sql_constraints = [
+        ('prestashop_unique_option', 'unique(backend_id, prestashop_id)',
+         'An attribute with the same ID on PrestaShop already exists.'),
+    ]
+    
     _defaults = {
         'prestashop_position': 1
     }
