@@ -536,9 +536,12 @@ class ProductInventoryAdapter(GenericAdapter):
             first_key = res.keys()[0]
             stock = res[first_key]
             stock['quantity'] = int(quantity)
+            _logger.debug("QUANTITY to update")
+            _logger.debug(stock)
             try:
 #                api.edit(self._prestashop_model, stock['id'], {
-                api.edit(self._prestashop_model, {
+                #This syntax works with prestapyt 0.6.2 : https://github.com/prestapyt/prestapyt/blob/master/prestapyt/prestapyt.py#L353
+                api.edit(self._prestashop_model, stock['id'],{
                     self._export_node_name: stock
                 })
             except ElementTree.ParseError:
