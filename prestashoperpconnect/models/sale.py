@@ -304,14 +304,18 @@ class prestashop_sale_order_line_discount(models.Model):
             ['openerp_id'],
             context=context
         )
-        order_id = info[0]['openerp_id']
-        _logger.debug("CREATE FROM discount")
+        order_id = info[0]['openerp_id']        
         vals['order_id'] = order_id[0]
         return super(prestashop_sale_order_line_discount, self).create(
             cr, uid, vals, context=context
         )
 
+class prestashop_payment_method(models.Model):
+    _inherit = 'payment.method'
 
+
+    allow_zero=fields.Boolean("Allow to import Zero values")
+    
 
 # BACKEND
 

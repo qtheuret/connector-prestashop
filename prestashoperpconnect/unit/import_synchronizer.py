@@ -426,7 +426,7 @@ class SaleImportRule(ConnectorUnit):
 
     def _rule_paid(self, record, method):
         """ Import the order only if it has received a payment """
-        if self._get_paid_amount(record) == 0.0:
+        if self._get_paid_amount(record) == 0.0 and not method.allow_zero: 
             raise OrderImportRuleRetry('The order has not been paid.\n'
                                        'The import will be retried later.')
 
@@ -435,6 +435,7 @@ class SaleImportRule(ConnectorUnit):
             GenericAdapter,
             '__not_exist_prestashop.payment'
         )
+        _logger.debug("Looking for payment of order reference %s", (record['reference']))
         payment_ids = payment_adapter.search({
             'filter[order_reference]': record['reference']
         })
@@ -483,7 +484,7 @@ class SaleImportRule(ConnectorUnit):
         max_days = method.days_before_cancel
         if not max_days:
             return
-        if self._get_paid_amount(record) != 0.0:
+        if self._get_paid_amount(record) != 0.0 or method.allow_zero :        
             return
         fmt = '%Y-%m-%d %H:%M:%S'
         order_date = datetime.strptime(record['date_add'], fmt)

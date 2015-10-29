@@ -129,11 +129,11 @@
             <field name="arch" type="xml">
                 <field name="name" position="before">
                     <field name="prestashop_order_id" 
-                    class="oe_inline" readonly="1"
-                    attrs="{'invisible':[('prestashop_order_id','in',(False, 0))]}"
+                           class="oe_inline" readonly="1"
+                           attrs="{'invisible':[('prestashop_order_id','in',(False, 0))]}"
                     />
                     <span 
-                     attrs="{'invisible':[('prestashop_order_id','in',(False, 0))]}"> / </span>
+                        attrs="{'invisible':[('prestashop_order_id','in',(False, 0))]}"> / </span>
                 
                 </field>
             </field>
@@ -146,7 +146,7 @@
             <field name="arch" type="xml">
                 <field name="name" position="after">
                     <field name="prestashop_order_id" string="Presta ID"
-                    filter_domain="[('prestashop_order_id','ilike',self)]"/>
+                           filter_domain="[('prestashop_order_id','ilike',self)]"/>
                     
                 </field>
             </field>
@@ -160,7 +160,7 @@
             <field name="arch" type="xml">
                 <field name="name" position="before">
                     <field name="prestashop_order_id" string="Presta ID"
-                    attrs="{'invisible':[('prestashop_order_id','in',(False, 0))]}"/>
+                           attrs="{'invisible':[('prestashop_order_id','in',(False, 0))]}"/>
                     
                 </field>
             </field>
@@ -173,11 +173,25 @@
             <field name="arch" type="xml">
                 <field name="name" position="before">
                     <field name="prestashop_order_id" string="Presta ID"
-                    attrs="{'invisible':[('prestashop_order_id','in',(False, 0))]}"/>
+                           attrs="{'invisible':[('prestashop_order_id','in',(False, 0))]}"/>
                     
                 </field>
             </field>
         </record>
+
+        <record id="view_presta_payment_method" model="ir.ui.view">
+            <field name="model">payment.method</field>
+            <field name="inherit_id" ref="sale_payment_method.payment_method_view_form"/>
+            <field name="priority">200</field>
+            <field name="arch" type="xml">
+                <field name="import_rule" position="after">
+                    <field name="allow_zero" string="Allow zero for importation"
+                           attrs="{'invisible': [('import_rule','!=', 'paid')] } "/>
+                    
+                </field>
+            </field>
+        </record>
+
 
 
 
