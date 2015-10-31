@@ -122,6 +122,14 @@ class sale_order(models.Model):
                     string="Invoice Number",
         
                     )
+                    
+    main_picking = fields.Char(
+            related='picking_ids.name',
+#            comodel_name="stock.picking", 
+            string='Main picking',            
+            readonly=True,
+            store=False
+        )
     
     @api.multi
     def action_invoice_create(self, grouped=False, states=['confirmed', 'done', 'exception'], date_invoice = False, context=None):
@@ -144,9 +152,10 @@ class sale_order(models.Model):
             inv_ids.write({'internal_number' :self.prestashop_invoice_number,
                             'origin' : new_name,
                             })
-            
-        if self.prestashop_bind_ids[0].backend_id.journal_id.id :
-            #we also have to set the journal for the invoicing
+        
+        if len(self.prestashop_bind_ids) == 1 and self.prestashop_bind_ids[0].backend_id.journal_id.id :
+            #we also have to set the journal for the invoicing only for 
+            #orders coming from the connector
             inv_ids.write({'journal_id':
                         self.prestashop_bind_ids[0].backend_id.journal_id.id })
             
@@ -337,7 +346,7 @@ class SaleOrderAdapter(GenericAdapter):
     _export_node_name = 'order'
 
     def update_sale_state(self, prestashop_id, datas):
-        api = self.connect()
+        api = self.connect()        
         return api.add('order_histories', datas)
 
     def search(self, filters=None):
@@ -398,21 +407,21 @@ class SaleStateExport(ExportSynchronizer):
         self.backend_adapter.update_sale_state(prestashop_id, datas)
 
 
-# TODO improve me, don't try to export state if the sale order does not come
-#      from a prestashop connector
 # TODO improve me, make the search on the sale order backend only
 @on_record_write(model_names='sale.order')
 def prestashop_sale_state_modified(session, model_name, record_id,
                                    fields=None):
     if 'state' in fields:
         sale = session.browse(model_name, record_id)
-        # a quick test to see if it is worth trying to export sale state
-        states = session.search(
-            'sale.order.state.list',
-            [('name', '=', sale.state)]
-        )
-        if states:
-            export_sale_state.delay(session, record_id, priority=20)
+        # a quick test to see if it is worth trying to export sale state        
+        if len(sale.prestashop_bind_ids) == 1:            
+            states = session.search(
+                'sale.order.state.list',
+                [('name', '=', sale.state)]
+            )                                        
+            if states:
+                _logger.debug("State to search : %s and found ", (sale.state, ) )
+                export_sale_state.delay(session, record_id, priority=20)
     return True
 
 

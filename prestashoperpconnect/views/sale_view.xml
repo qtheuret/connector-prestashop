@@ -171,10 +171,19 @@
             <field name="inherit_id" ref="sale.view_order_tree"/>
             <field name="priority">200</field>
             <field name="arch" type="xml">
+                <field name="main_exception_id" position="replace"/>
                 <field name="name" position="before">
                     <field name="prestashop_order_id" string="Presta ID"
                            attrs="{'invisible':[('prestashop_order_id','in',(False, 0))]}"/>
                     
+                </field>
+                
+                <field name="state" position="after">
+                    <field name="main_picking" string="Main Picking" />
+                    <field name="picking_ids" invisible="1" />
+                    <button name="action_view_delivery"  type="object" class="oe_highlight"
+                            icon="STOCK_REDO"
+                           attrs="{'invisible': ['|',('picking_ids','=',False),('picking_ids','=',[])]}" groups="base.group_user"/>
                 </field>
             </field>
         </record>

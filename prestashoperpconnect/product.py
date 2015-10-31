@@ -562,7 +562,7 @@ def prestashop_product_stock_updated(session, model_name, record_id,
     if session.context.get('connector_no_export'):
         return
     inventory_fields = list(set(fields).intersection(INVENTORY_FIELDS))
-    if inventory_fields:
+    if inventory_fields:        
         export_inventory.delay(session, model_name,
                                record_id, fields=inventory_fields,
                                priority=20)
