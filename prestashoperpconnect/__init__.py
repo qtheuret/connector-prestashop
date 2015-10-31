@@ -30,7 +30,7 @@ from . import connector
 from . import product
 #from . import product_combination
 #from . import sale
-from . import delivery
+#from . import delivery
 from . import consumer
 from . import account
 from . import models

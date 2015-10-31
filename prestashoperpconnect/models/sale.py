@@ -128,7 +128,7 @@ class sale_order(models.Model):
 #            comodel_name="stock.picking", 
             string='Main picking',            
             readonly=True,
-            store=False
+            store=True
         )
     
     @api.multi
@@ -411,6 +411,7 @@ class SaleStateExport(ExportSynchronizer):
 @on_record_write(model_names='sale.order')
 def prestashop_sale_state_modified(session, model_name, record_id,
                                    fields=None):
+    _logger.debug("Sale Order updated")
     if 'state' in fields:
         sale = session.browse(model_name, record_id)
         # a quick test to see if it is worth trying to export sale state        

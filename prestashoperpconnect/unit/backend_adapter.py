@@ -189,7 +189,7 @@ class GenericAdapter(PrestaShopCRUDAdapter):
         attributes['id'] = id
         _logger.info('method write, model %s, attributes %s', self._prestashop_model, unicode(attributes))
          
-        return api.edit(self._prestashop_model, {
+        return api.edit(self._prestashop_model, id, {
             self._export_node_name: attributes
         })
 
