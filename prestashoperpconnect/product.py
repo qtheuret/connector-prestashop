@@ -529,21 +529,12 @@ class ProductInventoryAdapter(GenericAdapter):
             )
 
     def export_quantity_url(self, url, key, filters, quantity):
-        api = PrestaShopWebServiceDict(url, key)
-        response = api.search(self._prestashop_model, filters)
+        response = self.search(filters)        
         for stock_id in response:
-            res = api.get(self._prestashop_model, stock_id)
-            first_key = res.keys()[0]
-            stock = res[first_key]
-            stock['quantity'] = int(quantity)
-            _logger.debug("QUANTITY to update")
-            _logger.debug(stock)
+            stock = self.read(stock_id)
+            stock['quantity'] = int(quantity)            
             try:
-#                api.edit(self._prestashop_model, stock['id'], {
-                #This syntax works with prestapyt 0.6.2 : https://github.com/prestapyt/prestapyt/blob/master/prestapyt/prestapyt.py#L353
-                api.edit(self._prestashop_model, stock['id'],{
-                    self._export_node_name: stock
-                })
+                self.write(stock['id'], stock)
             except ElementTree.ParseError:
                 pass
 
@@ -562,7 +553,7 @@ def prestashop_product_stock_updated(session, model_name, record_id,
     if session.context.get('connector_no_export'):
         return
     inventory_fields = list(set(fields).intersection(INVENTORY_FIELDS))
-    if inventory_fields:        
+    if inventory_fields:
         export_inventory.delay(session, model_name,
                                record_id, fields=inventory_fields,
                                priority=20)
