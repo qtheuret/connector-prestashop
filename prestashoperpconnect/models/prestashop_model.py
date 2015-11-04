@@ -111,7 +111,15 @@ class prestashop_backend(orm.Model):
                                 [('db','Database'),('file','File'),('url', 'URL')], string='Stockage type for image',
                                 required=True, default='db'
                             ),
-        'use_variant_default_code': fields.boolean(string='', help="""Allow to choose wether the default_code of the default variant is used"""),
+        'use_variant_default_code': fields.boolean(string='', 
+                    help="""Allow to choose wether the default_code or the default variant is used"""),
+        'quantity_field' : fields.selection(
+                            [('qty_available','Available Quantity'),
+                            ('virtual_available','Forecast quantity')],
+                            string='Field use for quantity update',
+                            required=True, 
+                            default='virtual_available'
+                        )
     }
 
     _defaults = {

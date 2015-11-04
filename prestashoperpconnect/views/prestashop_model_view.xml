@@ -154,6 +154,13 @@
                                             type="object"
                                             class="oe_highlight"
                                             string="Export in background"/>
+                                    
+                                </group>
+                                <group>
+                                    <label string="Stock field quantity" class="oe_inline"/>
+                                    <field name="quantity_field"
+                                          nolabel="1"/>
+                                    
                                 </group>
                                 <group>
                                     <label string="Import stock quantities" class="oe_inline"/>

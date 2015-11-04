@@ -145,7 +145,7 @@
                     <button name="recompute_prestashop_qty"
                                 class="oe_highlight"
                                 type="object"
-                                string="Export quantity"/>
+                                string="Export combination quantity "/>
                     <button name="resync"
                                 type="object"
                                 string="Resync" />
