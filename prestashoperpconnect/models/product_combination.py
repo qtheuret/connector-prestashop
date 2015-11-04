@@ -146,7 +146,6 @@ class prestashop_product_combination(orm.Model):
     def recompute_prestashop_qty(self, cr, uid, ids, context=None):
         if not hasattr(ids, '__iter__'):
             ids = [ids]
-
         for product in self.browse(cr, uid, ids, context=context):
             new_qty = self._prestashop_qty(cr, uid, product, context=context)
             self.write(
@@ -155,7 +154,19 @@ class prestashop_product_combination(orm.Model):
         return True
 
     def _prestashop_qty(self, cr, uid, product, context=None):
-        return product.qty_available
+        if context is None:
+            context = {}
+        backend = product.backend_id
+        stock = backend.warehouse_id.lot_stock_id
+        stock_field = backend.quantity_field        
+        location_ctx = context.copy()
+        location_ctx['location'] = stock.id
+        product_stk = self.read(
+            cr, uid, product.id, [stock_field], context=location_ctx
+        )
+        return product_stk[stock_field]
+
+#        return product.qty_available
 
 
 

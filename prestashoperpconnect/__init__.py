@@ -35,5 +35,6 @@ from . import consumer
 from . import account
 from . import models
 from . import stock_tracking
+from . import related_action
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

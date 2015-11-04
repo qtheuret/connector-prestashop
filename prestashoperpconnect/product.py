@@ -30,7 +30,7 @@ from openerp.addons.connector.connector import Binder
 from openerp.addons.connector.connector import ConnectorEnvironment
 from openerp.addons.connector.deprecate import log_deprecate
 from openerp.addons.connector.event import on_record_write
-from openerp.addons.connector.queue.job import job
+from openerp.addons.connector.queue.job import job, related_action
 from openerp.addons.connector.unit.mapper import mapping
 from openerp.addons.connector.unit.synchronizer import ExportSynchronizer
 from openerp.addons.product.product import check_ean
@@ -40,6 +40,8 @@ from .unit.import_synchronizer import DelayedBatchImport
 from .unit.import_synchronizer import PrestashopImportSynchronizer
 from .unit.import_synchronizer import import_record
 from .unit.mapper import PrestashopImportMapper
+from .related_action import link
+
 try:
     from xml.etree import cElementTree as ElementTree
 except ImportError, e:
@@ -560,6 +562,7 @@ def prestashop_product_stock_updated(session, model_name, record_id,
 
 
 @job
+@related_action(action=link)
 def export_inventory(session, model_name, record_id, fields=None):
     """ Export the inventory configuration and quantity of a product. """
     template = session.browse(model_name, record_id)
@@ -570,6 +573,7 @@ def export_inventory(session, model_name, record_id, fields=None):
 
 
 @job
+@related_action(action=link)
 def import_inventory(session, backend_id):
     env = get_environment(session, '_import_stock_available', backend_id)
     inventory_importer = env.get_connector_unit(ProductInventoryBatchImport)
