@@ -77,6 +77,12 @@ class product_product(orm.Model):
 #        'final_price': fields.float('Final Price'),
 #        'list_price_tax': fields.float('Sale Price Including Tax'),
         'default_on': fields.boolean('Default On'),
+        'combination_id': fields.related(
+            'prestashop_bind_ids',
+            'id',
+            type='integer',            
+            string='PrestaShop Combination ID', store = True),
+            
     }
     
     def _check_default_on(self, cr, uid, ids, context=None):

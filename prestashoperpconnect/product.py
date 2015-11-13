@@ -547,7 +547,7 @@ INVENTORY_FIELDS = ('quantity',)
 
 
 @on_record_write(model_names=[
-    'prestashop.product.template',
+#    'prestashop.product.template',
     'prestashop.product.combination'
 ])
 def prestashop_product_stock_updated(session, model_name, record_id,
