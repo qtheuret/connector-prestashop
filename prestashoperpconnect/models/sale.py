@@ -138,7 +138,7 @@ class sale_order(models.Model):
         with the prestashop_invoice_number
         In case of the invoice is not generated mainly from PS (eg : workflow accept invoice unpaid)
         the prestashop_invoice_number will be empty and won't cause troubles, 
-        the usual invoice number associated to the journl will be used.
+        the usual invoice number associated to the journal will be used.
         """
         res = super(sale_order,self).action_invoice_create(grouped=grouped, states=states, date_invoice = date_invoice, context=context)
         
@@ -178,8 +178,6 @@ class sale_order(models.Model):
             new_name = `order.prestashop_order_id` + '-'+  new_name
         vals = super(sale_order, self)._prepare_order_line_procurement(cr, uid, order, line, group_id=group_id, context=context)        
         vals['origin'] = new_name
-        _logger.debug("SHIP!")
-        _logger.debug(vals)
         return vals
         
 
@@ -232,8 +230,8 @@ class prestashop_sale_order(models.Model):
             readonly=True
         )
     
-
-
+    
+            
 class sale_order_line(models.Model):
     _inherit = 'sale.order.line'
    
