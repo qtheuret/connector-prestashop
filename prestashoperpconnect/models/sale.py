@@ -242,8 +242,8 @@ class prestashop_sale_order(models.Model):
         
         for order in self.browse(ps_orders ):
             _logger.debug("CHECK for order %s with id %s" % (order.name, order.openerp_id.id))     
-            if order.openerp_id.id != 88:
-                continue
+#            if order.openerp_id.id != 88:
+#                continue
                                            
             session = ConnectorSession(self.env.cr, self.env.uid,
                                    context=self.env.context)
