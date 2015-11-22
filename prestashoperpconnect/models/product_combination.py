@@ -215,7 +215,7 @@ class ProductCombinationRecordImport(PrestashopImportSynchronizer):
         )
         for option_value in option_values:
             option_value = backend_adapter.read(option_value['id'])
-            _logger.debug("OPTION VALUE in COMBINATION: " + str(option_value['id']))
+#            _logger.debug("OPTION VALUE in COMBINATION: " + str(option_value['id']))
 #            _logger.debug(option_value)
 #            self._import_dependency(
 #                option_value['id_attribute_group'],

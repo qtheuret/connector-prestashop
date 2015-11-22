@@ -28,6 +28,7 @@
 from datetime import datetime
 import logging
 import pytz
+from ..unit.backend_adapter import GenericAdapter
 from openerp.addons.connector.session import ConnectorSession
 from openerp.addons.prestashoperpconnect.product import import_inventory
 from openerp.osv import fields, orm
@@ -327,6 +328,11 @@ class prestashop_backend(orm.Model):
         self._scheduler_launch(cr, uid, self.import_suppliers,
                                domain=domain, context=context)
 
+    def _scheduler_create_payments(self, cr, uid, states=None, context=None):
+        order_obj = self.pool.get('prestashop.sale.order')
+        order_ids =  order_obj.search(cr, uid, [('state', 'not in', states)])
+        order_obj.create_payments(cr, uid, order_ids, context=context)
+            
     def import_record(self, cr, uid, backend_id, model_name, ext_id,
                       context=None):
         session = ConnectorSession(cr, uid, context=context)

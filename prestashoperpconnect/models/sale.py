@@ -27,10 +27,15 @@ from prestapyt import PrestaShopWebServiceDict
 from ..backend import prestashop
 from openerp.addons.connector.event import on_record_write
 from openerp.addons.connector.queue.job import job
+from openerp.addons.connector.connector import ConnectorUnit
+from openerp.addons.connector.session import ConnectorSession
+
 from openerp.addons.connector.unit.synchronizer import (ExportSynchronizer)
 from openerp.addons.connector_ecommerce.unit.sale_order_onchange import (
     SaleOrderOnChange)
 from ..connector import get_environment
+from ..unit.backend_adapter import GenericAdapter
+from ..unit.import_synchronizer import SaleImportRule
 from ..unit.backend_adapter import GenericAdapter
 
 #from openerp.osv import fields, orm
@@ -230,7 +235,32 @@ class prestashop_sale_order(models.Model):
             readonly=True
         )
     
-    
+    @api.model
+    def create_payments(self, ps_orders):
+        _logger.debug("CREATE PAYMENTS")
+        _logger.debug(ps_orders)
+        
+        for order in self.browse(ps_orders ):
+            _logger.debug("CHECK for order %s with id %s" % (order.name, order.openerp_id.id))     
+            if order.openerp_id.id != 88:
+                continue
+                                           
+            session = ConnectorSession(self.env.cr, self.env.uid,
+                                   context=self.env.context)
+            backend_id = order.backend_id
+            env = get_environment(session, 'prestashop.sale.order', backend_id.id)
+            _logger.debug(env)
+            
+            adapter = env.get_connector_unit(SaleOrderAdapter)
+            ps_order = adapter.read(order.prestashop_id)
+            #Force the rules check
+            rules = env.get_connector_unit(SaleImportRule)
+            rules.check(ps_order)
+            
+            if rules._get_paid_amount(ps_order) and \
+                    rules._get_paid_amount(ps_order) >= 0.0 :
+                amount = float(rules._get_paid_amount(ps_order))
+                order.openerp_id.automatic_payment(amount)
             
 class sale_order_line(models.Model):
     _inherit = 'sale.order.line'
@@ -362,7 +392,7 @@ class SaleOrderAdapter(GenericAdapter):
                 '%s/api' % shop.default_url, self.prestashop.webservice_key
             )
             result += api.search(self._prestashop_model, filters)
-        return result
+        return result    
 
 @prestashop
 class OrderCarriers(GenericAdapter):
