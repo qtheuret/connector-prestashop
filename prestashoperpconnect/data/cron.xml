@@ -129,7 +129,7 @@
             <field name="doall" eval="False"/>
             <field name="model" eval="'prestashop.backend'"/>
             <field name="function" eval="'_scheduler_create_payments'"/>
-            <field name="args" eval="'(['draft', 'done'],)'"/>
+            <field name="args" >(['draft', 'done'],)</field>
         </record>
         
     </data>
