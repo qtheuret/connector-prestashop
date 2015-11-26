@@ -545,9 +545,8 @@ class ProductInventoryAdapter(GenericAdapter):
 # but an export of their inventory
 INVENTORY_FIELDS = ('quantity',)
 
-
-@on_record_write(model_names=[
 #    'prestashop.product.template',
+@on_record_write(model_names=[
     'prestashop.product.combination'
 ])
 def prestashop_product_stock_updated(session, model_name, record_id,
