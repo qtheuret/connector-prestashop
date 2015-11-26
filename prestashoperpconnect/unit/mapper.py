@@ -604,11 +604,18 @@ class SaleOrderMapper(PrestashopImportMapper):
 
     @mapping
     def pricelist_id(self, record):
+        partner_id = self.get_openerp_id(
+            'prestashop.res.partner',
+            record['id_customer'])
+        partner_pricelist_id = self.env['res.partner'].browse(partner_id).property_product_pricelist
+        if partner_pricelist_id  :
+            return {'pricelist_id': partner_pricelist_id.id}
+        
         pricelist_id = self.session.search(
             'product.pricelist',
             [('currency_id', '=',
                 self.backend_record.company_id.currency_id.id),
-                ('type', '=', 'sale')])
+                ('type', '=', 'sale')], order="id")        
         if pricelist_id:
             return {'pricelist_id': pricelist_id[0]}
         return {}
