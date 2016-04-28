@@ -464,7 +464,7 @@ class ProductCombinationMapper(PrestashopImportMapper):
         ])
 #        return len(template_ids) > 0
         return template_ids and not combination_binder.to_backend(template_ids,
-                                                                  unwrap=True)
+                                                                  unwrap=True, wrap=True)
 
     @mapping
     def default_code(self, record):        
