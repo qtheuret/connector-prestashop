@@ -25,7 +25,7 @@
 #
 ##############################################################################
 
-from . import connector_model
+#from . import connector_model
 from . import prestashop_model
 from . import account
 from . import connector

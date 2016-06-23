@@ -28,12 +28,12 @@ from .backend import prestashop
 from openerp import SUPERUSER_ID
 from openerp.addons.connector.connector import Binder
 from openerp.addons.connector.connector import ConnectorEnvironment
-from openerp.addons.connector.deprecate import log_deprecate
+#from openerp.addons.connector.deprecate import log_deprecate
 from openerp.addons.connector.event import on_record_write
 from openerp.addons.connector.queue.job import job, related_action
 from openerp.addons.connector.unit.mapper import mapping
-from openerp.addons.connector.unit.synchronizer import ExportSynchronizer
-from openerp.addons.product.product import check_ean
+from openerp.addons.connector.unit.synchronizer import Exporter as ExportSynchronizer
+from openerp.addons.barcodes.barcodes import barcode_nomenclature
 from .connector import get_environment
 from .unit.backend_adapter import GenericAdapter  # , PrestaShopCRUDAdapter
 from .unit.import_synchronizer import DelayedBatchImport
@@ -260,7 +260,9 @@ class TemplateMapper(PrestashopImportMapper):
             return {}
         if record['ean13'] in ['', '0']:
             return {'ean13': False}
-        if check_ean(record['ean13']):
+        
+        barcode_nomenclature = self.env['barcode.nomenclature'].search([])[:1]
+        if barcode_nomenclature.check_ean(record['ean13']):
             return {'ean13': record['ean13']}
         return {}
 
@@ -395,7 +397,7 @@ class ProductInventoryImport(PrestashopImportSynchronizer):
 
         Deprecated, use ``binder_for`` now.
         """
-        log_deprecate('renamed to binder_for()')
+#        log_deprecate('renamed to binder_for()')
         return self.binder_for(model=model)
 
     def binder_for(self, model=None):

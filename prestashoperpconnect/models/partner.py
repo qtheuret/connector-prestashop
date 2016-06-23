@@ -36,7 +36,7 @@ from openerp.addons.connector.connector import ConnectorUnit
 from openerp.addons.connector.exception import FailedJobError
 from openerp.addons.connector.exception import NothingToDoJob
 from openerp.addons.connector.queue.job import job
-from openerp.addons.connector.unit.synchronizer import ImportSynchronizer
+from openerp.addons.connector.unit.synchronizer import Importer as ImportSynchronizer
 from openerp.addons.connector.unit.backend_adapter import BackendAdapter
 
 from openerp.addons.connector.unit.mapper import (mapping,

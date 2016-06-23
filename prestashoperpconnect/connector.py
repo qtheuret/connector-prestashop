@@ -22,7 +22,7 @@
 #
 ##############################################################################
 
-from openerp.addons.connector.connector import Environment
+from openerp.addons.connector.connector import ConnectorEnvironment as Environment
 from openerp.addons.connector.checkpoint import checkpoint
 
 

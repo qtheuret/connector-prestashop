@@ -26,8 +26,8 @@
 import logging
 from openerp.osv import orm
 from openerp.addons.connector.queue.job import job
-from openerp.addons.connector.unit.synchronizer import ExportSynchronizer
-from openerp.addons.connector_ecommerce.event import on_tracking_number_added
+from openerp.addons.connector.unit.synchronizer import Exporter as ExportSynchronizer
+from openerp.addons.connector_ecommerce.models.event import on_tracking_number_added
 from openerp.tools.translate import _
 from .backend import prestashop
 from .connector import get_environment

@@ -24,7 +24,7 @@
 
 from openerp.tools.translate import _
 from openerp.addons.connector.queue.job import job
-from openerp.addons.connector.unit.synchronizer import DeleteSynchronizer
+from openerp.addons.connector.unit.synchronizer import Deleter as DeleteSynchronizer
 from ..connector import get_environment
 
 

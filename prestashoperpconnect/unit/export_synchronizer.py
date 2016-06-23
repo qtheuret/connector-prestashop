@@ -26,7 +26,7 @@
 import logging
 from openerp.tools.translate import _
 from openerp.addons.connector.queue.job import job
-from openerp.addons.connector.unit.synchronizer import ExportSynchronizer
+from openerp.addons.connector.unit.synchronizer import Exporter as ExportSynchronizer
 from openerp.addons.prestashoperpconnect.unit.mapper \
     import TranslationPrestashopExportMapper
 from ..connector import get_environment

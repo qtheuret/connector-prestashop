@@ -29,7 +29,7 @@
     "name": "Prestashop-OpenERP connector New Generation",
     # 0.1 codenamed "In tartiflette we trust"
     # 0.2 codenamed "In La Sambuy we ski"
-    "version": "0.3",
+    "version": "9.0.1.0",
     "license": "AGPL-3",
     "depends": [
         "product",

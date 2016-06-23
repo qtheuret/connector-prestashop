@@ -30,7 +30,7 @@ from openerp.addons.connector.queue.job import job
 from openerp.addons.connector.connector import ConnectorUnit
 from openerp.addons.connector.session import ConnectorSession
 
-from openerp.addons.connector.unit.synchronizer import (ExportSynchronizer)
+from openerp.addons.connector.unit.synchronizer import Exporter as ExportSynchronizer
 from openerp.addons.connector_ecommerce.unit.sale_order_onchange import (
     SaleOrderOnChange)
 from ..connector import get_environment

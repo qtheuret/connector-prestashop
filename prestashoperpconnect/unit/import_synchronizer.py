@@ -34,7 +34,7 @@ from openerp.addons.connector.connector import ConnectorUnit
 from openerp.addons.connector.exception import FailedJobError
 from openerp.addons.connector.exception import NothingToDoJob
 from openerp.addons.connector.queue.job import job
-from openerp.addons.connector.unit.synchronizer import (ImportSynchronizer, Importer)
+from openerp.addons.connector.unit.synchronizer import Importer as ImportSynchronizer
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from ..backend import prestashop
 from ..connector import add_checkpoint

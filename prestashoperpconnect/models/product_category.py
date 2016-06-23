@@ -41,7 +41,7 @@ from openerp.addons.connector.connector import ConnectorUnit
 from openerp.addons.connector.exception import FailedJobError
 from openerp.addons.connector.exception import NothingToDoJob
 from openerp.addons.connector.queue.job import job
-from openerp.addons.connector.unit.synchronizer import ImportSynchronizer
+from openerp.addons.connector.unit.synchronizer import Importer as ImportSynchronizer
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from ..backend import prestashop
 from ..connector import add_checkpoint
@@ -50,12 +50,12 @@ from ..unit.exception import OrderImportRuleRetry
 
 from openerp.addons.connector.connector import Binder
 from openerp.addons.connector.connector import ConnectorEnvironment
-from openerp.addons.connector.deprecate import log_deprecate
+#from openerp.addons.connector.deprecate import log_deprecate
 from openerp.addons.connector.event import on_record_write
 from openerp.addons.connector.queue.job import job
 from openerp.addons.connector.unit.mapper import mapping
-from openerp.addons.connector.unit.synchronizer import ExportSynchronizer
-from openerp.addons.product.product import check_ean
+from openerp.addons.connector.unit.synchronizer import Exporter as ExportSynchronizer
+from openerp.addons.barcodes.barcodes import barcode_nomenclature
 from ..connector import get_environment
 from ..unit.import_synchronizer import DelayedBatchImport
 from ..unit.import_synchronizer import PrestashopImportSynchronizer

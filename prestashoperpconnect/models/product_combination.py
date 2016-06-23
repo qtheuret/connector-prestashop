@@ -49,7 +49,7 @@ from ..backend import prestashop
 from openerp import SUPERUSER_ID
 from openerp.addons.connector.unit.backend_adapter import BackendAdapter
 from openerp.addons.connector.unit.mapper import mapping
-from openerp.addons.product.product import check_ean
+from openerp.addons.barcodes.barcodes import barcode_nomenclature
 from openerp.osv.orm import browse_record_list
 from ..product import ProductInventoryExport
 from ..unit.backend_adapter import GenericAdapter
@@ -491,7 +491,9 @@ class ProductCombinationMapper(PrestashopImportMapper):
                 GenericAdapter, 'prestashop.product.template')
             template = backend_adapter.read(record['id_product'])
             return template['ean13'] and {}
-        if check_ean(record['ean13']):   
+        
+        barcode_nomenclature = self.env['barcode.nomenclature'].search([])[:1]
+        if barcode_nomenclature.check_ean(record['ean13']):
             return {'ean13': record['ean13']}                
         return {}
 
