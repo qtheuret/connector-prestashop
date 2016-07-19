@@ -145,7 +145,7 @@ class PrestashopImportSynchronizer(ImportSynchronizer):
 
     def _check_dependency(self, ext_id, model_name):
         ext_id = int(ext_id)
-        binder = self.get_binder_for_model(model_name)
+        binder = self.binder_for(model_name)
         if not binder.to_openerp(ext_id):
             import_record(
                 self.session,
@@ -244,7 +244,7 @@ class AddCheckpoint(ConnectorUnit):
 
 @prestashop
 class PaymentMethodsImportSynchronizer(BatchImportSynchronizer):
-    _model_name = 'payment.method'
+    _model_name = 'account.payment.mode'
 
     def run(self, filters=None, **kwargs):
         if filters is None:
@@ -255,13 +255,13 @@ class PaymentMethodsImportSynchronizer(BatchImportSynchronizer):
         )
 
     def _import_record(self, record):
-        ids = self.session.search('payment.method', [
+        ids = self.session.search('account.payment.mode', [
             ('name', '=', record['payment']),
             ('company_id', '=', self.backend_record.company_id.id),
         ])
         if ids:
             return
-        self.session.create('payment.method', {
+        self.session.create('account.payment.mode', {
             'name': record['payment'],
             'company_id': self.backend_record.company_id.id,
         })
@@ -357,7 +357,7 @@ class MailMessageRecordImport(PrestashopImportSynchronizer):
 
     def _has_to_skip(self):
         record = self.prestashop_record
-        binder = self.get_binder_for_model('prestashop.sale.order')
+        binder = self.binder_for('prestashop.sale.order')
         ps_so_id = binder.to_openerp(record['id_order'])
         return record['id_order'] == '0' or not ps_so_id
 
@@ -376,7 +376,7 @@ class SupplierRecordImport(PrestashopImportSynchronizer):
             return super(SupplierRecordImport, self)._create(record)
 
     def _after_import(self, erp_id):
-        binder = self.get_binder_for_model(self._model_name)
+        binder = self.binder_for(self._model_name)
         ps_id = binder.to_backend(erp_id)
         import_batch(
             self.session,
@@ -461,7 +461,7 @@ class SaleImportRule(ConnectorUnit):
         """
         session = self.session
         payment_method = record['payment']
-        method_ids = session.search('payment.method',
+        method_ids = session.search('account.payment.mode',
                                     [('name', '=', payment_method)])
         if not method_ids:
             raise FailedJobError(
@@ -473,7 +473,7 @@ class SaleImportRule(ConnectorUnit):
                 "-Eventually  link the Payment Method to an existing Workflow "
                 "Process or create a new one." % (payment_method,
                                                   payment_method))
-        method = session.browse('payment.method', method_ids[0])
+        method = session.browse('account.payment.mode', method_ids[0])
 
         self._rule_global(record, method)
         self._rules[method.import_rule](self, record, method)
@@ -579,7 +579,7 @@ class TranslatableRecordImport(PrestashopImportSynchronizer):
     _default_language = 'en_US'
 
     def _get_oerp_language(self, prestashop_id):
-        language_binder = self.get_binder_for_model('prestashop.res.lang')
+        language_binder = self.binder_for('prestashop.res.lang')
         erp_language_id = language_binder.to_openerp(prestashop_id)
         if erp_language_id is None:
             return None
@@ -920,7 +920,7 @@ class TranslatableRecordImport(PrestashopImportSynchronizer):
 #            PrestaShopCRUDAdapter,
 #            'prestashop.product.image'
 #        )
-#        binder = self.get_binder_for_model()
+#        binder = self.binder_for()
 #        template_id = binder.to_openerp(record['id'])
 #        _logger.debug("Template default image")
 #        _logger.debug(template_id)
