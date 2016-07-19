@@ -348,7 +348,7 @@ class prestashop_sale_order_line_discount(models.Model):
         )
 
 class prestashop_payment_method(models.Model):
-    _inherit = 'payment.method'
+    _inherit = 'account.payment.mode'
 
 
     allow_zero=fields.Boolean("Allow to import Zero values")
@@ -403,7 +403,7 @@ class OrderCarriers(GenericAdapter):
 
 @prestashop
 class PaymentMethodAdapter(GenericAdapter):
-    _model_name = 'payment.method'
+    _model_name = 'account.payment.mode'
     _prestashop_model = 'orders'
     _export_node_name = 'order'
     

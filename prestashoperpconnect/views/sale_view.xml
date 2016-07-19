@@ -110,7 +110,8 @@
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="priority">100</field>
             <field name="arch" type="xml">
-                <page string="Other Information" position="inside">
+                <xpath expr='//notebook//page[last()]' position='inside'>
+                <!--<page string="Other Information" position="inside">-->
                     <separator string="Prestashop Information"/>
                     <field name="prestashop_bind_ids" readonly="True">
                         <tree string="Prestashop Binding">
@@ -118,7 +119,8 @@
                             <field name="total_amount_tax"/>
                         </tree>
                     </field>
-                </page>
+                <!--</page>-->
+                </xpath>
             </field>
         </record>
 
@@ -189,8 +191,8 @@
         </record>
 
         <record id="view_presta_payment_method" model="ir.ui.view">
-            <field name="model">payment.method</field>
-            <field name="inherit_id" ref="sale_payment_method.payment_method_view_form"/>
+            <field name="model">account.payment.mode</field>
+            <field name="inherit_id" ref="account_payment_mode.account_payment_mode_form"/>
             <field name="priority">200</field>
             <field name="arch" type="xml">
                 <field name="import_rule" position="after">
