@@ -33,11 +33,11 @@
     "license": "AGPL-3",
     "depends": [
         "product",
-        "product_m2mcategories",
+        "product_categ_attributes",
         "connector_ecommerce",
         "product_multi_image",
         "purchase",
-        "product_dimension"
+        "product_dimension",
     ],
     "external_dependencies": {
         'python': ["unidecode"],
