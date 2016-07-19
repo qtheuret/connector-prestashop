@@ -241,6 +241,13 @@ class PConfigurationAdapter(GenericAdapter):
 class AccountTaxAdapter(GenericAdapter):
     _model_name = 'prestashop.account.tax'
     _prestashop_model = 'taxes'
+    
+    def search(self, filters=None):
+        if filters is None:
+            filters = {}
+        filters['filter[deleted]'] = 0
+
+        return super(AccountTaxAdapter, self).search(filters)
 
 
 @prestashop
