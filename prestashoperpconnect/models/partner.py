@@ -286,7 +286,7 @@ class ResPartnerRecordImport(PrestashopImportSynchronizer):
                                 
                                 
     def _after_import(self, erp_id):
-        binder = self.get_binder_for_model(self._model_name)
+        binder = self.binder_for(self._model_name)
         ps_id = binder.to_backend(erp_id.id)
         import_batch.delay(
             self.session,
@@ -300,7 +300,7 @@ class ResPartnerRecordImport(PrestashopImportSynchronizer):
     #TODO : find the problem with synchronous call orf category    
     def _set_groups_on_customer(self):        
         partner_categories = []
-        binder = self.get_binder_for_model(
+        binder = self.binder_for(
                 'prestashop.res.partner.category'
             )
         record = self.prestashop_record
@@ -372,7 +372,7 @@ class PartnerImportMapper(PrestashopImportMapper):
 #    @mapping
 #    def groups(self, record):
 #        partner_categories = []
-#        binder = self.get_binder_for_model(
+#        binder = self.binder_for(
 #                'prestashop.res.partner.category'
 #            )
 #        
@@ -400,7 +400,7 @@ class PartnerImportMapper(PrestashopImportMapper):
 
     @mapping
     def lang(self, record):
-        binder = self.get_binder_for_model('prestashop.res.lang')
+        binder = self.binder_for('prestashop.res.lang')
         erp_lang_id = None
         if record.get('id_lang'):
             erp_lang_id = binder.to_openerp(record['id_lang'])
@@ -437,7 +437,7 @@ class PartnerImportMapper(PrestashopImportMapper):
 
     @mapping
     def shop_id(self, record):
-        shop_binder = self.get_binder_for_model('prestashop.shop')
+        shop_binder = self.binder_for('prestashop.shop')
         shop_id = shop_binder.to_openerp(
             record['id_shop'])
         if not shop_id:
@@ -446,7 +446,7 @@ class PartnerImportMapper(PrestashopImportMapper):
 
     @mapping
     def shop_group_id(self, record):
-        shop_group_binder = self.get_binder_for_model('prestashop.shop.group')
+        shop_group_binder = self.binder_for('prestashop.shop.group')
         shop_group_id = shop_group_binder.to_openerp(
             record['id_shop_group'])
         if not shop_group_id:
@@ -455,7 +455,7 @@ class PartnerImportMapper(PrestashopImportMapper):
 
     @mapping
     def default_category_id(self, record):
-        category_binder = self.get_binder_for_model(
+        category_binder = self.binder_for(
             'prestashop.res.partner.category')
         default_category_id = category_binder.to_openerp(
             record['id_default_group'])

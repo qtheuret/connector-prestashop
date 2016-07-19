@@ -312,7 +312,7 @@ class TemplateMapper(PrestashopImportMapper):
 
     @mapping
     def default_shop_id(self, record):
-        shop_group_binder = self.get_binder_for_model('prestashop.shop.group')
+        shop_group_binder = self.binder_for('prestashop.shop.group')
         default_shop_id = shop_group_binder.to_openerp(
             record['id_shop_default'])
         if not default_shop_id:
@@ -332,7 +332,7 @@ class ProductInventoryExport(ExportSynchronizer):
     _model_name = ['prestashop.product.template']
 
     def get_filter(self, template):
-        binder = self.get_binder_for_model()
+        binder = self.binder_for()
         prestashop_id = binder.to_backend(template.id)
         return {
             'filter[id_product]': prestashop_id,
@@ -382,7 +382,7 @@ class ProductInventoryImport(PrestashopImportSynchronizer):
 
     def _check_dependency(self, ext_id, model_name):
         ext_id = int(ext_id)
-        binder = self.get_binder_for_model(model_name)
+        binder = self.binder_for(model_name)
         if not binder.to_openerp(ext_id):
             import_record(
                 self.session,
@@ -391,7 +391,7 @@ class ProductInventoryImport(PrestashopImportSynchronizer):
                 ext_id
             )
 
-    def get_binder_for_model(self, model=None):
+    def binder_for(self, model=None):
         """ Returns an new instance of the correct ``Binder`` for
         a model
 
@@ -450,9 +450,9 @@ class ProductInventoryImport(PrestashopImportSynchronizer):
 
     def _get_template(self, record):
         if record['id_product_attribute'] == '0':
-            binder = self.get_binder_for_model('prestashop.product.template')
+            binder = self.binder_for('prestashop.product.template')
             return binder.to_openerp(record['id_product'], unwrap=True)
-        binder = self.get_binder_for_model('prestashop.product.combination')
+        binder = self.binder_for('prestashop.product.combination')
         return binder.to_openerp(record['id_product_attribute'], unwrap=True)
 
     def run(self, record):

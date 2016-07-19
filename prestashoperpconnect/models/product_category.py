@@ -219,7 +219,7 @@ class ProductCategoryBatchImporter(DelayedBatchImport):
 #            unsynchronized imports """
 #        record = self.prestashop_record
 #        prestashop_id = int(prestashop_id)
-#        binder = self.get_binder_for_model(model_name)
+#        binder = self.binder_for(model_name)
 #        priority = 0
 #        if int(record['level_depth']) > 0 :
 #            priority = int(record['level_depth']) -1
@@ -314,7 +314,7 @@ class ProductCategoryMapper(PrestashopImportMapper):
 
     @mapping
     def default_shop_id(self, record):
-        shop_group_binder = self.get_binder_for_model('prestashop.shop.group')
+        shop_group_binder = self.binder_for('prestashop.shop.group')
         default_shop_id = shop_group_binder.to_openerp(
             record['id_shop_default'])
         if not default_shop_id:

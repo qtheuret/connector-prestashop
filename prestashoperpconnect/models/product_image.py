@@ -142,7 +142,7 @@ class ProductImageAdapter(PrestaShopCRUDAdapter):
     def create(self, attributes=None):
         api = PrestaShopWebServiceImage(self.prestashop.api_url,
                                         self.prestashop.webservice_key)
-        template_binder = self.get_binder_for_model(
+        template_binder = self.binder_for(
             'prestashop.product.template')
         template = template_binder.to_backend(attributes['id_product'],
                                               unwrap=True)

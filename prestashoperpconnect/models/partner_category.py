@@ -122,7 +122,7 @@ class PartnerCategoryImportMapper(PrestashopImportMapper):
         _logger.debug("PARTNER CATEGORY MAPPING")
         name = None
         if 'language' in record['name']:
-            language_binder = self.get_binder_for_model('prestashop.res.lang')
+            language_binder = self.binder_for('prestashop.res.lang')
             languages = record['name']['language']
             if not isinstance(languages, list):
                 languages = [languages]

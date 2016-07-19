@@ -315,7 +315,7 @@ class ProductCombinationMapper(PrestashopImportMapper):
         if not isinstance(images, list):
             images = [images]
         if images[0].get('id'):
-            binder = self.get_binder_for_model('prestashop.product.image')
+            binder = self.binder_for('prestashop.product.image')
             image_id = binder.to_openerp(images[0].get('id'))
             variant_image = self.session.browse('prestashop.product.image',
                                                 image_id.id)
@@ -412,7 +412,7 @@ class ProductCombinationMapper(PrestashopImportMapper):
         return self._main_template
 
     def get_main_template_id(self, record):
-        template_binder = self.get_binder_for_model(
+        template_binder = self.binder_for(
             'prestashop.product.template')
         return template_binder.to_openerp(record['id_product'])
 
@@ -423,7 +423,7 @@ class ProductCombinationMapper(PrestashopImportMapper):
             option_values = [option_values]
 
         for option_value in option_values:
-            option_value_binder = self.get_binder_for_model(
+            option_value_binder = self.binder_for(
                 'prestashop.product.combination.option.value')
             option_value_openerp_id = option_value_binder.to_openerp(
                 option_value['id'])
@@ -457,7 +457,7 @@ class ProductCombinationMapper(PrestashopImportMapper):
 
     def _template_code_exists(self, code):
         model = self.session.pool.get('product.product')
-        combination_binder = self.get_binder_for_model('prestashop.product.combination')
+        combination_binder = self.binder_for('prestashop.product.combination')
         template_ids = model.search(self.session.cr, SUPERUSER_ID, [
             ('default_code', '=', code),
             ('company_id', '=', self.backend_record.company_id.id),
@@ -661,7 +661,7 @@ class ProductCombinationOptionRecordImport(PrestashopImportSynchronizer):
         
         _logger.debug("OPTION IMPORT")
         #Check wether the option is already in db
-        binder = self.get_binder_for_model(
+        binder = self.binder_for(
             'prestashop.product.combination.option')
         attribute_id = binder.to_openerp(ext_id, unwrap=True)
         
@@ -703,7 +703,7 @@ class ProductCombinationOptionMapper(PrestashopImportMapper):
     def name(self, record):
         name = None
         if 'language' in record['name']:
-            language_binder = self.get_binder_for_model('prestashop.res.lang')
+            language_binder = self.binder_for('prestashop.res.lang')
             languages = record['name']['language']
             if not isinstance(languages, list):
                 languages = [languages]
@@ -766,7 +766,7 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
     def name(self, record):
         #TODO : improve the search to prevent duplicates
         name = None
-        binder = self.get_binder_for_model(
+        binder = self.binder_for(
             'prestashop.product.combination.option')
         attribute_id = binder.to_openerp(record['id_attribute_group'],
                                          unwrap=True)
@@ -791,7 +791,7 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
 
     @mapping
     def attribute_id(self, record):
-        binder = self.get_binder_for_model(
+        binder = self.binder_for(
             'prestashop.product.combination.option')
         attribute_id = binder.to_openerp(record['id_attribute_group'],
                                          unwrap=True)

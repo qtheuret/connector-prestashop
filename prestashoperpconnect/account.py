@@ -99,7 +99,7 @@ class RefundMapper(PrestashopImportMapper):
         return {'journal_id': journal_ids[0]}
 
     def _get_order(self, record):
-        binder = self.get_binder_for_model('prestashop.sale.order')
+        binder = self.binder_for('prestashop.sale.order')
         sale_order_id = binder.to_openerp(record['id_order'])
         return self.session.browse('prestashop.sale.order', sale_order_id.id)
 
@@ -174,7 +174,7 @@ class RefundMapper(PrestashopImportMapper):
         }
 
     def _get_shipping_order_line(self, record):
-        binder = self.get_binder_for_model('prestashop.sale.order')
+        binder = self.binder_for('prestashop.sale.order')
         sale_order_id = binder.to_openerp(record['id_order'])
         sale_order = self.session.browse(
             'prestashop.sale.order', sale_order_id)
@@ -262,13 +262,13 @@ class RefundMapper(PrestashopImportMapper):
 
     @mapping
     def partner_id(self, record):
-        binder = self.get_binder_for_model('prestashop.res.partner')
+        binder = self.binder_for('prestashop.res.partner')
         partner_id = binder.to_openerp(record['id_customer'], unwrap=True)
         return {'partner_id': partner_id.id}
 
     @mapping
     def account_id(self, record):
-        binder = self.get_binder_for_model('prestashop.sale.order')
+        binder = self.binder_for('prestashop.sale.order')
         sale_order_id = binder.to_openerp(record['id_order'], unwrap=True)
         sale_order = self.session.browse(
             'prestashop.sale.order', sale_order_id)
@@ -280,7 +280,7 @@ class RefundMapper(PrestashopImportMapper):
             return {'account_id': sale_order.payment_method_id.account_id.id}
         context = self.session.context
         context['company_id'] = self.backend_record.company_id.id
-        binder = self.get_binder_for_model('prestashop.res.partner')
+        binder = self.binder_for('prestashop.res.partner')
         partner_id = binder.to_openerp(record['id_customer'])
         partner = self.session.pool['prestashop.res.partner'].browse(
             self.session.cr,

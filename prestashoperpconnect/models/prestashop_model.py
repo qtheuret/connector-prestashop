@@ -62,7 +62,9 @@ class prestashop_backend(orm.Model):
 
         Can be inherited to add custom versions.
         """
-        return [('1.5', '1.5')]
+        return [('1.5', '1.5'),
+#                ('1.6', '1.6'),
+                ]
 
     _columns = {
         'version': fields.selection(
@@ -250,7 +252,7 @@ class prestashop_backend(orm.Model):
             ids = [ids]
         session = ConnectorSession(cr, uid, context=context)
         for backend_record in self.browse(cr, uid, ids, context=context):
-            import_batch.delay(session, 'payment.method', backend_record.id)
+            import_batch.delay(session, 'account.payment.mode', backend_record.id)
         return True
 
     def import_refunds(self, cr, uid, ids, context=None):

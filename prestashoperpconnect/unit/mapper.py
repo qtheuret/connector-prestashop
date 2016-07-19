@@ -60,7 +60,7 @@ class PrestashopImportMapper(ImportMapper):
         This permits to find the openerp id through the external application
         model in Erp.
         '''
-        binder = self.get_binder_for_model(model)
+        binder = self.binder_for(model)
         erp_ps_id = binder.to_openerp(prestashop_id)
         if erp_ps_id is None:
             return None
@@ -114,7 +114,7 @@ class ShopImportMapper(PrestashopImportMapper):
 
     @mapping
     def shop_group_id(self, record):
-        shop_group_binder = self.get_binder_for_model('prestashop.shop.group')
+        shop_group_binder = self.binder_for('prestashop.shop.group')
         shop_group_id = shop_group_binder.to_openerp(
             record['id_shop_group'])
         if not shop_group_id:
@@ -145,7 +145,7 @@ class ShopImportMapper(PrestashopImportMapper):
 #        _logger.debug("PARTNER CATEGORY MAPPING")
 #        name = None
 #        if 'language' in record['name']:
-#            language_binder = self.get_binder_for_model('prestashop.res.lang')
+#            language_binder = self.binder_for('prestashop.res.lang')
 #            languages = record['name']['language']
 #            if not isinstance(languages, list):
 #                languages = [languages]
@@ -222,7 +222,7 @@ class ShopImportMapper(PrestashopImportMapper):
 #            groups = [groups]
 #        partner_categories = []
 #        for group in groups:
-#            binder = self.get_binder_for_model(
+#            binder = self.binder_for(
 #                'prestashop.res.partner.category'
 #            )
 #            category_id = binder.to_openerp(group['id'])
@@ -236,7 +236,7 @@ class ShopImportMapper(PrestashopImportMapper):
 #
 #    @mapping
 #    def lang(self, record):
-#        binder = self.get_binder_for_model('prestashop.res.lang')
+#        binder = self.binder_for('prestashop.res.lang')
 #        erp_lang_id = None
 #        if record.get('id_lang'):
 #            erp_lang_id = binder.to_openerp(record['id_lang'])
@@ -273,7 +273,7 @@ class ShopImportMapper(PrestashopImportMapper):
 #
 #    @mapping
 #    def shop_id(self, record):
-#        shop_binder = self.get_binder_for_model('prestashop.shop')
+#        shop_binder = self.binder_for('prestashop.shop')
 #        shop_id = shop_binder.to_openerp(
 #            record['id_shop'])
 #        if not shop_id:
@@ -282,7 +282,7 @@ class ShopImportMapper(PrestashopImportMapper):
 #
 #    @mapping
 #    def shop_group_id(self, record):
-#        shop_group_binder = self.get_binder_for_model('prestashop.shop.group')
+#        shop_group_binder = self.binder_for('prestashop.shop.group')
 #        shop_group_id = shop_group_binder.to_openerp(
 #            record['id_shop_group'])
 #        if not shop_group_id:
@@ -291,7 +291,7 @@ class ShopImportMapper(PrestashopImportMapper):
 #
 #    @mapping
 #    def default_category_id(self, record):
-#        category_binder = self.get_binder_for_model(
+#        category_binder = self.binder_for(
 #            'prestashop.res.partner.category')
 #        default_category_id = category_binder.to_openerp(
 #            record['id_default_group'])
@@ -412,7 +412,7 @@ class AddressImportMapper(PrestashopImportMapper):
     @mapping
     def country(self, record):
         if record.get('id_country'):
-            binder = self.get_binder_for_model('prestashop.res.country')
+            binder = self.binder_for('prestashop.res.country')
             erp_country_id = binder.to_openerp(
                 record['id_country'], unwrap=True)
             return {'country_id': erp_country_id.id}
@@ -424,7 +424,7 @@ class AddressImportMapper(PrestashopImportMapper):
 
     @mapping
     def prestashop_partner_id(self, record):
-        partner_binder = self.get_binder_for_model('prestashop.res.partner')
+        partner_binder = self.binder_for('prestashop.res.partner')
         if record['id_customer']:
             prestashop_partner_id = partner_binder.to_openerp(
                 record['id_customer'])
@@ -627,7 +627,7 @@ class SaleOrderMapper(PrestashopImportMapper):
     @mapping
     def payment(self, record):
         method_ids = self.session.search(
-            'payment.method',
+            'account.payment.mode',
             [
                 ('name', '=', record['payment']),
                 ('company_id', '=', self.backend_record.company_id.id),
@@ -682,7 +682,7 @@ class SaleOrderMapper(PrestashopImportMapper):
     def get_workflow_datas(self, record):
         payment = self.payment(record)
         
-        payment = self.env['payment.method'].browse(payment['payment_method_id'])
+        payment = self.env['account.payment.mode'].browse(payment['payment_method_id'])
         _logger.debug("display payment_method_id")
         _logger.debug(payment)
         
@@ -745,7 +745,7 @@ class SaleOrderLineMapper(PrestashopImportMapper):
 #        if 'product_attribute_id' in record and \
 #                record.get('product_attribute_id') != '0':
         if int(record.get('product_attribute_id', 0)):
-            combination_binder = self.get_binder_for_model(
+            combination_binder = self.binder_for(
                 'prestashop.product.combination')
             product_id = combination_binder.to_openerp(
                 record['product_attribute_id'],
@@ -769,7 +769,7 @@ class SaleOrderLineMapper(PrestashopImportMapper):
         return {'product_id': product_id}
 
     def _find_tax(self, ps_tax_id):
-        binder = self.get_binder_for_model('prestashop.account.tax')
+        binder = self.binder_for('prestashop.account.tax')
         openerp_id = binder.to_openerp(ps_tax_id, unwrap=True)
         tax = self.session.read(
             'account.tax', openerp_id.id,
@@ -910,7 +910,7 @@ class TaxMapper(PrestashopImportMapper):
     def name(self, record):
         name = None
         if 'language' in record['name']:
-            language_binder = self.get_binder_for_model('prestashop.res.lang')
+            language_binder = self.binder_for('prestashop.res.lang')
             languages = record['name']['language']
             if not isinstance(languages, list):
                 languages = [languages]
@@ -947,7 +947,7 @@ class ConfigurationMapper(PrestashopImportMapper):
     @mapping
     def backend_id(self, record):
         currency_ids = self.session.search('prestashop.res.currency', [])
-        currency_binder = self.get_binder_for_model(
+        currency_binder = self.binder_for(
             'prestashop.res.currency')        
         for c_id in currency_ids:
             currency_id = currency_binder.to_openerp(
@@ -987,7 +987,7 @@ class ConfigurationMapper(PrestashopImportMapper):
                 {'taxes_included': included}
             )
         if record['name'] == 'PS_CURRENCY_DEFAULT':
-            currency_binder = self.get_binder_for_model(
+            currency_binder = self.binder_for(
                 'prestashop.res.currency')
             currency_id = currency_binder.to_openerp(
                 int(record['value']),
@@ -1010,7 +1010,7 @@ class TaxRuleMapper(PrestashopImportMapper):
 
     @mapping
     def tax_id(self, record):
-        tax_binder = self.get_binder_for_model('prestashop.account.tax')
+        tax_binder = self.binder_for('prestashop.account.tax')
         tax_id = tax_binder.to_openerp(
             record['id_tax'])
         if not tax_id:
@@ -1032,7 +1032,7 @@ class TaxRuleMapper(PrestashopImportMapper):
 
     @mapping
     def tax_group_id(self, record):
-        tax_group_binder = self.get_binder_for_model(
+        tax_group_binder = self.binder_for(
             'prestashop.account.tax.group')
         tax_group_id = tax_group_binder.to_openerp(
             record['id_tax_rules_group'])

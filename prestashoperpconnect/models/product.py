@@ -364,7 +364,7 @@ class TemplateRecordImport(TranslatableRecordImport):
             PrestaShopCRUDAdapter,
             'prestashop.product.image'
         )
-        binder = self.get_binder_for_model()
+        binder = self.binder_for()
         template_id = binder.to_openerp(record['id'])
         _logger.debug("Template default image")
         _logger.debug(template_id)
