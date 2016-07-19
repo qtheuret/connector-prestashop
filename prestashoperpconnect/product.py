@@ -342,7 +342,7 @@ class ProductInventoryExport(ExportSynchronizer):
     def run(self, binding_id, fields):
         """ Export the product inventory to Prestashop """
         template = self.session.browse(self.model._name, binding_id)
-        adapter = self.get_connector_unit_for_model(
+        adapter = self.unit_for(
             GenericAdapter, '_import_stock_available'
         )
         filter = self.get_filter(template)

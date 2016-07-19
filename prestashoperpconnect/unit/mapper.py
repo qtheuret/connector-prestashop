@@ -189,7 +189,7 @@ class ShopImportMapper(PrestashopImportMapper):
 #
 #    @mapping
 #    def pricelist(self, record):
-#        binder = self.get_connector_unit_for_model(
+#        binder = self.unit_for(
 #            Binder, 'prestashop.groups.pricelist')
 #        pricelist_id = binder.to_openerp(
 #            record['id_default_group'], unwrap=True)
@@ -328,7 +328,7 @@ class SupplierMapper(PrestashopImportMapper):
 
     @mapping
     def image(self, record):
-        supplier_image_adapter = self.get_connector_unit_for_model(
+        supplier_image_adapter = self.unit_for(
             PrestaShopCRUDAdapter, 'prestashop.supplier.image'
         )
         try:
@@ -475,7 +475,7 @@ class SaleOrderMapper(PrestashopImportMapper):
     def _get_discounts_lines(self, record):
         if record['total_discounts'] == '0.00':
             return []       
-        adapter = self.get_connector_unit_for_model(GenericAdapter,
+        adapter = self.unit_for(GenericAdapter,
                     'prestashop.sale.order.line.discount')
         discount_ids = adapter.search({'filter[id_order]': record['id']})
         _logger.debug(discount_ids)
@@ -509,7 +509,7 @@ class SaleOrderMapper(PrestashopImportMapper):
 
         children = []
         for child_record in child_records:
-            adapter = self.get_connector_unit_for_model(GenericAdapter,
+            adapter = self.unit_for(GenericAdapter,
                                                         model_name)
             detail_record = adapter.read(child_record['id'])
 
@@ -523,7 +523,7 @@ class SaleOrderMapper(PrestashopImportMapper):
     def _get_discounts_lines(self, record):
         if record['total_discounts'] == '0.00':
             return []
-        adapter = self.get_connector_unit_for_model(
+        adapter = self.unit_for(
             GenericAdapter, 'prestashop.sale.order.line.discount')
         discount_ids = adapter.search({'filter[id_order]': record['id']})
         discount_mappers = []
@@ -672,7 +672,7 @@ class SaleOrderMapper(PrestashopImportMapper):
                 order_line_ids,
                 sess.context
             )
-        onchange = self.get_connector_unit_for_model(SaleOrderOnChange)
+        onchange = self.unit_for(SaleOrderOnChange)
         order_line_ids = []
         if 'prestashop_order_line_ids' in result:
             order_line_ids = result['prestashop_order_line_ids']
@@ -919,12 +919,21 @@ class TaxMapper(PrestashopImportMapper):
                     lang['attrs']['id'])
                 if not erp_language_id:
                     continue
-                erp_lang = self.session.read(
-                    'prestashop.res.lang',
-                    erp_language_id.id,
-                    []
-                )
-                if erp_lang['code'] == 'en_US':
+                    
+                _logger.debug("LANGUAGE %s " % erp_language_id)
+                erp_lang = erp_language_id
+#                erp_lang = self.session.read(
+#                    'prestashop.res.lang',
+#                    erp_language_id.id,
+#                    []
+#                )
+#                erp_lang = self.env['prestashop.res.lang'].search
+#                    erp_language_id.id,
+#                    []
+#                )
+                
+#                if erp_lang['code'] == 'en_US':
+                if erp_lang.code == 'en_US':
                     name = lang['value']
                     break
             if name is None:
@@ -946,34 +955,41 @@ class ConfigurationMapper(PrestashopImportMapper):
 
     @mapping
     def backend_id(self, record):
-        currency_ids = self.session.search('prestashop.res.currency', [])
+#        currency_ids = self.session.search('prestashop.res.currency', [])
+        currency_ids = self.env['prestashop.res.currency'].with_context(active_test=False).search([])
         currency_binder = self.binder_for(
             'prestashop.res.currency')        
         for c_id in currency_ids:
             currency_id = currency_binder.to_openerp(
-                c_id,
+                c_id.id,
                 unwrap=True
             )
-            pricelist_id = self.session.search(
-                'product.pricelist', [('currency_id', '=', currency_id.id),
-                                      ('type', '=', 'sale')])            
+            pricelist_id = self.env['product.pricelist'].with_context(active_test=False).search(
+                                    [('currency_id', '=', currency_id.id)]
+                                    )            
             if pricelist_id and len(pricelist_id) == 1:
                 item = {
+                    'applied_on': '3_global',
+                    'sequence': 99,
                     'min_quantity': 0,
-                    'sequence': 5,
-                    'base': 1,
-                    'price_discount': 0  # -float(record['reduction']) / 100.0,
+                    'compute_price': 'percentage',
+                    'base': 'list_price',
+                    'percent_price': 0  # -float(record['reduction']) / 100.0,
                 }
-                version = {
-                    'name': 'Version',
-                    'active': True,
-                    'items_id': [(0, 0, item)],
-                }
-                self.session.create('product.pricelist', {
-                                    'name': 'Sale Pricelist',
-                                    'active': True, 'type': 'sale',
-                                    'currency_id': currency_id.id,
-                                    'version_id': [(0, 0, version)]})
+#                version = {
+#                    'name': 'Version',
+#                    'active': True,
+#                    'items_id': [(0, 0, item)],
+#                }
+                plist_datas = {'name': 'Sale Pricelist',
+                               'active': True, 
+                               #'type': 'sale',
+                               'currency_id': currency_id.id,
+                               'item_ids': [(0, 0, item)]
+                               }
+                                    
+                self.env['product.pricelist'].create(plist_datas)
+                
 
         if record['name'] == 'PS_TAX':
             if record['value'] == '1':
@@ -981,9 +997,12 @@ class ConfigurationMapper(PrestashopImportMapper):
             else:
                 included = False
 
-            self.session.write(
-                'prestashop.backend',
-                [self.backend_record.id],
+#            self.session.write(
+#                'prestashop.backend',
+#                [self.backend_record.id],
+#                {'taxes_included': included}
+#            )
+            self.backend_record.write(                
                 {'taxes_included': included}
             )
         if record['name'] == 'PS_CURRENCY_DEFAULT':
@@ -993,9 +1012,15 @@ class ConfigurationMapper(PrestashopImportMapper):
                 int(record['value']),
                 unwrap=True
             )
-            self.session.write('res.company',
-                               [self.backend_record.company_id.id],
-                               {'currency_id': currency_id.id})
+            
+#            self.session.write('res.company',
+#                               [self.backend_record.company_id.id],
+#                               {'currency_id': currency_id.id})
+            
+            self.backend_record.company_id.write(
+                {'currency_id': currency_id.id}
+            )
+            
         return {'backend_id': self.backend_record.id}
 
 
@@ -1016,18 +1041,22 @@ class TaxRuleMapper(PrestashopImportMapper):
         if not tax_id:
             return {}
         if record['id_tax_rules_group']:
-            p_binder_tax = self.get_connector_unit_for_model(
+            p_binder_tax = self.unit_for(
                 Binder, 'prestashop.account.tax')
             tax = p_binder_tax.to_openerp(record['id_tax'], unwrap=True)
-            p_binder_tax_group = self.get_connector_unit_for_model(
+            p_binder_tax_group = self.unit_for(
                 Binder, 'prestashop.account.tax.group')
             tax_group = p_binder_tax_group.to_openerp(
                 record['id_tax_rules_group'], unwrap=True)
-            self.session.write(
-                'account.tax',
-                [tax.id],
-                {'group_id': tax_group.id}
-            )
+            
+#            
+#            self.session.write(
+#                'account.tax',
+#                [tax.id],
+#                {'group_id': tax_group.id}
+#            )
+
+            tax.write({'group_id': tax_group.id})
         return {'tax_id': tax_id.id}
 
     @mapping
@@ -1063,14 +1092,14 @@ class SupplierInfoMapper(PrestashopImportMapper):
 
     @mapping
     def name(self, record):
-        binder = self.get_connector_unit_for_model(Binder,
+        binder = self.unit_for(Binder,
                                                    'prestashop.supplier')
         partner_id = binder.to_openerp(record['id_supplier'], unwrap=True)
         return {'name': partner_id.id}
 
     @mapping
     def product_tmpl_id(self, record):
-        binder = self.get_connector_unit_for_model(
+        binder = self.unit_for(
             Binder,
             'prestashop.product.template'
         )
@@ -1135,7 +1164,7 @@ class MailMessageMapper(PrestashopImportMapper):
 
     @mapping
     def object_ref(self, record):
-        binder = self.get_connector_unit_for_model(
+        binder = self.unit_for(
             Binder, 'prestashop.sale.order'
         )
         order_id = binder.to_openerp(record['id_order'], unwrap=True)
@@ -1147,7 +1176,7 @@ class MailMessageMapper(PrestashopImportMapper):
     @mapping
     def author_id(self, record):
         if record['id_customer'] != '0':
-            binder = self.get_connector_unit_for_model(
+            binder = self.unit_for(
                 Binder, 'prestashop.res.partner')
             partner_id = binder.to_openerp(record['id_customer'], unwrap=True)
             return {'author_id': partner_id}

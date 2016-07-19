@@ -431,7 +431,7 @@ class SaleImportRule(ConnectorUnit):
                                        'The import will be retried later.')
 
     def _get_paid_amount(self, record):
-        payment_adapter = self.get_connector_unit_for_model(
+        payment_adapter = self.unit_for(
             GenericAdapter,
             '__not_exist_prestashop.payment'
         )
@@ -549,7 +549,7 @@ class SaleOrderImport(PrestashopImportSynchronizer):
         return True
 
     def _check_refunds(self, id_customer, id_order):
-        backend_adapter = self.get_connector_unit_for_model(
+        backend_adapter = self.unit_for(
             GenericAdapter, 'prestashop.refund'
         )
         filters = {'filter[id_customer]': id_customer[0]}
@@ -564,7 +564,7 @@ class SaleOrderImport(PrestashopImportSynchronizer):
         """ Return True if the import can be skipped """
         if self._get_openerp_id():
             return True
-        rules = self.get_connector_unit_for_model(SaleImportRule)
+        rules = self.unit_for(SaleImportRule)
         return rules.check(self.prestashop_record)
 
 
@@ -581,19 +581,32 @@ class TranslatableRecordImport(PrestashopImportSynchronizer):
     def _get_oerp_language(self, prestashop_id):
         language_binder = self.binder_for('prestashop.res.lang')
         erp_language_id = language_binder.to_openerp(prestashop_id)
-        if erp_language_id is None:
+        if erp_language_id is None or len(erp_language_id)==0:
             return None
-        model = self.environment.session.pool.get('prestashop.res.lang')
-        erp_lang = model.read(
-            self.session.cr,
-            self.session.uid,
-            erp_language_id.id,
-        )
+        
+        _logger.debug("Language found %s " % erp_language_id)
+        
+#        model = self.env['prestashop.res.lang']
+        
+#        erp_lang = model.read(
+#            self.session.cr,
+#            self.session.uid,
+#            erp_language_id.id,
+##        )
+#        erp_lang = model.search(
+#            erp_language_id.id,
+#        )
+        erp_lang = erp_language_id
         return erp_lang
 
     def find_each_language(self, record):
         languages = {}
-        for field in self._translatable_fields[self.environment.model_name]:
+#        for field in self._translatable_fields[self.environment.model_name]:
+        fields = self.model.fields_get()
+        translatable_fields = [field for field, attrs in fields.iteritems()
+                               if attrs.get('translate')]
+        _logger.debug("translatable_fields %s"  % translatable_fields)
+        for field in translatable_fields:
             # TODO FIXME in prestapyt
             if not isinstance(record[field]['language'], list):
                 record[field]['language'] = [record[field]['language']]
@@ -602,16 +615,22 @@ class TranslatableRecordImport(PrestashopImportSynchronizer):
                     continue
                 erp_lang = self._get_oerp_language(language['attrs']['id'])
                 if erp_lang is not None:
-                    languages[language['attrs']['id']] = erp_lang['code']
+                    languages[language['attrs']['id']] = erp_lang.code
         return languages
 
     def _split_per_language(self, record):
         splitted_record = {}
         languages = self.find_each_language(record)
-        model_name = self.environment.model_name
+        _logger.debug("LANGUAGES %s" % languages)
+        
+        model_name = self.model
+        fields = self.model.fields_get()
+        translatable_fields = [field for field, attrs in fields.iteritems()
+                               if attrs.get('translate')]
+        
         for language_id, language_code in languages.items():
             splitted_record[language_code] = record.copy()
-            for field in self._translatable_fields[model_name]:
+            for field in translatable_fields:
                 for language in record[field]['language']:
                     current_id = language['attrs']['id']
                     current_value = language['value']
@@ -916,7 +935,7 @@ class TranslatableRecordImport(PrestashopImportSynchronizer):
 #        record = self._get_prestashop_data()
 #        if record['id_default_image']['value'] == '':
 #            return
-#        adapter = self.get_connector_unit_for_model(
+#        adapter = self.unit_for(
 #            PrestaShopCRUDAdapter,
 #            'prestashop.product.image'
 #        )

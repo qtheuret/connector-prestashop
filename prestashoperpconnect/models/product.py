@@ -270,7 +270,7 @@ class TemplateRecordImport(TranslatableRecordImport):
         _logger.debug(prestashop_record)
         _logger.debug(associations)
         _logger.debug(option_values)
-        backend_adapter = self.get_connector_unit_for_model(
+        backend_adapter = self.unit_for(
             BackendAdapter,
             'prestashop.product.combination.option.value'
         )
@@ -294,7 +294,7 @@ class TemplateRecordImport(TranslatableRecordImport):
             combinations = [combinations]
         
         priority = 15
-#        variant_adapter = self.get_connector_unit_for_model(
+#        variant_adapter = self.unit_for(
 #                ProductCombinationRecordImport, 'prestashop.product.combination')
 #        importer = self.unit_for(ProductCombinationBatchImporter, model='prestashop.product.combination')
         
@@ -360,7 +360,7 @@ class TemplateRecordImport(TranslatableRecordImport):
         record = self._get_prestashop_data()
         if record['id_default_image']['value'] == '':
             return
-        adapter = self.get_connector_unit_for_model(
+        adapter = self.unit_for(
             PrestaShopCRUDAdapter,
             'prestashop.product.image'
         )

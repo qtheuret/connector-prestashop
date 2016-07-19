@@ -343,7 +343,7 @@ class PartnerImportMapper(PrestashopImportMapper):
 
     @mapping
     def pricelist(self, record):
-        binder = self.get_connector_unit_for_model(
+        binder = self.unit_for(
             Binder, 'prestashop.groups.pricelist')
         pricelist_id = binder.to_openerp(
             record['id_default_group'], unwrap=True)

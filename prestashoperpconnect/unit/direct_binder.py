@@ -49,12 +49,25 @@ class DirectBinder(ConnectorUnit):
         nr_ps_mapped = 0
         nr_ps_not_mapped = 0
         # Get all OERP obj
-        sess = self.session
+        
         erp_model_name = self.model._inherits.iterkeys().next()
-        erp_rec_name = sess.pool[erp_model_name]._rec_name
-        erp_ids = sess.search(erp_model_name, [])
-        erp_list_dict = sess.read(erp_model_name, erp_ids, [])
-        adapter = self.get_connector_unit_for_model(BackendAdapter)
+        erp_rec_name = self.session.pool[erp_model_name]._rec_name
+        _logger.debug("erp_rec_name %s" % erp_rec_name)
+        _logger.debug("erp_model_name %s" % erp_model_name)
+        _logger.debug("self.session %s" % self.session)
+        
+
+
+        my_model = self.env[erp_model_name]
+ 
+        
+        erp_ids = my_model.with_context(active_test=False).search([])
+        _logger.debug("My erp_ids %s" % erp_ids)
+#        erp_list_dict = self.session.read(erp_model_name, erp_ids, [])
+#        
+#        
+        erp_list_dict = erp_ids
+        adapter = self.unit_for(BackendAdapter)
         # Get the IDS from PS
         ps_ids = adapter.search()
         if not ps_ids:
@@ -64,7 +77,7 @@ class DirectBinder(ConnectorUnit):
                 % adapter.prestashop_model
             )
 
-        binder = self.get_binder_for_model()
+        binder = self.binder_for()
         # Loop on all PS IDs
         for ps_id in ps_ids:
             # Check if the PS ID is already mapped to an OE ID
@@ -84,8 +97,10 @@ class DirectBinder(ConnectorUnit):
                 # Loop on OE IDs
                 for erp_dict in erp_list_dict:
                     # Search for a match
-                    erp_val = erp_dict[self._erp_field]
+                    erp_val = erp_dict[self._erp_field]                    
                     ps_val = ps_dict[self._ps_field]
+                    _logger.debug("erp val %s compared to ps_val %s" % (erp_val, ps_val))
+                    
                     if self._compare_function(
                             ps_val,
                             erp_val,
@@ -98,7 +113,9 @@ class DirectBinder(ConnectorUnit):
                         }
                         for oe_field, ps_field in self._copy_fields:
                             data[oe_field] = erp_dict[ps_field]
-                        ps_erp_id = sess.create(self._model_name, data)
+                        
+                        ps_erp_id = self.env[self._model_name].create(data)
+                        
                         binder.bind(ps_id, ps_erp_id)
                         _logger.debug(
                             "[%s] Mapping PS '%s' (%s) to OERP '%s' (%s)"

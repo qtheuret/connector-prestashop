@@ -161,12 +161,16 @@ class prestashop_backend(orm.Model):
                 env = get_environment(session, model_name, backend_id)
                 directBinder = env.get_connector_unit(DirectBinder)
                 directBinder.run()
+            
+            
             #TODO : Consider running the prestashop.configuration in asynchronous mode (Example of conf > 1000 items)
             import_batch(session, 'prestashop.configuration', backend_id)
-            import_batch(session, 'prestashop.account.tax.group', backend_id)
+            import_batch(session, 'prestashop.account.tax.group', backend_id)            
             import_batch(session, 'prestashop.account.tax', backend_id)
+            
             import_batch(session, 'prestashop.tax.rule', backend_id)
             import_batch(session, 'prestashop.sale.order.state', backend_id)
+            
         return True
 
     def _date_as_user_tz(self, cr, uid, dtstr):

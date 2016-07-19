@@ -49,7 +49,7 @@ class PrestashopTrackingExport(ExportSynchronizer):
     def run(self, binding_id):
         """ Export the tracking number of a picking to PrestaShop """
         # verify the picking is done + Prestashop id exists
-        tracking_adapter = self.get_connector_unit_for_model(
+        tracking_adapter = self.unit_for(
             PrestaShopCRUDAdapter, '__not_exit_prestashop.order_carrier')
 
         self.binding = self.session.browse(self.model._name, binding_id)

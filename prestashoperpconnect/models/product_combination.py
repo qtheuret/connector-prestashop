@@ -209,7 +209,7 @@ class ProductCombinationRecordImport(PrestashopImportSynchronizer):
             'product_option_values', {}).get('product_option_value', [])
         if not isinstance(option_values, list):
             option_values = [option_values]
-        backend_adapter = self.get_connector_unit_for_model(
+        backend_adapter = self.unit_for(
             BackendAdapter,
             'prestashop.product.combination.option.value'
         )
@@ -323,7 +323,7 @@ class ProductCombinationMapper(PrestashopImportMapper):
                 if variant_image.type == 'db':
                     return {'image_variant': variant_image.file_db_store}
                 else:
-                    adapter = self.get_connector_unit_for_model(
+                    adapter = self.unit_for(
                         PrestaShopCRUDAdapter,
                         'prestashop.product.image')
                     try:
@@ -487,7 +487,7 @@ class ProductCombinationMapper(PrestashopImportMapper):
     @mapping
     def ean13(self, record): 
         if record['ean13'] in ['', '0']:
-            backend_adapter = self.get_connector_unit_for_model(
+            backend_adapter = self.unit_for(
                 GenericAdapter, 'prestashop.product.template')
             template = backend_adapter.read(record['id_product'])
             return template['ean13'] and {}
@@ -501,21 +501,21 @@ class ProductCombinationMapper(PrestashopImportMapper):
     
     @mapping
     def length(self, record):          
-        backend_adapter = self.get_connector_unit_for_model(
+        backend_adapter = self.unit_for(
                 GenericAdapter, 'prestashop.product.template')
         main_template = backend_adapter.read(record['id_product'])
         return {'length': main_template['depth']}
     
     @mapping
     def height (self, record):
-        backend_adapter = self.get_connector_unit_for_model(
+        backend_adapter = self.unit_for(
                 GenericAdapter, 'prestashop.product.template')
         main_template = backend_adapter.read(record['id_product'])
         return {'height': main_template['height']}
     
     @mapping
     def width(self, record):  
-        backend_adapter = self.get_connector_unit_for_model(
+        backend_adapter = self.unit_for(
                 GenericAdapter, 'prestashop.product.template')
         main_template = backend_adapter.read(record['id_product'])
         return {'width': main_template['width']}
