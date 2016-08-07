@@ -31,10 +31,12 @@ import pytz
 from ..unit.backend_adapter import GenericAdapter
 from openerp.addons.connector.session import ConnectorSession
 from openerp.addons.prestashoperpconnect.product import import_inventory
-from openerp.osv import fields, orm
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from ..connector import get_environment
 from ..unit.direct_binder import DirectBinder
+from openerp.osv import fields, orm
+from openerp import models, fields, api, _
+
 from ..unit.import_synchronizer import (
     import_batch,
     import_customers_since,
@@ -50,91 +52,150 @@ from ..unit.import_synchronizer import (
 _logger = logging.getLogger(__name__)
 
 
-class prestashop_backend(orm.Model):
+
+class PrestashopBackend(models.Model):
     _name = 'prestashop.backend'
     _doc = 'Prestashop Backend'
     _inherit = 'connector.backend'
 
     _backend_type = 'prestashop'
 
-    def _select_versions(self, cr, uid, context=None):
+    
+    def _select_versions(self):
         """ Available versions
 
         Can be inherited to add custom versions.
         """
-        return [('1.5', '1.5'),
-#                ('1.6', '1.6'),
-                ]
+        return [('1.5', '1.5'),]
 
-    _columns = {
-        'version': fields.selection(
-            _select_versions,
-            string='Version',
-            required=True),
-        'location': fields.char('Location', required=True),
-        'webservice_key': fields.char(
+
+            
+    location = fields.Char("Location", required=True)
+    version = fields.Selection(compute=_select_versions, string='Version',
+            required=True)
+    webservice_key = fields.Char(
             'Webservice key',
             required=True,
             help="You have to put it in 'username' of the PrestaShop "
             "Webservice api path invite"
-        ),
-        'warehouse_id': fields.many2one(
+        )
+    warehouse_id = fields.Many2one(
             'stock.warehouse',
             'Warehouse',
             required=True,
             help='Warehouse used to compute the stock quantities.'
-        ),
-        'taxes_included': fields.boolean("Use tax included prices",
-#                                         readonly=True
-                                         ),
-        'import_partners_since': fields.datetime('Import partners since'),
-        'import_orders_since': fields.datetime('Import Orders since'),
-        'import_products_since': fields.datetime('Import Products since'),
-        'import_refunds_since': fields.datetime('Import Refunds since'),
-        'import_suppliers_since': fields.datetime('Import Suppliers since'),
-        'language_ids': fields.one2many(
-            'prestashop.res.lang',
-            'backend_id',
-            'Languages'
-        ),
-        'company_id': fields.many2one('res.company', 'Company', select=1,
-                                      required=True),
-        'discount_product_id': fields.many2one('product.product',
-                                               'Discount Product', select=1,
-                                               required=False),
-        'shipping_product_id': fields.many2one('product.product',
-                                               'Shipping Product', select=1,
-                                               required=False),
-        'journal_id': fields.many2one('account.journal',
-                                               'Main Journal for invoices', select=1,
-                                               required=False),                                        
-        'api_debug': fields.boolean("Debug the API"),
-        'api_timeout': fields.float("Timeout in seconds"),
-        'image_store_type' : fields.selection(
+        )
+        
+    taxes_included = fields.Boolean("Use tax included prices" )
+    
+    import_partners_since = fields.Datetime('Import partners since')
+    import_orders_since = fields.Datetime('Import Orders since')
+    import_products_since = fields.Datetime('Import Products since')
+    import_refunds_since = fields.Datetime('Import Refunds since')
+    import_suppliers_since = fields.Datetime('Import Suppliers since')
+    language_ids = fields.One2many(comodel_name='prestashop.res.lang', 
+                    inverse_name='backend_id',
+                    string='Languages'
+        )
+    company_id = fields.Many2one('res.company', 'Company', select=True,
+                                      required=True)
+    discount_product_id = fields.Many2one('product.product',
+                                               'Discount Product', select=True,
+                                               required=False)
+    shipping_product_id = fields.Many2one('product.product',
+                                               'Shipping Product', select=True,
+                                               required=False)
+    journal_id = fields.Many2one('account.journal',
+                                'Main Journal for invoices', select=True,
+                                 required=False)                                       
+    api_debug =  fields.Boolean("Debug the API", default=False)
+    api_timeout = fields.Float("Timeout in seconds", default=100)
+    image_store_type = fields.Selection(
                                 [('db','Database'),('file','File'),('url', 'URL')], string='Stockage type for image',
                                 required=True, default='db'
-                            ),
-        'use_variant_default_code': fields.boolean(string='', 
-                    help="""Allow to choose wether the default_code or the default variant is used"""),
-        'quantity_field' : fields.selection(
+                            )
+    use_variant_default_code = fields.Boolean(string='', 
+                    help="""Allow to choose wether the default_code or the default variant is used""",
+                    default=True)
+    quantity_field = fields.Selection(
                             [('qty_available','Available Quantity'),
                             ('virtual_available','Forecast quantity')],
                             string='Field use for quantity update',
                             required=True, 
                             default='virtual_available'
                         )
-    }
+    
+            
+#    _columns = {
+#        'version': fields.selection(
+#            _select_versions,
+#            string='Version',
+#            required=True),
+#        'location': fields.Char('Location', required=True),
+#        'webservice_key': fields.Char(
+#            'Webservice key',
+#            required=True,
+#            help="You have to put it in 'username' of the PrestaShop "
+#            "Webservice api path invite"
+#        ),
+#        'warehouse_id': fields.Many2one(
+#            'stock.warehouse',
+#            'Warehouse',
+#            required=True,
+#            help='Warehouse used to compute the stock quantities.'
+#        ),
+#        'taxes_included': fields.Boolean("Use tax included prices",
+##                                         readonly=True
+#                                         ),
+#        'import_partners_since': fields.datetime('Import partners since'),
+#        'import_orders_since': fields.datetime('Import Orders since'),
+#        'import_products_since': fields.datetime('Import Products since'),
+#        'import_refunds_since': fields.datetime('Import Refunds since'),
+#        'import_suppliers_since': fields.datetime('Import Suppliers since'),
+#        'language_ids': fields.one2many(
+#            'prestashop.res.lang',
+#            'backend_id',
+#            'Languages'
+#        ),
+#        'company_id': fields.Many2one('res.company', 'Company', select=True,
+#                                      required=True),
+#        'discount_product_id': fields.Many2one('product.product',
+#                                               'Discount Product', select=True,
+#                                               required=False),
+#        'shipping_product_id': fields.Many2one('product.product',
+#                                               'Shipping Product', select=True,
+#                                               required=False),
+#        'journal_id': fields.Many2one('account.journal',
+#                                               'Main Journal for invoices', select=True,
+#                                               required=False),                                        
+#        'api_debug': fields.Boolean("Debug the API"),
+#        'api_timeout': fields.float("Timeout in seconds"),
+#        'image_store_type' : fields.selection(
+#                                [('db','Database'),('file','File'),('url', 'URL')], string='Stockage type for image',
+#                                required=True, default='db'
+#                            ),
+#        'use_variant_default_code': fields.Boolean(string='', 
+#                    help="""Allow to choose wether the default_code or the default variant is used"""),
+#        'quantity_field' : fields.selection(
+#                            [('qty_available','Available Quantity'),
+#                            ('virtual_available','Forecast quantity')],
+#                            string='Field use for quantity update',
+#                            required=True, 
+#                            default='virtual_available'
+#                        )
+#    }
 
-    _defaults = {
-        'company_id': lambda s, cr, uid,
-        c: s.pool.get('res.company')._company_default_get(cr, uid,
-                                                          'prestashop.backend',
-                                                          context=c),
-        'api_debug': False,
-        'api_timeout': 100.0,
-        'use_variant_default_code': True,
-    }
+#    _defaults = {
+#        'company_id': lambda s, cr, uid,
+#        c: s.pool.get('res.company')._company_default_get(cr, uid,
+#                                                          'prestashop.backend',
+#                                                          context=c),
+#        'api_debug': False,
+#        'api_timeout': 100.0,
+#        'use_variant_default_code': True,
+#    }
 
+    @api.v7
     def synchronize_metadata(self, cr, uid, ids, context=None):
         if not hasattr(ids, '__iter__'):
             ids = [ids]
@@ -148,6 +209,7 @@ class prestashop_backend(orm.Model):
                 import_batch(session, model, backend_id)
         return True
 
+    @api.v7
     def synchronize_basedata(self, cr, uid, ids, context=None):
         if not hasattr(ids, '__iter__'):
             ids = [ids]
@@ -172,7 +234,8 @@ class prestashop_backend(orm.Model):
             import_batch(session, 'prestashop.sale.order.state', backend_id)
             
         return True
-
+    
+    @api.cr_uid_context
     def _date_as_user_tz(self, cr, uid, dtstr):
         if not dtstr:
             return None
@@ -183,11 +246,14 @@ class prestashop_backend(orm.Model):
         dt = pytz.utc.localize(dt)
         dt = dt.astimezone(timezone)
         return dt
-
-    def import_customers_since(self, cr, uid, ids, context=None):
+        
+    @api.multi
+    def import_customers_since(self):
         if not hasattr(ids, '__iter__'):
             ids = [ids]
-        session = ConnectorSession(cr, uid, context=context)
+        session = session = ConnectorSession(self.env.cr, self.env.uid,
+                                       context=self.env.context)
+                                       
         for backend_record in self.browse(cr, uid, ids, context=context):
             since_date = self._date_as_user_tz(
                 cr, uid, backend_record.import_partners_since
@@ -200,7 +266,8 @@ class prestashop_backend(orm.Model):
             )
 
         return True
-
+    
+    @api.cr_uid_context
     def import_products(self, cr, uid, ids, context=None):
         if not hasattr(ids, '__iter__'):
             ids = [ids]
@@ -213,6 +280,7 @@ class prestashop_backend(orm.Model):
                                   priority=10)
         return True
 
+    @api.cr_uid_context
     def import_carriers(self, cr, uid, ids, context=None):
         if not hasattr(ids, '__iter__'):
             ids = [ids]
@@ -221,20 +289,23 @@ class prestashop_backend(orm.Model):
             import_carriers.delay(session, backend_id, priority=10)
         return True
 
+    @api.cr_uid_context
     def update_product_stock_qty(self, cr, uid, ids, context=None):
         if not hasattr(ids, '__iter__'):
             ids = [ids]
         session = ConnectorSession(cr, uid, context=context)
         export_product_quantities.delay(session, ids)
         return True
-
+    
+    @api.cr_uid_context
     def import_stock_qty(self, cr, uid, ids, context=None):
         if not hasattr(ids, '__iter__'):
             ids = [ids]
         session = ConnectorSession(cr, uid, context=context)
         for backend_id in ids:
             import_inventory.delay(session, backend_id)
-
+    
+    @api.cr_uid_context
     def import_sale_orders(self, cr, uid, ids, context=None):
         if not hasattr(ids, '__iter__'):
             ids = [ids]
@@ -251,6 +322,7 @@ class prestashop_backend(orm.Model):
             )
         return True
 
+    @api.cr_uid_context
     def import_payment_methods(self, cr, uid, ids, context=None):
         if not hasattr(ids, '__iter__'):
             ids = [ids]
@@ -259,6 +331,7 @@ class prestashop_backend(orm.Model):
             import_batch.delay(session, 'account.payment.mode', backend_record.id)
         return True
 
+    @api.cr_uid_context
     def import_refunds(self, cr, uid, ids, context=None):
         if not hasattr(ids, '__iter__'):
             ids = [ids]
@@ -270,6 +343,7 @@ class prestashop_backend(orm.Model):
             import_refunds.delay(session, backend_record.id, since_date)
         return True
 
+    @api.cr_uid_context
     def import_suppliers(self, cr, uid, ids, context=None):
         if not hasattr(ids, '__iter__'):
             ids = [ids]
@@ -281,6 +355,7 @@ class prestashop_backend(orm.Model):
             import_suppliers.delay(session, backend_record.id, since_date)
         return True
 
+    @api.cr_uid_context
     def _scheduler_launch(self, cr, uid, callback, domain=None,
                           context=None):
         if domain is None:
@@ -289,6 +364,7 @@ class prestashop_backend(orm.Model):
         if ids:
             callback(cr, uid, ids, context=context)
 
+    @api.cr_uid_context
     def _scheduler_confirm_sale_orders(self, cr, uid, domain=None,
                                        context=None):
         sale_obj = self.pool.get('sale.order')
@@ -299,29 +375,34 @@ class prestashop_backend(orm.Model):
         for id in ids:
             sale_obj.action_button_confirm(cr, uid, id, context=context)
 
+    @api.cr_uid_context
     def _scheduler_update_product_stock_qty(self, cr, uid, domain=None,
                                             context=None):
         self._scheduler_launch(cr, uid, self.update_product_stock_qty,
                                domain=domain, context=context)
 
+    @api.cr_uid_context
     def _scheduler_import_sale_orders(self, cr, uid, domain=None,
                                       context=None):
         self._scheduler_launch(cr, uid, self.import_sale_orders,
                                domain=domain, context=context)
-
+    
+    @api.cr_uid_context
     def _scheduler_import_customers(self, cr, uid, domain=None,
                                     context=None):
         self._scheduler_launch(cr, uid, self.import_customers_since,
                                domain=domain, context=context)
-
+    
+    @api.cr_uid_context
     def _scheduler_import_products(self, cr, uid, domain=None, context=None):
         self._scheduler_launch(cr, uid, self.import_products, domain=domain,
                                context=context)
-
+    
+    @api.cr_uid_context
     def _scheduler_import_carriers(self, cr, uid, domain=None, context=None):
         self._scheduler_launch(cr, uid, self.import_carriers, domain=domain,
                                context=context)
-
+    @api.cr_uid_context
     def _scheduler_import_payment_methods(self, cr, uid, domain=None,
                                           context=None):
         self._scheduler_launch(cr, uid, self.import_payment_methods,
@@ -329,16 +410,19 @@ class prestashop_backend(orm.Model):
 
         self._scheduler_launch(cr, uid, self.import_refunds,
                                domain=domain, context=context)
-
+    
+    @api.cr_uid_context
     def _scheduler_import_suppliers(self, cr, uid, domain=None, context=None):
         self._scheduler_launch(cr, uid, self.import_suppliers,
                                domain=domain, context=context)
-
+    
+    @api.cr_uid_context
     def _scheduler_create_payments(self, cr, uid, states=None, context=None):
         order_obj = self.pool.get('prestashop.sale.order')
         order_ids =  order_obj.search(cr, uid, [('state', 'not in', states)])
         order_obj.create_payments(cr, uid, order_ids, context=context)
-            
+    
+    @api.cr_uid_context            
     def import_record(self, cr, uid, backend_id, model_name, ext_id,
                       context=None):
         session = ConnectorSession(cr, uid, context=context)
@@ -346,24 +430,34 @@ class prestashop_backend(orm.Model):
         return True
 
 
-class prestashop_binding(orm.AbstractModel):
+class prestashop_binding(models.AbstractModel):
     _name = 'prestashop.binding'
     _inherit = 'external.binding'
     _description = 'PrestaShop Binding (abstract)'
 
-    _columns = {
-        # 'openerp_id': openerp-side id must be declared in concrete model
-        'backend_id': fields.many2one(
+
+    backend_id = fields.Many2one(
             'prestashop.backend',
             'PrestaShop Backend',
             required=True,
-            ondelete='restrict'),
+            ondelete='restrict')
         # TODO : do I keep the char like in Magento, or do I put a PrestaShop ?
-        'prestashop_id': fields.integer('ID on PrestaShop'),
-    }
+    prestashop_id = fields.Integer('ID on PrestaShop')
+        
+#    _columns = {
+#        # 'openerp_id': openerp-side id must be declared in concrete model
+#        'backend_id': fields.Many2one(
+#            'prestashop.backend',
+#            'PrestaShop Backend',
+#            required=True,
+#            ondelete='restrict'),
+#        # TODO : do I keep the char like in Magento, or do I put a PrestaShop ?
+#        'prestashop_id': fields.integer('ID on PrestaShop'),
+#    }
     # the _sql_contraints cannot be there due to this bug:
     # https://bugs.launchpad.net/openobject-server/+bug/1151703
 
+    @api.cr_uid_context
     def resync(self, cr, uid, ids, context=None):
         if not hasattr(ids, '__iter__'):
             ids = [ids]
@@ -382,24 +476,37 @@ class prestashop_binding(orm.AbstractModel):
 
 
 # TODO remove external.shop.group from connector_ecommerce
-class prestashop_shop_group(orm.Model):
+class prestashop_shop_group(models.Model):
     _name = 'prestashop.shop.group'
     _inherit = 'prestashop.binding'
     _description = 'PrestaShop Shop Group'
 
-    _columns = {
-        'name': fields.char('Name', required=True),
-        'shop_ids': fields.one2many(
+    name = fields.Char('Name', required=True)
+    shop_ids = fields.One2many(
             'prestashop.shop',
             'shop_group_id',
             string="Shops",
-            readonly=True),
-        'company_id': fields.related('backend_id', 'company_id',
-                                     type="many2one",
+            readonly=True)
+    company_id = fields.Many2one( 
                                      relation="res.company",
                                      string='Company',
-                                     store=False),
-    }
+                                     store=False,
+                                    related="backend_id.company_id" )
+    
+    
+#    _columns = {
+#        'name': fields.Char('Name', required=True),
+#        'shop_ids': fields.one2many(
+#            'prestashop.shop',
+#            'shop_group_id',
+#            string="Shops",
+#            readonly=True),
+#        'company_id': fields.related('backend_id', 'company_id',
+#                                     type="many2one",
+#                                     relation="res.company",
+#                                     string='Company',
+#                                     store=False),
+#    }
 
     _sql_constraints = [
         ('prestashop_uniq', 'unique(backend_id, prestashop_id)',
@@ -408,11 +515,12 @@ class prestashop_shop_group(orm.Model):
 
 
 # TODO migrate from sale.shop
-class prestashop_shop(orm.Model):
+class prestashop_shop(models.Model):
     _name = 'prestashop.shop'
     _inherit = 'prestashop.binding'
     _description = 'PrestaShop Shop'
 
+    @api.v7
     def _get_shop_from_shopgroup(self, cr, uid, ids, context=None):
         return self.pool.get('prestashop.shop').search(
             cr,
@@ -421,36 +529,80 @@ class prestashop_shop(orm.Model):
             context=context
         )
 
-    _columns = {
-        'name': fields.char('Name',
-                            help="The name of the method on the backend",
-                            required=True),
+#    _columns = {
+#        'name': fields.Char('Name',
+#                            help="The name of the method on the backend",
+#                            required=True),
+#
+#        'shop_group_id': fields.Many2one(
+#            'prestashop.shop.group',
+#            'PrestaShop Shop Group',
+#            required=True,
+#            ondelete='cascade'
+#        ),
+#        'openerp_id': fields.Many2one(
+#            'stock.warehouse',
+#            string='WareHouse',
+#            required=True,
+#            readonly=True,
+#            ondelete='cascade'
+#        ),
+#        # what is the exact purpose of this field?
+#        'default_category_id': fields.Many2one(
+#            'product.category',
+#            'Default Product Category',
+#            help="The category set on products when?? TODO."
+#            "\nOpenERP requires a main category on products for accounting."
+#        ),
+#        'backend_id': fields.related(
+#            'shop_group_id',
+#            'backend_id',
+#            type='many2one',
+#            relation='prestashop.backend',
+#            string='PrestaShop Backend',
+#            store={
+#                'prestashop.shop': (
+#                    lambda self, cr, uid, ids, c={}: ids,
+#                    ['shop_group_id'],
+#                    10
+#                ),
+#                'prestashop.shop.group': (
+#                    _get_shop_from_shopgroup,
+#                    ['backend_id'],
+#                    20
+#                ),
+#            },
+#            readonly=True
+#        ),
+#        'default_url': fields.Char('Default url'),
+#    }
 
-        'shop_group_id': fields.many2one(
+    name = fields.Char('Name',
+                            help="The name of the method on the backend",
+                            required=True)
+
+    shop_group_id = fields.Many2one(
             'prestashop.shop.group',
             'PrestaShop Shop Group',
             required=True,
             ondelete='cascade'
-        ),
-        'openerp_id': fields.many2one(
+        )
+    openerp_id = fields.Many2one(
             'stock.warehouse',
             string='WareHouse',
             required=True,
             readonly=True,
             ondelete='cascade'
-        ),
+        )
         # what is the exact purpose of this field?
-        'default_category_id': fields.many2one(
+    default_category_id = fields.Many2one(
             'product.category',
             'Default Product Category',
             help="The category set on products when?? TODO."
             "\nOpenERP requires a main category on products for accounting."
-        ),
-        'backend_id': fields.related(
-            'shop_group_id',
-            'backend_id',
-            type='many2one',
-            relation='prestashop.backend',
+        )
+    backend_id = fields.Many2one(
+            comodel_name='prestashop.backend',
             string='PrestaShop Backend',
             store={
                 'prestashop.shop': (
@@ -464,10 +616,11 @@ class prestashop_shop(orm.Model):
                     20
                 ),
             },
-            readonly=True
-        ),
-        'default_url': fields.char('Default url'),
-    }
+            readonly=True,
+            related="shop_group_id.backend_id"
+        )
+    default_url = fields.Char('Default url')
+    
 
     _sql_constraints = [
         ('prestashop_uniq', 'unique(backend_id, prestashop_id)',
@@ -475,35 +628,44 @@ class prestashop_shop(orm.Model):
     ]
 
 
-class stock_location(orm.Model):
+class stock_location(models.Model):
     _inherit = 'stock.warehouse'
 
-    _columns = {
-        'prestashop_bind_ids': fields.one2many(
+#    _columns = {
+#        'prestashop_bind_ids': fields.one2many(
+#            'prestashop.shop', 'openerp_id',
+#            string='PrestaShop Bindings',
+#            readonly=True),
+#    }
+    prestashop_bind_ids = fields.One2many(
             'prestashop.shop', 'openerp_id',
             string='PrestaShop Bindings',
-            readonly=True),
-    }
+            readonly=True)
 
 
-class prestashop_res_lang(orm.Model):
+class prestashop_res_lang(models.Model):
     _name = 'prestashop.res.lang'
     _inherit = 'prestashop.binding'
     _inherits = {'res.lang': 'openerp_id'}
 
-    _columns = {
-        'openerp_id': fields.many2one(
+#    _columns = {
+#        'openerp_id': fields.Many2one(
+#            'res.lang',
+#            string='Lang',
+#            required=True,
+#            ondelete='cascade'
+#        ),
+#        'active': fields.Boolean('Active in prestashop'),
+#    }
+    
+    openerp_id = fields.Many2one(
             'res.lang',
             string='Lang',
             required=True,
             ondelete='cascade'
-        ),
-        'active': fields.boolean('Active in prestashop'),
-    }
-
-    _defaults = {
-        'active': False,
-    }
+        )
+    active = fields.Boolean('Active in prestashop', default=False)
+    
 
     _sql_constraints = [
         ('prestashop_uniq', 'unique(backend_id, prestashop_id)',
@@ -511,31 +673,44 @@ class prestashop_res_lang(orm.Model):
     ]
 
 
-class res_lang(orm.Model):
+class res_lang(models.Model):
     _inherit = 'res.lang'
 
-    _columns = {
-        'prestashop_bind_ids': fields.one2many(
+#    _columns = {
+#        'prestashop_bind_ids': fields.one2many(
+#            'prestashop.res.lang',
+#            'openerp_id',
+#            string='prestashop Bindings',
+#            readonly=True),
+#    }
+
+    prestashop_bind_ids = fields.One2many(
             'prestashop.res.lang',
             'openerp_id',
             string='prestashop Bindings',
-            readonly=True),
-    }
+            readonly=True)
+    
 
-
-class prestashop_res_country(orm.Model):
+class prestashop_res_country(models.Model):
     _name = 'prestashop.res.country'
     _inherit = 'prestashop.binding'
     _inherits = {'res.country': 'openerp_id'}
 
-    _columns = {
-        'openerp_id': fields.many2one(
+#    _columns = {
+#        'openerp_id': fields.Many2one(
+#            'res.country',
+#            string='Country',
+#            required=True,
+#            ondelete='cascade'
+#        ),
+#    }
+    openerp_id = fields.Many2one(
             'res.country',
             string='Country',
             required=True,
             ondelete='cascade'
-        ),
-    }
+        )
+    
 
     _sql_constraints = [
         ('prestashop_uniq', 'unique(backend_id, prestashop_id)',
@@ -543,32 +718,46 @@ class prestashop_res_country(orm.Model):
     ]
 
 
-class res_country(orm.Model):
+class res_country(models.Model):
     _inherit = 'res.country'
 
-    _columns = {
-        'prestashop_bind_ids': fields.one2many(
+#    _columns = {
+#        'prestashop_bind_ids': fields.one2many(
+#            'prestashop.res.country',
+#            'openerp_id',
+#            string='prestashop Bindings',
+#            readonly=True
+#        ),
+#    }
+
+    prestashop_bind_ids = fields.One2many(
             'prestashop.res.country',
             'openerp_id',
             string='prestashop Bindings',
             readonly=True
-        ),
-    }
+        )
 
-
-class prestashop_res_currency(orm.Model):
+class prestashop_res_currency(models.Model):
     _name = 'prestashop.res.currency'
     _inherit = 'prestashop.binding'
     _inherits = {'res.currency': 'openerp_id'}
 
-    _columns = {
-        'openerp_id': fields.many2one(
+#    _columns = {
+#        'openerp_id': fields.Many2one(
+#            'res.currency',
+#            string='Currency',
+#            required=True,
+#            ondelete='cascade'
+#        ),
+#    }
+    
+    openerp_id = fields.Many2one(
             'res.currency',
             string='Currency',
             required=True,
             ondelete='cascade'
-        ),
-    }
+        )
+    
 
     _sql_constraints = [
         ('prestashop_uniq', 'unique(backend_id, prestashop_id)',
@@ -576,37 +765,56 @@ class prestashop_res_currency(orm.Model):
     ]
 
 
-class res_currency(orm.Model):
+class res_currency(models.Model):
     _inherit = 'res.currency'
 
     _columns = {
-        'prestashop_bind_ids': fields.one2many(
+#        'prestashop_bind_ids': fields.one2many(
+#            'prestashop.res.currency',
+#            'openerp_id',
+#            string='prestashop Bindings',
+#            readonly=True
+#        ),
+    }
+
+    prestashop_bind_ids = fields.One2many(
             'prestashop.res.currency',
             'openerp_id',
             string='prestashop Bindings',
             readonly=True
-        ),
-    }
+        )
 
-
-class prestashop_account_tax(orm.Model):
+class prestashop_account_tax(models.Model):
     _name = 'prestashop.account.tax'
     _inherit = 'prestashop.binding'
     _inherits = {'account.tax': 'openerp_id'}
 
-    _columns = {
-        'openerp_id': fields.many2one(
+#    _columns = {
+#        'openerp_id': fields.Many2one(
+#            'account.tax',
+#            string='Tax',
+#            required=True,
+#            ondelete='cascade'
+#        ),
+#        'prestashop_tax_group_id': fields.Many2one(
+#            'prestashop.account.tax.group',
+#            string='Tax Group',
+#            ondelete='cascade'
+#        ),
+#    }
+
+    openerp_id = fields.Many2one(
             'account.tax',
             string='Tax',
             required=True,
             ondelete='cascade'
-        ),
-        'prestashop_tax_group_id': fields.many2one(
+        )
+    prestashop_tax_group_id = fields.Many2one(
             'prestashop.account.tax.group',
             string='Tax Group',
             ondelete='cascade'
-        ),
-    }
+        )
+    
 
     _sql_constraints = [
         ('prestashop_uniq', 'unique(backend_id, prestashop_id)',
@@ -617,99 +825,163 @@ class prestashop_account_tax(orm.Model):
 class account_tax(orm.Model):
     _inherit = 'account.tax'
 
-    _columns = {
-        'prestashop_bind_ids': fields.one2many(
+#    _columns = {
+#        'prestashop_bind_ids': fields.one2many(
+#            'prestashop.account.tax',
+#            'openerp_id',
+#            string='prestashop Bindings',
+#            readonly=True
+#        ),
+#    }
+
+    prestashop_bind_ids = fields.One2many(
             'prestashop.account.tax',
             'openerp_id',
             string='prestashop Bindings',
             readonly=True
-        ),
-    }
+        )
+    
 
-
-class prestashop_tax_rule(orm.Model):
+class prestashop_tax_rule(models.Model):
     _name = 'prestashop.tax.rule'
     _inherit = 'prestashop.binding'
     _inherits = {'tax.rule': 'openerp_id'}
 
-    _columns = {
-        'openerp_id': fields.many2one(
+#    _columns = {
+#        'openerp_id': fields.Many2one(
+#            'tax.rule',
+#            string='Tax rule',
+#            required=True,
+#            ondelete='cascade'
+#        ),
+#        'tax_group_id': fields.Many2one(
+#            'prestashop.account.tax.group',
+#            string='Tax group',
+#            ondelete='cascade'
+#        ),
+#        'tax_id': fields.Many2one(
+#            'prestashop.account.tax',
+#            string='Tax',
+#            ondelete='cascade'
+#        ),
+#    }
+
+    openerp_id = fields.Many2one(
             'tax.rule',
             string='Tax rule',
             required=True,
             ondelete='cascade'
-        ),
-        'tax_group_id': fields.many2one(
+        )
+    
+    tax_group_id = fields.Many2one(
             'prestashop.account.tax.group',
             string='Tax group',
             ondelete='cascade'
-        ),
-        'tax_id': fields.many2one(
+        )
+    tax_id = fields.Many2one(
             'prestashop.account.tax',
             string='Tax',
             ondelete='cascade'
-        ),
-    }
+        )
+    
 
 
-class tax_rule(orm.Model):
+class tax_rule(models.Model):
     _name = 'tax.rule'
 
-    _columns = {
-        'prestashop_bind_ids': fields.one2many(
+#    _columns = {
+#        'prestashop_bind_ids': fields.one2many(
+#            'prestashop.tax.rule',
+#            'openerp_id',
+#            string='prestashop Bindings',
+#            readonly=True
+#        ),
+#        'tax_id': fields.Many2one(
+#            'account.tax',
+#            string='Tax',
+#            #             required = True,
+#            ondelete='cascade'
+#        ),
+#        'tax_group_id': fields.Many2one(
+#            'account.tax.group',
+#            string='Tax Group',
+#            #             required = True,
+#            ondelete='cascade'
+#        ),
+#    }
+    
+    prestashop_bind_ids = fields.One2many(
             'prestashop.tax.rule',
             'openerp_id',
             string='prestashop Bindings',
             readonly=True
-        ),
-        'tax_id': fields.many2one(
+        )
+    
+    tax_id = fields.Many2one(
             'account.tax',
             string='Tax',
             #             required = True,
             ondelete='cascade'
-        ),
-        'tax_group_id': fields.many2one(
+        )
+    
+    tax_group_id = fields.Many2one(
             'account.tax.group',
             string='Tax Group',
             #             required = True,
             ondelete='cascade'
-        ),
-    }
+        )
+    
 
 
-class prestashop_account_tax_group(orm.Model):
+class prestashop_account_tax_group(models.Model):
     _name = 'prestashop.account.tax.group'
     _inherit = 'prestashop.binding'
     _inherits = {'account.tax.group': 'openerp_id'}
 
-    _columns = {
-        'openerp_id': fields.many2one(
+#    _columns = {
+#        'openerp_id': fields.Many2one(
+#            'account.tax.group',
+#            string='Tax Group',
+#            required=True,
+#            ondelete='cascade'
+#        ),
+#    }
+
+    openerp_id = fields.Many2one(
             'account.tax.group',
             string='Tax Group',
             required=True,
             ondelete='cascade'
-        ),
-    }
-
+        )
+        
     _sql_constraints = [
         ('prestashop_uniq', 'unique(backend_id, prestashop_id)',
          'A Tax Group with the same ID on prestashop already exists.'),
     ]
 
 
-class account_tax_group(orm.Model):
+class account_tax_group(models.Model):
     _inherit = 'account.tax.group'
 
-    _columns = {
-        'prestashop_bind_ids': fields.one2many(
+#    _columns = {
+#        'prestashop_bind_ids': fields.one2many(
+#            'prestashop.account.tax.group',
+#            'openerp_id',
+#            string='Prestashop Bindings',
+#            readonly=True
+#        ),
+#        'company_id': fields.Many2one(
+#            'res.company', 'Company', select=True,
+#            required=True),
+#    }
+
+    prestashop_bind_ids = fields.One2many(
             'prestashop.account.tax.group',
             'openerp_id',
             string='Prestashop Bindings',
             readonly=True
-        ),
-        'company_id': fields.many2one(
-            'res.company', 'Company', select=1,
-            required=True),
-    }
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
+        )
+    company_id = fields.Many2one(
+            'res.company', 'Company', select=True,
+            required=True)
+    
