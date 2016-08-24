@@ -71,7 +71,7 @@ class PrestashopBackend(models.Model):
 
             
     location = fields.Char("Location", required=True)
-    version = fields.Selection(compute=_select_versions, string='Version',
+    version = fields.Selection(selection=_select_versions, string='Version',
             required=True)
     webservice_key = fields.Char(
             'Webservice key',
@@ -98,7 +98,8 @@ class PrestashopBackend(models.Model):
                     string='Languages'
         )
     company_id = fields.Many2one('res.company', 'Company', select=True,
-                                      required=True)
+                                required=True,
+                                default=lambda self: self.env.user.company_id)
     discount_product_id = fields.Many2one('product.product',
                                                'Discount Product', select=True,
                                                required=False)
@@ -235,12 +236,13 @@ class PrestashopBackend(models.Model):
             
         return True
     
-    @api.cr_uid_context
-    def _date_as_user_tz(self, cr, uid, dtstr):
+    @api.multi
+    def _date_as_user_tz(self, dtstr):
         if not dtstr:
             return None
-        users_obj = self.pool.get('res.users')
-        user = users_obj.browse(cr, uid, uid)
+#        users_obj = self.pool.get('res.users')
+#        user = users_obj.browse(cr, uid, uid)
+        user = self.env.user
         timezone = pytz.timezone(user.partner_id.tz or 'utc')
         dt = datetime.strptime(dtstr, DEFAULT_SERVER_DATETIME_FORMAT)
         dt = pytz.utc.localize(dt)
@@ -249,15 +251,14 @@ class PrestashopBackend(models.Model):
         
     @api.multi
     def import_customers_since(self):
-        if not hasattr(ids, '__iter__'):
-            ids = [ids]
+#        if not hasattr(ids, '__iter__'):
+#            ids = [ids]
         session = session = ConnectorSession(self.env.cr, self.env.uid,
                                        context=self.env.context)
                                        
-        for backend_record in self.browse(cr, uid, ids, context=context):
-            since_date = self._date_as_user_tz(
-                cr, uid, backend_record.import_partners_since
-            )
+#        for backend_record in self.browse(cr, uid, ids, context=context):
+        for backend_record in self:
+            since_date = self._date_as_user_tz(backend_record.import_partners_since)
             import_customers_since.delay(
                 session,
                 backend_record.id,
@@ -604,18 +605,19 @@ class prestashop_shop(models.Model):
     backend_id = fields.Many2one(
             comodel_name='prestashop.backend',
             string='PrestaShop Backend',
-            store={
-                'prestashop.shop': (
-                    lambda self, cr, uid, ids, c={}: ids,
-                    ['shop_group_id'],
-                    10
-                ),
-                'prestashop.shop.group': (
-                    _get_shop_from_shopgroup,
-                    ['backend_id'],
-                    20
-                ),
-            },
+#            store={
+#                'prestashop.shop': (
+#                    lambda self, cr, uid, ids, c={}: ids,
+#                    ['shop_group_id'],
+#                    10
+#                ),
+#                'prestashop.shop.group': (
+#                    _get_shop_from_shopgroup,
+#                    ['backend_id'],
+#                    20
+#              store  ),
+#            },
+            store=True,
             readonly=True,
             related="shop_group_id.backend_id"
         )

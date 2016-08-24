@@ -712,12 +712,14 @@ class ProductCombinationOptionMapper(PrestashopImportMapper):
                     lang['attrs']['id'])
                 if not erp_language_id:
                     continue
-                erp_lang = self.session.read(
-                    'prestashop.res.lang',
-                    erp_language_id.id,
-                    []
-                )
-                if erp_lang['code'] == 'en_US':
+                    
+#                erp_lang = self.session.read(
+#                    'prestashop.res.lang',
+#                    erp_language_id.id,
+#                    []
+#                )
+#                if erp_lang['code'] == 'en_US':
+                if erp_language_id.code == 'en_US':
                     name = lang['value']
                     break
             if name is None:

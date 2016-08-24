@@ -411,14 +411,17 @@ class PartnerImportMapper(PrestashopImportMapper):
                 self.session.uid,
                 'base',
                 'lang_en')[1]
-        model = self.environment.session.pool.get('prestashop.res.lang')
-
-        erp_lang = model.read(
-            self.session.cr,
-            self.session.uid,
-            erp_lang_id.id,
-        )
-        return {'lang': erp_lang['code']}
+#        model = self.environment.session.pool.get('prestashop.res.lang')
+#
+#        erp_lang = model.read(
+#            self.session.cr,
+#            self.session.uid,
+#            erp_lang_id.id,
+#        )
+#        erp_lang = self.env['prestashop.res.lang'].search([('id', '=', )])
+        
+#        return {'lang': erp_lang['code']}
+        return {'lang': erp_lang_id.code}
 
     @mapping
     def customer(self, record):

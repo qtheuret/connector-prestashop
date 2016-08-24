@@ -38,6 +38,6 @@ Example of customizations:
 
 """,
  'data': [],
- 'installable': True,
+ 'installable': False,
  'application': False
  }

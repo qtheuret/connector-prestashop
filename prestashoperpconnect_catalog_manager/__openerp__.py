@@ -56,6 +56,6 @@ TODO :
         'wizard/sync_products_view.xml'
     ],
     "active": False,
-    "installable": True,
+    "installable": False,
     "application": True,
 }
