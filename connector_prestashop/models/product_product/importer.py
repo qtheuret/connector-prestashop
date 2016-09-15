@@ -217,7 +217,7 @@ class ProductCombinationMapper(ImportMapper):
         elif self.env['barcode.nomenclature'].check_ean(record['ean13']):
             barcode = record['ean13']
         if barcode:
-            return {'barcode': ean13}
+            return {'barcode': barcode}
         return {}
 
     def _get_tax_ids(self, record):

@@ -90,6 +90,8 @@ class PrestashopBackend(models.Model):
         required=True,
         string='Shipping Product',
     )
+    api_debug= fields.Boolean(string="Debug the API")
+    api_timeout= fields.Float(string="Timeout in seconds")
 
     @api.multi
     def synchronize_metadata(self):
