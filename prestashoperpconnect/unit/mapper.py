@@ -933,6 +933,23 @@ class TaxMapper(PrestashopImportMapper):
             name = record['name']
 
         return {'name': name}
+    
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        """ Will bind the tax to an existing one with the same code """
+        _logger.debug("self %s and record %s" % (self, record))
+        _logger.debug("self name %s and record " % (self.name(record)))
+        tax = self.env['account.tax'].search([
+                        ('name', '=', self.name(record)['name']),
+                        ('company_id', '=', self.company_id(record)['company_id']),
+                        ('amount', '=', self.amount(record)['amount']),
+                        ('price_include', '=', self.price_include(record)['price_include']),
+        ]   
+        , limit=1)
+        if tax:
+            return {'openerp_id': tax.id}
+
 
 
 @prestashop

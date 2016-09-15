@@ -29,7 +29,7 @@
 
 import base64
 import logging
-from prestapyt import PrestaShopWebServiceDict
+from prestapyt import PrestaShopWebServiceError, PrestaShopWebServiceDict
 from openerp.addons.connector.unit.backend_adapter import CRUDAdapter
 from ..backend import prestashop
 
@@ -139,8 +139,8 @@ class GenericAdapter(PrestaShopCRUDAdapter):
     def connect(self):
         # Add parameter to debug 
         # https://github.com/akretion/prestapyt/blob/master/prestapyt/prestapyt.py#L81
-        _logger.info("Connect to %s with apikey %s in debug mode %s and \
-                        timeout %s",
+        _logger.info("Connect to %s with apikey %s in debug mode %s and " + 
+                        "timeout %s",
                         self.prestashop.api_url,
                         self.prestashop.webservice_key,
                         str(self.prestashop.api_debug),
@@ -149,8 +149,9 @@ class GenericAdapter(PrestaShopCRUDAdapter):
         return PrestaShopWebServiceDict(self.prestashop.api_url,
                                         self.prestashop.webservice_key,
                                         self.prestashop.api_debug, 
-                                        None, 
-                                        {'timeout': self.prestashop.api_timeout})
+#                                        {None}, 
+#                                        {'timeout': self.prestashop.api_timeout}
+                                        )
 
     def search(self, filters=None):
         """ Search records according to some criterias
