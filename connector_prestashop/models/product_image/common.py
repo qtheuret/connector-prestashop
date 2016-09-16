@@ -49,7 +49,8 @@ class ProductImageAdapter(PrestaShopCRUDAdapter):
 
     def read(self, product_tmpl_id, image_id, options=None):
         api = PrestaShopWebServiceImage(self.prestashop.api_url,
-                                        self.prestashop.webservice_key)
+                                        self.prestashop.webservice_key,
+                                        self.prestashop.api_debug)
         return api.get_image(
             self._prestashop_image_model,
             product_tmpl_id,
