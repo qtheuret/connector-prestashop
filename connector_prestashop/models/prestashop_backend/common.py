@@ -91,6 +91,8 @@ class PrestashopBackend(models.Model):
         string='Shipping Product',
     )
     api_debug= fields.Boolean(string="Debug the API")
+    matching_product_template= fields.Boolean(string="matching product template")
+    matching_product_product= fields.Boolean(string="matching product template")
 
     @api.multi
     def synchronize_metadata(self):
