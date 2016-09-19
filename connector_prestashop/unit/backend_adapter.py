@@ -73,7 +73,7 @@ class PrestaShopWebServiceImage(PrestaShopWebServiceDict):
 
 class PrestaShopLocation(object):
 
-    def __init__(self, location, webservice_key):
+    def __init__(self, location, webservice_key,api_debug):
         self.location = location
         self.webservice_key = webservice_key
         if not location.endswith('/api'):
@@ -81,6 +81,7 @@ class PrestaShopLocation(object):
         if not location.startswith('http'):
             location = 'http://' + location
         self.api_url = location
+        self.api_debug = api_debug
 
 
 class PrestaShopCRUDAdapter(CRUDAdapter):
@@ -95,11 +96,14 @@ class PrestaShopCRUDAdapter(CRUDAdapter):
         super(PrestaShopCRUDAdapter, self).__init__(environment)
         self.prestashop = PrestaShopLocation(
             self.backend_record.location.encode(),
-            self.backend_record.webservice_key
+            self.backend_record.webservice_key,
+            self.backend_record.api_debug,
         )
+#        print("api_debug %s" % self.backend_record.api_debug)
         self.client = PrestaShopWebServiceDict(
             self.prestashop.api_url,
             self.prestashop.webservice_key,
+            self.backend_record.api_debug,
         )
 
     def search(self, filters=None):
