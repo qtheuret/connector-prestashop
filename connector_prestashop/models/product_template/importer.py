@@ -9,7 +9,7 @@ from prestapyt import PrestaShopWebServiceError
 
 from openerp import models, fields
 from openerp.addons.connector.queue.job import job
-from openerp.addons.connector.unit.mapper import mapping, ImportMapper
+from openerp.addons.connector.unit.mapper import mapping, ImportMapper, only_create
 
 from ...unit.importer import (
     DelayedBatchImporter,
@@ -103,6 +103,24 @@ class TemplateMapper(ImportMapper):
             ('company_id', '=', self.backend_record.company_id.id),
         ], limit=1)
         return len(template_ids) > 0
+    
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        """ Will bind the product to an existing one with the same code """
+        if self.backend_record.matching_product_product:
+            if self.has_combinations(record):
+                return {}
+            code = record.get('reference')
+            if code:
+                if self._template_code_exists(code):
+                    product = self.env['product.template'].search(
+                [('default_code', '=', code)], limit=1)
+                if product:
+                    return {'openerp_id': product.id}
+        else:
+            return
+
 
     @mapping
     def default_code(self, record):

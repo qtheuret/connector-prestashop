@@ -27,6 +27,7 @@ class PaymentModeBinder(Binder):
     _external_field = 'name'
 
     def to_openerp(self, external_id, unwrap=False, company=None):
+        print("external_id %s"% external_id)
         if company is None:
             company = self.backend_record.company_id
         bindings = self.model.with_context(active_test=False).search(

@@ -7,7 +7,7 @@ from prestapyt import PrestaShopWebServiceError
 from openerp import models
 
 from openerp.addons.connector.unit.backend_adapter import BackendAdapter
-from openerp.addons.connector.unit.mapper import mapping, ImportMapper
+from openerp.addons.connector.unit.mapper import mapping, ImportMapper, only_create
 from ...unit.importer import (
     PrestashopImporter,
     import_batch,
@@ -185,6 +185,23 @@ class ProductCombinationMapper(ImportMapper):
         return template_ids and not combination_binder.to_backend(
             template_ids, wrap=True)
 
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        """ Will bind the product to an existing one with the same code """
+        if self.backend_record.matching_product_template:
+            if self.has_combinations(record):
+                return {}
+            code = record.get('reference')
+            if code:
+                if self._template_code_exists(code):
+                    product = self.env['product.template'].search(
+                [('default_code', '=', code)], limit=1)
+                if product:
+                    return {'openerp_id': product.id}
+        else:
+            return
+
     @mapping
     def default_code(self, record):
         code = record.get('reference')
@@ -217,7 +234,7 @@ class ProductCombinationMapper(ImportMapper):
         elif self.env['barcode.nomenclature'].check_ean(record['ean13']):
             barcode = record['ean13']
         if barcode:
-            return {'barcode': ean13}
+            return {'barcode': barcode}
         return {}
 
     def _get_tax_ids(self, record):
