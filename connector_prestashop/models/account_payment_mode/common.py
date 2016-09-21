@@ -28,6 +28,8 @@ class PaymentModeBinder(Binder):
 
     def to_openerp(self, external_id, unwrap=False, company=None):
 #        print("external_id %s"% external_id)
+        external_ID=external_id.encode('utf-8')
+#        print("external_id %s"% enc)
         if company is None:
             company = self.backend_record.company_id
         bindings = self.model.with_context(active_test=False).search(
