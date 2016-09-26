@@ -4,22 +4,24 @@
 import logging
 
 from openerp import models, fields, api, exceptions, _
-
+from prestapyt import PrestaShopWebServiceError, PrestaShopWebServiceDict
 from openerp.addons.connector.session import ConnectorSession
 from ...unit.importer import import_batch, import_record
 from ...unit.auto_matching_importer import AutoMatchingImporter
 from ...connector import get_environment
-from ...unit.backend_adapter import GenericAdapter, api_handle_errors
+from ...unit.backend_adapter import GenericAdapter, api_handle_errors, PrestaShopLocation
 from ...backend import prestashop
 
 from ..product_template.exporter import export_product_quantities
 from ..product_template.importer import import_inventory
 from ..res_partner.importer import import_customers_since
+from ..res_partner.common import PartnerAdapter
 from ..delivery_carrier.importer import import_carriers
 from ..product_supplierinfo.importer import import_suppliers
 from ..account_invoice.importer import import_refunds
 from ..product_template.importer import import_products
 from ..sale_order.importer import import_orders_since
+
 
 
 _logger = logging.getLogger(__name__)
@@ -90,9 +92,41 @@ class PrestashopBackend(models.Model):
         required=True,
         string='Shipping Product',
     )
+    
+    #Debug and matching
+    
     api_debug= fields.Boolean(string="Debug the API")
     matching_product_template= fields.Boolean(string="matching product template")
     matching_product_product= fields.Boolean(string="matching product template")
+    matching_customer= fields.Boolean(string="matching customer")
+    matching_address= fields.Boolean(string="matching adress")
+    
+    @api.model
+    def create(self, vals):
+        backend=super(PrestashopBackend, self).create(vals)
+        prestashop = PrestaShopLocation(
+            backend.location.encode(),
+            backend.webservice_key,
+        )
+#        print("api_debug %s" % self.backend_record.api_debug)
+        client = PrestaShopWebServiceDict(
+            prestashop.api_url,
+            prestashop.webservice_key)
+
+        backend.matching_customer_ch=[]
+
+        customer = client.get('customers', options={'limit': 1,'display': 'full'})
+        tab=customer['customers']['customer'].keys()
+        for key in tab:
+            self.env['prestashop.partner.field'].create({
+                'name' : key,
+                'value' : key
+            })
+        return backend
+    
+    matching_customer_ch=fields.Many2one(comodel_name='prestashop.partner.field',string="field matched")
+    matching_product_ch=fields.Selection([('default_code','default_code'),('barcode','barcode')],string="field matched product")
+
 
     @api.multi
     def synchronize_metadata(self):
@@ -323,3 +357,9 @@ class NoModelAdapter(GenericAdapter):
 class ShopGroupAdapter(GenericAdapter):
     _model_name = 'prestashop.shop.group'
     _prestashop_model = 'shop_groups'
+    
+class selection_selection(models.Model):
+    _name = 'prestashop.partner.field'
+    
+    name = fields.Char('Name', required=True)
+    value = fields.Char('Value', required=True)

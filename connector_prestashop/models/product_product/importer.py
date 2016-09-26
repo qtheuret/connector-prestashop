@@ -192,11 +192,11 @@ class ProductCombinationMapper(ImportMapper):
         if self.backend_record.matching_product_template:
             if self.has_combinations(record):
                 return {}
-            code = record.get('reference')
+            code = record.get(self.backend_record.matching_product_ch)
             if code:
                 if self._template_code_exists(code):
-                    product = self.env['product.template'].search(
-                [('default_code', '=', code)], limit=1)
+                    product = self.env['product.product'].search(
+                [(self.backend_record.matching_product_ch, '=', code)], limit=1)
                 if product:
                     return {'openerp_id': product.id}
         else:

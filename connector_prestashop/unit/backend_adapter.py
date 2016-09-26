@@ -73,7 +73,7 @@ class PrestaShopWebServiceImage(PrestaShopWebServiceDict):
 
 class PrestaShopLocation(object):
 
-    def __init__(self, location, webservice_key,api_debug):
+    def __init__(self, location, webservice_key,api_debug=False):
         self.location = location
         self.webservice_key = webservice_key
         if not location.endswith('/api'):
