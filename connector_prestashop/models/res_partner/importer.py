@@ -259,6 +259,15 @@ class AddressImporter(PrestashopImporter):
                 )
 
 
+    def _has_to_skip(self):
+        record = self.prestashop_record
+        binder = self.binder_for('prestashop.address')
+        address_binding = binder.to_openerp(record['id'])
+        return record['deleted'] == '1' or not address_binding
+
+
+
+
 @prestashop
 class AddressBatchImporter(DelayedBatchImporter):
     _model_name = 'prestashop.address'
