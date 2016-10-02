@@ -16,9 +16,14 @@
                 <attribute name="invisible">0</attribute>
             </page>
             <page name="connector" position="inside">
-                <group string="PrestaShop Bindings">
+                <group string="PrestaShop Partner Bindings" attrs="{'invisible': [('prestashop_bind_ids', '=', False)]}">
                     <field  name="prestashop_bind_ids" nolabel="1"/>
                 </group>
+                
+                <group string="PrestaShop Adress Bindings" attrs="{'invisible': [('prestashop_address_bind_ids', '=', False)]}">
+                    <field  name="prestashop_address_bind_ids" nolabel="1"/>
+                </group>
+
             </page>
         </field>
     </record>
@@ -49,8 +54,8 @@
                 <field name="backend_id"/>
                 <field name="shop_group_id"/>
                 <button name="resync"
-                    type="object"
-                    string="Resync" />
+                        type="object"
+                        string="Resync" />
             </tree>
         </field>
     </record>

@@ -94,40 +94,62 @@ class PrestashopBackend(models.Model):
     )
     
     #Debug and matching
-    
     api_debug= fields.Boolean(string="Debug the API")
-    matching_product_template= fields.Boolean(string="matching product template")
-    matching_product_product= fields.Boolean(string="matching product template")
-    matching_customer= fields.Boolean(string="matching customer")
-    matching_address= fields.Boolean(string="matching adress")
+    
+    
+    matching_product_template = fields.Boolean(string="Match product template")
+    
+    matching_product_ch = fields.Selection([('default_code','default_code'),('barcode','barcode')],string="Matching Field for product")
+    
+    matching_customer = fields.Boolean(string="Matching Customer", 
+                    help="The selected fields will be matched to the ref field \
+                        of the partner. Please adapt your datas consequently.")
+    matching_customer_ch = fields.Many2one(comodel_name='prestashop.partner.field'
+                            , string="Matched field", help="Field that will be matched.")
+    
+    
     
     @api.model
     def create(self, vals):
-        backend=super(PrestashopBackend, self).create(vals)
-        prestashop = PrestaShopLocation(
-            backend.location.encode(),
-            backend.webservice_key,
-        )
-#        print("api_debug %s" % self.backend_record.api_debug)
-        client = PrestaShopWebServiceDict(
-            prestashop.api_url,
-            prestashop.webservice_key)
-
-        backend.matching_customer_ch=[]
-
-        customer = client.get('customers', options={'limit': 1,'display': 'full'})
-        tab=customer['customers']['customer'].keys()
-        for key in tab:
-            self.env['prestashop.partner.field'].create({
-                'name' : key,
-                'value' : key
-            })
+        backend = super(PrestashopBackend, self).create(vals)
+        backend.fill_matched_fields(backend.id)
         return backend
     
-    matching_customer_ch=fields.Many2one(comodel_name='prestashop.partner.field',string="field matched")
-    matching_product_ch=fields.Selection([('default_code','default_code'),('barcode','barcode')],string="field matched product")
+    
+    @api.onchange("matching_customer")
+    def change_matching_customer(self):
+        #Update the field list so that if you API change you could find the new fields to map
+        self.fill_matched_fields(self._origin.id)
+        
+    
+    @api.multi
+    def fill_matched_fields(self, backend_id):
+        self.ensure_one()
+        
+        options={'limit': 1,'display': 'full'}
+             
+        prestashop = PrestaShopLocation(
+                        self.location.encode(),
+                        self.webservice_key,
+                    )
+        
+        client = PrestaShopWebServiceDict(
+                    prestashop.api_url,
+                    prestashop.webservice_key)
 
+        customer = client.get('customers', options=options)
+        tab=customer['customers']['customer'].keys()
+        for key in tab:
+            key_present = self.env['prestashop.partner.field'].search(
+                    [('value', '=', key), ('backend_id', '=', backend_id)])
 
+            if len(key_present) == 0 :
+                self.env['prestashop.partner.field'].create({
+                    'name' : key,
+                    'value' : key,
+                    'backend_id': backend_id
+                })
+        
     @api.multi
     def synchronize_metadata(self):
         session = ConnectorSession.from_env(self.env)
@@ -358,8 +380,10 @@ class ShopGroupAdapter(GenericAdapter):
     _model_name = 'prestashop.shop.group'
     _prestashop_model = 'shop_groups'
     
-class selection_selection(models.Model):
+class PrestashopPartnerField(models.Model):
     _name = 'prestashop.partner.field'
     
     name = fields.Char('Name', required=True)
     value = fields.Char('Value', required=True)
+    backend_id = fields.Many2one(comodel_name="prestashop.backend", 
+                string="Backend", required=True)

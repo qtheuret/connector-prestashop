@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
 import re
+import logging
 
 from openerp import fields
 from openerp.addons.connector.queue.job import job
@@ -19,6 +20,7 @@ from ...backend import prestashop
 from ...unit.mapper import backend_to_m2o
 from ...connector import add_checkpoint
 
+_logger = logging.getLogger(__name__)
 
 @prestashop
 class PartnerImportMapper(ImportMapper):
@@ -42,8 +44,7 @@ class PartnerImportMapper(ImportMapper):
     def openerp_id(self, record):
         """ Will bind the product to an existing one with the same code """
         if self.backend_record.matching_customer:
-            code = record.get(self.backend_record.matching_customer_ch)
-            
+            code = record.get(self.backend_record.matching_customer_ch.value)
             
             if code:
                 partner = self.env['res.partner'].search(
@@ -177,8 +178,10 @@ class AddressImportMapper(ImportMapper):
                 if address:
                     return {'openerp_id': address.id}
         else:
-            return
+            return {}
 
+
+    
 
     @mapping
     def backend_id(self, record):
