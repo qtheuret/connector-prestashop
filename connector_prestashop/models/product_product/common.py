@@ -67,8 +67,10 @@ class ProductProduct(models.Model):
     @api.multi
     def _check_default_on(self):
         
-        if self.env.context.get('skip_check_default_variant', False) or \
-            self.backend_record.matching_product_template:
+        if self.env.context.get('skip_check_default_variant', False) :
+        #TODO: see how to pass the context here for preventing this check to be called
+        #or \ self.backend_record.matching_product_template:
+
                 return True
         for product in self:
             if product.product_tmpl_id.product_variant_count > 1:
