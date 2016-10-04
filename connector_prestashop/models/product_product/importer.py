@@ -17,6 +17,8 @@ from ...unit.importer import (
 from ...unit.backend_adapter import GenericAdapter, PrestaShopCRUDAdapter
 from ...backend import prestashop
 
+import logging
+_logger = logging.getLogger(__name__)
 
 @prestashop
 class ProductCombinationImporter(PrestashopImporter):
@@ -190,21 +192,27 @@ class ProductCombinationMapper(ImportMapper):
     def openerp_id(self, record):
         """ Will bind the product to an existing one with the same code """
         if self.backend_record.matching_product_template:
-            if self.has_combinations(record):
-                return {}
-            code = record.get(self.backend_record.matching_product_ch)
-            if code:
-                if self._template_code_exists(code):
+            code = record.get(self.backend_record.matching_product_ch)            
+            if self.backend_record.matching_product_ch == 'reference':    
+                if code:
                     product = self.env['product.product'].search(
-                [(self.backend_record.matching_product_ch, '=', code)], limit=1)
-                if product:
-                    return {'openerp_id': product.id}
+                    [('default_code', '=', code)], limit=1)                    
+                    if product:
+                            return {'openerp_id': product.id}
+            if self.backend_record.matching_product_ch == 'ean13':
+                if code:
+                    product = self.env['product.product'].search(
+                    [('barcode', '=', code)], limit=1)
+                    if product:
+                        return {'openerp_id': product.id}                    
         else:
-            return
+            return {}
 
     @mapping
-    def default_code(self, record):
+    def default_code(self, record):        
         code = record.get('reference')
+        if self.backend_record.matching_product_template:
+            return {'default_code': code}
         if not code:
             code = "%s_%s" % (record['id_product'], record['id'])
         if not self._template_code_exists(code):
