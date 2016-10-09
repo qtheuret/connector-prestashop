@@ -492,30 +492,32 @@ class ProductTemplateImporter(TranslatableRecordImporter):
         combinations = associations.get('combinations', {}).get(
             'combinations', [])
 
-        if not isinstance(combinations, list):
-            combinations = [combinations]
-        if combinations:
-            first_exec = combinations.pop(
-                combinations.index({
-                    'id': prestashop_record[
-                        'id_default_combination']['value']}))
-            if first_exec:
-                import_record(
-                    self.session, 'prestashop.product.combination',
-                    self.backend_record.id, first_exec['id'])
+        with self.session.change_context(skip_check_default_variant=
+                self.backend_record.matching_product_template):
+            if not isinstance(combinations, list):
+                combinations = [combinations]
+            if combinations:
+                first_exec = combinations.pop(
+                    combinations.index({
+                        'id': prestashop_record[
+                            'id_default_combination']['value']}))
+                if first_exec:
+                    import_record(
+                        self.session, 'prestashop.product.combination',
+                        self.backend_record.id, first_exec['id'])
 
-            for combination in combinations:
-                import_record(
-                    self.session, 'prestashop.product.combination',
-                    self.backend_record.id, combination['id'])
-            if combinations and associations['images'].get('image', False):
-                set_product_image_variant.delay(
-                    self.session,
-                    'prestashop.product.combination',
-                    self.backend_record.id,
-                    combinations,
-                    priority=15,
-                )
+                for combination in combinations:
+                    import_record(
+                        self.session, 'prestashop.product.combination',
+                        self.backend_record.id, combination['id'])
+                if combinations and associations['images'].get('image', False):
+                    set_product_image_variant.delay(
+                        self.session,
+                        'prestashop.product.combination',
+                        self.backend_record.id,
+                        combinations,
+                        priority=15,
+                    )
 
     def import_images(self, binding):
         prestashop_record = self._get_prestashop_data()
