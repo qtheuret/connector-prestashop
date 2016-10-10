@@ -388,4 +388,4 @@ class PrestashopPartnerField(models.Model):
     name = fields.Char('Name', required=True)
     value = fields.Char('Value', required=True)
     backend_id = fields.Many2one(comodel_name="prestashop.backend", 
-                string="Backend", required=True)
+                string="Backend", required=True, ondelete='cascade')
