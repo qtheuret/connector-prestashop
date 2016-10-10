@@ -58,7 +58,14 @@ class TemplateMapper(ImportMapper):
         price = float(record['price'])
         if tax:
             tax = tax[:1]
-            return (price / (1 + tax.amount) - impact_price) * (1 + tax.amount)
+            price = (price / (1 + tax.amount) - impact_price) * (1 + tax.amount)
+            
+            if self.backend_record.taxes_included and not tax.price_include:
+                #If the taxe we set on product is not included in Odoo
+                #but the price is only set as included on PS
+                #we have to convert it
+                price = price / (1 + tax.amount/100.0)
+            return price
         price = float(record['price']) - impact_price
         return price
 
@@ -130,7 +137,7 @@ class TemplateMapper(ImportMapper):
                 associations = record.get('associations', {})
                 combinations = associations.get('combinations', {}).get(
                                 'combinations', [])
-                _logger.debug("COMBINATIONS %s" % combinations)
+                
                 for prod in combinations:
                     backend_adapter = self.unit_for(
                                 BackendAdapter, 'prestashop.product.combination')
@@ -143,8 +150,8 @@ class TemplateMapper(ImportMapper):
                         
                         if len(product) > 1 :
                             raise ValidationError(_('Error! Multiple products ' 
-                                        'found with combinations reference.' 
-                                        'Maybe consider to update you datas'))
+                                        'found with combinations reference %s.' 
+                                        'Maybe consider to update you datas') % code)
                         template |= product.product_tmpl_id
                         
                     if self.backend_record.matching_product_ch == 'ean13':
@@ -152,8 +159,8 @@ class TemplateMapper(ImportMapper):
                         [('barcode', '=', code)])
                         if len(product) > 1 :
                             raise ValidationError(_('Error! Multiple products ' 
-                                        'found with combinations reference.' 
-                                        'Maybe consider to update you datas'))
+                                        'found with combinations reference %s.' 
+                                        'Maybe consider to update you datas') % code)
                         template |= product.product_tmpl_id
                         
                 _logger.debug('template %s' % template)
