@@ -139,12 +139,21 @@ class TemplateMapper(ImportMapper):
                     
                     if self.backend_record.matching_product_ch == 'reference':    
                         product = self.env['product.product'].search(
-                        [('default_code', '=', code)], limit=1)
+                        [('default_code', '=', code)])
+                        
+                        if len(product) > 1 :
+                            raise ValidationError(_('Error! Multiple products ' 
+                                        'found with combinations reference.' 
+                                        'Maybe consider to update you datas'))
                         template |= product.product_tmpl_id
                         
                     if self.backend_record.matching_product_ch == 'ean13':
                         product = self.env['product.product'].search(
-                        [('barcode', '=', code)], limit=1)
+                        [('barcode', '=', code)])
+                        if len(product) > 1 :
+                            raise ValidationError(_('Error! Multiple products ' 
+                                        'found with combinations reference.' 
+                                        'Maybe consider to update you datas'))
                         template |= product.product_tmpl_id
                         
                 _logger.debug('template %s' % template)
@@ -450,7 +459,9 @@ class ProductTemplateImporter(TranslatableRecordImporter):
         super(ProductTemplateImporter, self)._after_import(binding)
         self.import_images(binding)
         self.import_combinations()
-        self.attribute_line(binding)
+        if not self.backend_record.matching_product_template:
+            #If product is matched we don't need to create attribute line
+            self.attribute_line(binding)
         self.deactivate_default_product(binding)
 
     def deactivate_default_product(self, binding):
