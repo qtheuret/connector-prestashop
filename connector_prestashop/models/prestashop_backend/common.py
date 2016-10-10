@@ -112,14 +112,16 @@ class PrestashopBackend(models.Model):
     @api.model
     def create(self, vals):
         backend = super(PrestashopBackend, self).create(vals)
-        backend.fill_matched_fields(backend.id)
+        if backend.location and backend.webservice_key:
+            backend.fill_matched_fields(backend.id)
         return backend
     
     
     @api.onchange("matching_customer")
     def change_matching_customer(self):
         #Update the field list so that if you API change you could find the new fields to map
-        self.fill_matched_fields(self._origin.id)
+        if self._origin.id:
+            self.fill_matched_fields(self._origin.id)
         
     
     @api.multi
