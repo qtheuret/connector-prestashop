@@ -152,7 +152,13 @@ class PrestashopProductCombination(models.Model):
 
     @api.model
     def _prestashop_qty(self, product):
-        return product.qty_available
+        stock_field = self.backend_record.quantity_field
+        if stock_field == 'qty_available':
+            stock = product.qty_available
+        else:
+            stock = product.virtual_available
+        
+        return stock
 
     _sql_constraints = [
         ('prestashop_erp_uniq', 'unique(backend_id, openerp_id)',

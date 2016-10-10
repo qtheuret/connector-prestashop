@@ -62,6 +62,13 @@ class PrestashopBackend(models.Model):
         help='Warehouse used to compute the stock quantities.'
     )
     taxes_included = fields.Boolean("Use tax included prices")
+    quantity_field = fields.Selection(
+                            [('qty_available','Available Quantity'),
+                            ('virtual_available','Forecast quantity')],
+                            string='Field use for quantity update',
+                            required=True, 
+                            default='virtual_available'
+                        )
     import_partners_since = fields.Datetime('Import partners since')
     import_orders_since = fields.Datetime('Import Orders since')
     import_products_since = fields.Datetime('Import Products since')

@@ -112,7 +112,11 @@ class PrestashopProductTemplate(models.Model):
 
     def _prestashop_qty(self):
         location_id = self.backend_id.warehouse_id.lot_stock_id.id
-        return self.with_context(location=location_id).qty_available
+        stock_field = self.backend_id.quantity_field
+        if stock_field == 'qty_available':
+            return self.with_context(location=location_id).qty_available
+        else:
+            return self.with_context(location=location_id).virtual_available
 
 
 @prestashop
@@ -157,11 +161,13 @@ class ProductInventoryAdapter(GenericAdapter):
             stock = res[first_key]
             stock['quantity'] = int(quantity)
             try:
-                client.edit(self._prestashop_model, stock['id'], {
-                    self._export_node_name: stock
-                })
+#                client.edit(self._prestashop_model, stock['id'], {
+#                    self._export_node_name: stock
+#                })
+                self.write(stock['id'], stock)
             # TODO: investigate the silent errors
             except PrestaShopWebServiceError:
                 pass
             except ElementTree.ParseError:
                 pass
+
