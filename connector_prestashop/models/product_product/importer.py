@@ -344,6 +344,21 @@ class ProductCombinationOptionMapper(ImportMapper):
         else:
             name = record['name']
         return {'name': name}
+    
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        """ Will bind the product attribute to an existing one with the same name """
+        if self.backend_record.matching_product_template:
+            name = self.name(record)['name']
+            
+            attribute = self.env['product.attribute'].search([('name', '=', name)])
+            
+            if len(attribute) == 1 :
+                return {'openerp_id': attribute.id}                    
+        else:
+            return {}
+
 
 
 @prestashop
@@ -380,6 +395,23 @@ class ProductCombinationOptionValueMapper(ImportMapper):
     @mapping
     def backend_id(self, record):
         return {'backend_id': self.backend_record.id}
+    
+    
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        """ Will bind the attribute value to an existing one with the same code """
+        if self.backend_record.matching_product_template:
+            name = record['name']
+            
+            attribute = self.env['product.attribute.value'].search([
+                            ('name', '=', name),
+                            ('attribute_id', '=', self.attribute_id(record)['attribute_id'])])
+            
+            if len(attribute) == 1 :
+                return {'openerp_id': attribute.id}                    
+        else:
+            return {}
 
 
 @prestashop
