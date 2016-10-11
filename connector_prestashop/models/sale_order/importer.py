@@ -400,7 +400,7 @@ class SaleOrderLineMapper(ImportMapper):
                 return self.tax_id(record)
         return {'product_id': product.id}
 
-    def _find_tax(self, ps_tax_id):
+    def _find_tax(self, ps_tax_id, record):
         binder = self.binder_for('prestashop.account.tax')
         taxes = binder.to_openerp(ps_tax_id, unwrap=True)
         
