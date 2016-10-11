@@ -196,6 +196,12 @@ class SaleOrderMapper(ImportMapper):
         binder = self.binder_for('prestashop.res.partner')
         partner = binder.to_openerp(record['id_customer'], unwrap=True)
         return {'partner_id': partner.id}
+    
+    @mapping
+    def fiscal_position_id(self, record):
+        binder = self.binder_for('prestashop.res.partner')
+        partner = binder.to_openerp(record['id_customer'], unwrap=True)
+        return {'fiscal_position_id': partner.property_account_position_id.id}
 
     @mapping
     def partner_invoice_id(self, record):
@@ -396,7 +402,16 @@ class SaleOrderLineMapper(ImportMapper):
 
     def _find_tax(self, ps_tax_id):
         binder = self.binder_for('prestashop.account.tax')
-        return binder.to_openerp(ps_tax_id, unwrap=True)
+        taxes = binder.to_openerp(ps_tax_id, unwrap=True)
+        
+        binder = self.binder_for('prestashop.sale.order')
+        order_id = binder.to_openerp(record['id_order'], unwrap=True)
+        fp = order_id.fiscal_poition_id
+        if len(fp) :
+            new_taxes = fp.map_tax(taxes)
+            _logger.debug("TAXES MAPPED %s" % new_taxes.code)
+            taxes = new_taxes
+        return taxes
 
     @mapping
     def tax_id(self, record):
