@@ -195,10 +195,12 @@ class AddressImportMapper(ImportMapper):
 
     @mapping
     def name(self, record):
+        
         parts = [record['firstname'], record['lastname']]
         if record['alias']:
             parts.append('(%s)' % record['alias'])
         name = ' '.join(p.strip() for p in parts if p.strip())
+        _logger.debug("ADRESSE NAME %s" % name)
         return {'name': name}
 
     @mapping
@@ -257,15 +259,6 @@ class AddressImporter(PrestashopImporter):
                     binding.parent_id.id,
                     self.backend_record.id
                 )
-
-
-    def _has_to_skip(self):
-        record = self.prestashop_record
-        binder = self.binder_for('prestashop.address')
-        address_binding = binder.to_openerp(record['id'])
-        return record['deleted'] == '1' or not address_binding
-
-
 
 
 @prestashop
