@@ -141,7 +141,7 @@ class TemplateMapper(ImportMapper):
                 for prod in combinations:
                     backend_adapter = self.unit_for(
                                 BackendAdapter, 'prestashop.product.combination')
-                    variant = backend_adapter.read(prod['id'])
+                    variant = backend_adapter.read(int(prod['id']))
                     code = variant.get(self.backend_record.matching_product_ch)
                     
                     if self.backend_record.matching_product_ch == 'reference':    
