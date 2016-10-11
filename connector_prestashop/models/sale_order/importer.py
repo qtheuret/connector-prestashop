@@ -23,6 +23,8 @@ from ...unit.importer import (
 from ...unit.exception import OrderImportRuleRetry
 from ...backend import prestashop
 
+import logging
+_logger = logging.getLogger(__name__)
 
 @prestashop
 class PrestaShopSaleOrderOnChange(SaleOrderOnChange):
