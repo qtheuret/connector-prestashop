@@ -304,12 +304,9 @@ class SaleOrderImporter(PrestashopImporter):
     def _recompute_fp(self, binding):
         
         fp = binding.openerp_id.fiscal_position_id or binding.openerp_id.partner_id.property_account_position_id
-        _logger.debug("BINDING %s" % binding)
-        _logger.debug("Fiscal position %s" % fp)
         if len(fp) == 1:
             for line in binding.openerp_id.order_line:
                 new_taxes = fp.map_tax(line.tax_id)
-                _logger.debug("NEW TAXES %s" % new_taxes)
                 line.write({'tax_id': [(6, 0, new_taxes.ids)]})
         
     def _after_import(self, binding):
