@@ -301,9 +301,30 @@ class SaleOrderImporter(PrestashopImporter):
             })
         binding.openerp_id.recompute()
 
+    def _recompute_fp(self, binding):
+        
+        fp = binding.openerp_id.fiscal_position_id or binding.openerp_id.partner_id.property_account_position_id
+        _logger.debug("BINDING %s" % binding)
+        _logger.debug("Fiscal position %s" % fp)
+        if len(fp) == 1:
+            for line in order_line:
+                new_taxes = fp.map_tax(line.tax_id)
+                _logger.debug("NEW TAXES %s" % new_taxes)
+                line.write({'tax_id': [(6, 0, new_taxes.ids)]})
+                        
+#        order_id = binder.to_openerp(record['id_order'], unwrap=True)
+#        fp = order_id.partner_id.property_account_position_id
+#        _logger.debug("Fiscal position %s" % fp)
+#        _logger.debug("Fiscal position %s" % fp)
+#        if len(fp) == 1 :
+#            new_taxes = fp.map_tax(taxes)
+#            _logger.debug("TAXES MAPPED %s" % new_taxes.code)
+#            taxes = new_taxes
+        
     def _after_import(self, binding):
         super(SaleOrderImporter, self)._after_import(binding)
         self._add_shipping_line(binding)
+        self._recompute_fp(binding)
 
     # TODO: this method is unreachable
     def _check_refunds(self, id_customer, id_order):
@@ -406,14 +427,15 @@ class SaleOrderLineMapper(ImportMapper):
         binder = self.binder_for('prestashop.account.tax')
         taxes = binder.to_openerp(ps_tax_id, unwrap=True)
         
-        binder = self.binder_for('prestashop.sale.order')
-        order_id = binder.to_openerp(record['id_order'], unwrap=True)
-        fp = order_id.partner_id.property_account_position_id
-        _logger.debug("Fiscal position %s" % fp)
-        if len(fp) == 1 :
-            new_taxes = fp.map_tax(taxes)
-            _logger.debug("TAXES MAPPED %s" % new_taxes.code)
-            taxes = new_taxes
+#        binder = self.binder_for('prestashop.sale.order')
+#        order_id = binder.to_openerp(record['id_order'], unwrap=True)
+#        fp = order_id.partner_id.property_account_position_id
+#        _logger.debug("Fiscal position %s" % fp)
+#        _logger.debug("Fiscal position %s" % fp)
+#        if len(fp) == 1 :
+#            new_taxes = fp.map_tax(taxes)
+#            _logger.debug("TAXES MAPPED %s" % new_taxes.code)
+#            taxes = new_taxes
         return taxes
 
     @mapping
