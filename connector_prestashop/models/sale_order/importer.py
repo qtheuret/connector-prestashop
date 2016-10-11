@@ -421,7 +421,7 @@ class SaleOrderLineMapper(ImportMapper):
             taxes = [taxes]
         result = self.env['account.tax'].browse()
         for ps_tax in taxes:
-            result |= self._find_tax(ps_tax['id'])
+            result |= self._find_tax(ps_tax['id'], record)
         if result:
             return {'tax_id': [(6, 0, result.ids)]}
         return {}
