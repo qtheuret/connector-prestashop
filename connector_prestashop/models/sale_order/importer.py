@@ -408,7 +408,7 @@ class SaleOrderLineMapper(ImportMapper):
         
         binder = self.binder_for('prestashop.sale.order')
         order_id = binder.to_openerp(record['id_order'], unwrap=True)
-        fp = order_id.fiscal_position_id
+        fp = order_id.partner_id.property_account_position_id
         _logger.debug("Fiscal position %s" % fp)
         if len(fp) == 1 :
             new_taxes = fp.map_tax(taxes)
