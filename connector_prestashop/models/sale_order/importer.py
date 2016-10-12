@@ -46,8 +46,13 @@ class SaleImportRule(ConnectorUnit):
                              record['payment']['method'])
 
     def _rule_paid(self, record, mode):
-        """ Import the order only if it has received a payment """
-        if self._get_paid_amount(record) == 0.0:
+        """ Import the order only if it has received a payment 
+            Or if the associated state is set as Paid in PS """
+        adapter = self.unit_for(
+            GenericAdapter, 'prestashop.sale.order.state')
+        state = adapter.search({'filter[id]': record['current_state']})
+        state = adapter.read(state[0])
+        if not bool(int(state['paid'])) :
             raise OrderImportRuleRetry('The order has not been paid.\n'
                                        'The import will be retried later.')
 
@@ -98,7 +103,7 @@ class SaleImportRule(ConnectorUnit):
                                                    ps_payment_method))
         self._rule_global(record, payment_mode)
         self._rules[payment_mode.import_rule](self, record, payment_mode)
-
+        
     def _rule_global(self, record, mode):
         """ Rule always executed, whichever is the selected rule """
         order_id = record['id']
