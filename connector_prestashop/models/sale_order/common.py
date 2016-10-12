@@ -20,6 +20,13 @@ class SaleOrder(models.Model):
         string='PrestaShop Bindings',
     )
 
+    prestashop_order_id = fields.Integer(
+                    related="prestashop_bind_ids.prestashop_id", 
+                    store=True, 
+                    string="Order_id On prestashop",
+                    default=False,
+                    index=True)
+
 
 class PrestashopSaleOrder(models.Model):
     _name = 'prestashop.sale.order'
