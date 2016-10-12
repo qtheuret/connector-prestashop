@@ -123,11 +123,6 @@ class TemplateMapper(ImportMapper):
     @mapping
     def openerp_id(self, record):
         """ Will bind the product to an existing one with the same code """
-#        if not self.backend_record.matching_product_template: 
-#            if self.has_combinations(record): 
-#                return {}
-            
-        
         if self.backend_record.matching_product_template:            
             if self.has_combinations(record): 
                 #Browse combinations for matching products and find if there
@@ -137,7 +132,9 @@ class TemplateMapper(ImportMapper):
                 associations = record.get('associations', {})
                 combinations = associations.get('combinations', {}).get(
                                 'combinations', [])
-                
+                if len(combinations) == 1 :
+                    #Defensive mode when product have no combinations, force the list mode
+                    combinations = [combinations]
                 for prod in combinations:
                     backend_adapter = self.unit_for(
                                 BackendAdapter, 'prestashop.product.combination')
