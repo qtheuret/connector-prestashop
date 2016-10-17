@@ -6,7 +6,7 @@ import datetime
 from prestapyt import PrestaShopWebServiceError
 
 from openerp.addons.connector.unit.mapper import (mapping,
-                                                  ImportMapper)
+                                                  ImportMapper, only_create)
 from ...unit.importer import TranslatableRecordImporter, DelayedBatchImporter
 from ...unit.mapper import backend_to_m2o
 from ...backend import prestashop
@@ -56,6 +56,21 @@ class ProductCategoryMapper(ImportMapper):
         if record['date_upd'] == '0000-00-00 00:00:00':
             return {'date_upd': datetime.datetime.now()}
         return {'date_upd': record['date_upd']}
+    
+    
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        """ Will bind the product attribute to an existing one with the same name """
+        if self.backend_record.matching_product_template:
+            name = self.name(record)['name']
+            
+            attribute = self.env['product.category'].search([('name', '=', name)])
+            
+            if len(attribute) == 1 :
+                return {'openerp_id': attribute.id}                    
+        else:
+            return {}
 
 
 @prestashop
