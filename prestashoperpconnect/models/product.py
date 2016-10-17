@@ -205,10 +205,10 @@ class TemplateRecordImport(TranslatableRecordImport):
         self.import_images(erp_id.id)
         # TODO : check what's wrong in this mapper
 #        self.import_default_image(erp_id.id)
-        self.import_supplierinfo(erp_id.id)
+#        self.import_supplierinfo(erp_id.id)
         self.import_combinations()
-        self.attribute_line(erp_id.id)
-        self.deactivate_default_product(erp_id.id)
+#        self.attribute_line(erp_id.id)
+#        self.deactivate_default_product(erp_id.id)
 
     def deactivate_default_product(self, erp_id):
         template = self.session.browse(
@@ -285,11 +285,12 @@ class TemplateRecordImport(TranslatableRecordImport):
             )
     
     def import_combinations(self):
+        _logger.debug("IMPORT COMBINATIONS")
         prestashop_record = self._get_prestashop_data()
         associations = prestashop_record.get('associations', {})
 
         combinations = associations.get('combinations', {}).get(
-            'combinations', [])
+            self.backend_record.get_version_ps_key('combination'), [])
         if not isinstance(combinations, list):
             combinations = [combinations]
         
@@ -313,7 +314,9 @@ class TemplateRecordImport(TranslatableRecordImport):
     def import_images(self, erp_id):
         prestashop_record = self._get_prestashop_data()
         associations = prestashop_record.get('associations', {})
-        images = associations.get('images', {}).get('image', {})
+        
+        images = associations.get('images', {}).get(
+            self.backend_record.get_version_ps_key('image'), {})
 
         if not isinstance(images, list):
             images = [images]
@@ -420,6 +423,7 @@ class TemplateRecordImport(TranslatableRecordImport):
         record = self.prestashop_record
         associations = record.get('associations', {})
         categories = associations.get('categories', {}).get('category', [])
+        _logger.debug("IMPORT CATEGORIES %s" %  categories)
         if not isinstance(categories, list):
             categories = [categories]
         for category in categories:

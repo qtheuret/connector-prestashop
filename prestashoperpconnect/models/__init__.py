@@ -26,7 +26,7 @@
 ##############################################################################
 
 from . import connector_model
-from . import prestashop_model
+from . import prestashop_backend
 from . import account
 from . import connector
 from . import delivery

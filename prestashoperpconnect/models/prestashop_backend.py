@@ -28,7 +28,7 @@
 from datetime import datetime
 import logging
 import pytz
-from ..unit.backend_adapter import GenericAdapter, PrestaShopLocation
+from ..unit.backend_adapter import GenericAdapter, PrestaShopLocation, PrestaShopWebServiceDict
 from openerp.addons.connector.session import ConnectorSession
 from openerp.addons.prestashoperpconnect.product import import_inventory
 from openerp.osv import fields, orm
@@ -60,18 +60,8 @@ class prestashop_backend(orm.Model):
 
     _backend_type = 'prestashop'
 
-    def _select_versions(self, cr, uid, context=None):
-        """ Available versions
-
-        Can be inherited to add custom versions.
-        """
-        return [('1.5', '1.5')]
 
     _columns = {
-        'version': fields.selection(
-            _select_versions,
-            string='Version',
-            required=True),
         'location': fields.char('Location', required=True),
         'webservice_key': fields.char(
             'Webservice key',
@@ -358,6 +348,24 @@ class PrestashopPartnerField(models.Model):
 class PrestashopNewAPIBackend(models.Model):
     _inherit="prestashop.backend"
     
+    def _select_versions(self):
+        """ Available versions
+
+        Can be inherited to add custom versions.
+        """
+        return [
+            ('1.5', '< 1.6.0.9'),
+            ('1.6.0.9', '1.6.0.9 - 1.6.0.10'),
+            ('1.6.0.11', '>= 1.6.0.11'),
+        ]
+
+    version = new_fields.Selection(
+        selection='_select_versions',
+        string='Version',
+        required=True,
+    )
+
+    
     matching_product_template = new_fields.Boolean(string="Match product template")
     
     matching_product_ch = new_fields.Selection([('reference','Reference'),('ean13','Barcode')],string="Matching Field for product")
@@ -367,6 +375,7 @@ class PrestashopNewAPIBackend(models.Model):
                         of the partner. Please adapt your datas consequently.")
     matching_customer_ch = new_fields.Many2one(comodel_name='prestashop.partner.field'
                             , string="Matched field", help="Field that will be matched.")
+    matching_customer_up = new_fields.Boolean(string="Keep the matching filed uptodate", )
     
     
     
@@ -391,14 +400,14 @@ class PrestashopNewAPIBackend(models.Model):
         
         options={'limit': 1,'display': 'full'}
              
-        prestashop = PrestaShopLocation(
-                        self.location.encode(),
-                        self.webservice_key,
-                    )
-        
-        client = PrestaShopWebServiceDict(
-                    prestashop.api_url,
-                    prestashop.webservice_key)
+             
+        client = PrestaShopWebServiceDict(self.location,
+                                        self.webservice_key,
+                                        self.api_debug, 
+#                                        None,
+#                                        {'timeout': self.prestashop.api_timeout}
+                                        )
+                                        
 
         customer = client.get('customers', options=options)
         tab=customer['customers']['customer'].keys()
@@ -413,6 +422,32 @@ class PrestashopNewAPIBackend(models.Model):
                     'backend_id': backend_id
                 })
     
+    
+    def get_version_ps_key(self, key):
+        keys_conversion = {
+            '1.6.0.9': {
+                'product_option_value': 'product_option_values',
+                'category': 'categories',
+                'order_slip_detail': 'order_slip_details',
+                'group': 'groups',
+                'order_row': 'order_rows',
+                'tax': 'taxes',
+                'image': 'images',
+            },
+            # singular names as < 1.6.0.9
+            '1.6.0.11': {
+                'product_option_value': 'product_option_values',
+                'order_slip_detail': 'order_slip_details',
+                'group': 'groups',
+                'combination': 'combination',
+                'order_row': 'order_rows',
+                'tax': 'taxes',
+                'image': 'image',
+            },
+        }
+        if self.version == '1.6.0.9':
+            key = keys_conversion[self.version][key]
+        return key
 
 class prestashop_binding(orm.AbstractModel):
     _name = 'prestashop.binding'

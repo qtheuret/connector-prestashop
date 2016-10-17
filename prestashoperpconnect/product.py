@@ -39,7 +39,7 @@ from .unit.backend_adapter import GenericAdapter  # , PrestaShopCRUDAdapter
 from .unit.import_synchronizer import DelayedBatchImport
 from .unit.import_synchronizer import PrestashopImportSynchronizer
 from .unit.import_synchronizer import import_record
-from .unit.mapper import PrestashopImportMapper
+from .unit.mapper import PrestashopImportMapper, only_create
 from .related_action import link
 
 try:
@@ -136,8 +136,12 @@ class TemplateMapper(PrestashopImportMapper):
         return {'date_upd': record['date_upd']}
 
     def has_combinations(self, record):
+        
         combinations = record.get('associations', {}).get(
-            'combinations', {}).get('combinations', [])
+            'combinations', {}).get('combination', [])
+        _logger.debug("len(combinations) %s" % len(combinations))
+        _logger.debug("COMBINATIONS ASSOCIATIONS %s" % record)            
+        
         return len(combinations) != 0
 
     def _template_code_exists(self, code):
@@ -147,6 +151,80 @@ class TemplateMapper(PrestashopImportMapper):
             ('company_id', '=', self.backend_record.company_id.id),
         ])
         return len(template_ids) > 0
+
+
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        """ Will bind the product to an existing one with the same code """
+        print("self.backend_record.matching_product_template %s" % self.backend_record)
+        print("self.backend_record.matching_product_template %s" % self.backend_record.matching_product_template)
+        if self.backend_record.matching_product_template:            
+            if self.has_combinations(record): 
+                #Browse combinations for matching products and find if there
+                #is a potential template to be matched
+                
+                template = self.env['product.template']
+                associations = record.get('associations', {})
+                combinations = associations.get('combinations', {}).get(
+                                self.backend_record.get_version_ps_key('combination'), [])
+                _logger.debug('Template Creation with combinations %s' % combinations)
+                if len(combinations) == 1 :
+                    #Defensive mode when product have no combinations, force the list mode
+                    combinations = [combinations]
+                for prod in combinations:
+                    backend_adapter = self.unit_for(
+                                BackendAdapter, 'prestashop.product.combination')
+                    variant = backend_adapter.read(int(prod['id']))
+                    code = variant.get(self.backend_record.matching_product_ch)
+                    
+                    if self.backend_record.matching_product_ch == 'reference':    
+                        product = self.env['product.product'].search(
+                        [('default_code', '=', code)])
+                        
+                        if len(product) > 1 :
+                            raise ValidationError(_('Error! Multiple products ' 
+                                        'found with combinations reference %s.' 
+                                        'Maybe consider to update you datas') % code)
+                        template |= product.product_tmpl_id
+                        
+                    if self.backend_record.matching_product_ch == 'ean13':
+                        product = self.env['product.product'].search(
+                        [('barcode', '=', code)])
+                        if len(product) > 1 :
+                            raise ValidationError(_('Error! Multiple products ' 
+                                        'found with combinations reference %s.' 
+                                        'Maybe consider to update you datas') % code)
+                        template |= product.product_tmpl_id
+                        
+                _logger.debug('Template Matched %s' % template)
+                if len(template) == 1:
+                    return {'openerp_id': template.id}
+                if len(template) > 1 :
+                    raise ValidationError(_('Error! Multiple templates are '
+                                    'found with combinations reference.'
+                                    'Maybe consider to change matching option'))
+            
+            else:
+                code = record.get(self.backend_record.matching_product_ch)
+                if self.backend_record.matching_product_ch == 'reference':    
+                    if code:
+                        if self._template_code_exists(code):
+                            product = self.env['product.template'].search(
+                        [('default_code', '=', code)], limit=1)
+                            if product:
+                                return {'openerp_id': product.id}
+
+
+                if self.backend_record.matching_product_ch == 'ean13':
+                    if code:
+                        product = self.env['product.template'].search(
+                        [('barcode', '=', code)], limit=1)
+                        if product:
+                            return {'openerp_id': product.id}
+        
+        
+        return {}
 
     @mapping
     def default_code(self, record):
@@ -219,7 +297,7 @@ class TemplateMapper(PrestashopImportMapper):
             return {'categ_id': category_id}
 
         categories = record['associations'].get('categories', {}).get(
-            'category', [])
+            self.backend_record.get_version_ps_key('category'), [])
         if not isinstance(categories, list):
             categories = [categories]
         if not categories:
@@ -232,8 +310,9 @@ class TemplateMapper(PrestashopImportMapper):
 
     @mapping
     def categ_ids(self, record):
+        
         categories = record['associations'].get('categories', {}).get(
-            'category', [])
+            self.backend_record.get_version_ps_key('category'), [])
         if not isinstance(categories, list):
             categories = [categories]
         product_categories = []

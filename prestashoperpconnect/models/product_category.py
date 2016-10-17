@@ -36,7 +36,7 @@ from ..unit.import_synchronizer import \
                 (TranslatableRecordImport,
                 DelayedBatchImport,
                 )
-from ..unit.mapper import (PrestashopImportMapper)
+from ..unit.mapper import (PrestashopImportMapper, only_create)
 from openerp.addons.connector.connector import ConnectorUnit
 from openerp.addons.connector.exception import FailedJobError
 from openerp.addons.connector.exception import NothingToDoJob
@@ -320,3 +320,17 @@ class ProductCategoryMapper(PrestashopImportMapper):
         if not default_shop_id:
             return {}
         return {'default_shop_id': default_shop_id.id}
+
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        """ Will bind the product attribute to an existing one with the same name """
+        if self.backend_record.matching_product_template:
+            name = self.name(record)['name']
+            
+            attribute = self.env['product.category'].search([('name', '=', name)])
+            
+            if len(attribute) == 1 :
+                return {'openerp_id': attribute.id}                    
+        else:
+            return {}

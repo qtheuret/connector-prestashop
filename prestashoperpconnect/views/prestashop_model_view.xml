@@ -159,7 +159,7 @@
                                 <group>
                                     <label string="Stock field quantity" class="oe_inline"/>
                                     <field name="quantity_field"
-                                          nolabel="1"/>
+                                           nolabel="1"/>
                                     
                                 </group>
                                 <group>
@@ -189,6 +189,25 @@
                                     <field name="image_store_type"/>
                                     <field name="use_variant_default_code"/>
                                 
+                                </group>
+                                <group colspan="4">
+                                    <group string="Matching option for Product" >
+
+                                        <field name="matching_product_template"/>                                   
+                                        <field name="matching_product_ch" 
+                                               attrs="{'invisible':[('matching_product_template', '=', False)],
+                                                    'required':[('matching_product_template', '=', True)]}"/>
+                            
+                                    </group>
+                                    <group string="Matching option for partner" >
+                            
+                                        <field name="matching_customer"></field>
+                                        <field name="matching_customer_ch" 
+                                               attrs="{'invisible':[('matching_customer', '=', False)],
+                                                    'required':[('matching_customer', '=', True)]
+                                            }"/>
+
+                                    </group>
                                 </group>
                             </page>
                         </notebook>

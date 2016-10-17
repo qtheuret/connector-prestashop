@@ -462,3 +462,27 @@ class PartnerImportMapper(PrestashopImportMapper):
         if not default_category_id:
             return {}
         return {'default_category_id': default_category_id.id}
+
+    @mapping
+    def ref(self, record):
+        
+        if self.backend_record.matching_customer :
+            ref = record.get(self.backend_record.matching_customer_ch.value)
+            if self.backend_record.matching_customer_up :
+                return {'ref': ref}
+        return {}
+
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        """ Will bind the product to an existing one with the same code """
+        if self.backend_record.matching_customer:
+            code = record.get(self.backend_record.matching_customer_ch.value)
+            
+            if code:
+                partner = self.env['res.partner'].search(
+                [('ref', '=', code)], limit=1)
+                if partner:
+                    return {'openerp_id': partner.id}
+        else:
+            return

@@ -149,7 +149,7 @@ class GenericAdapter(PrestaShopCRUDAdapter):
         return PrestaShopWebServiceDict(self.prestashop.api_url,
                                         self.prestashop.webservice_key,
                                         self.prestashop.api_debug, 
-#                                        {None}, 
+#                                        None,
 #                                        {'timeout': self.prestashop.api_timeout}
                                         )
 

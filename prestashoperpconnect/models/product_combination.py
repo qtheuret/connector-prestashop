@@ -59,7 +59,7 @@ from ..unit.import_synchronizer import (PrestashopImportSynchronizer,
                                         TranslatableRecordImport
                                         )
 
-from ..unit.mapper import PrestashopImportMapper
+from ..unit.mapper import PrestashopImportMapper, only_create
 
 _logger = logging.getLogger(__name__)
 
@@ -306,12 +306,18 @@ class ProductCombinationMapper(PrestashopImportMapper):
 
     @mapping
     def default_on(self, record):
-        return {'default_on': bool(int(record['default_on']))}
+        _logger.debug("record['default_on'] %s" % record['default_on'])
+        _logger.debug("record['default_on'] %s" % record)
+        default_on = record['default_on']
+        if default_on == '':
+            default_on = 0
+        return {'default_on': bool(int(default_on))}
     
     @mapping
     def image_variant(self, record):
         associations = record.get('associations', {})
-        images = associations.get('images', {}).get('image', {})
+        images = associations.get('images', {}).get(
+                            self.backend_record.get_version_ps_key('image'), {})
         if not isinstance(images, list):
             images = [images]
         if images[0].get('id'):
@@ -469,6 +475,8 @@ class ProductCombinationMapper(PrestashopImportMapper):
     @mapping
     def default_code(self, record):        
         code = record.get('reference')
+        if self.backend_record.matching_product_template:
+            return {'default_code': code}
         if not code:
             code = "%s_%s" % (record['id_product'], record['id'])
         if not self._template_code_exists(code):
@@ -495,6 +503,28 @@ class ProductCombinationMapper(PrestashopImportMapper):
             return {'ean13': record['ean13']}                
         return {}
 
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        """ Will bind the product to an existing one with the same code """
+        if self.backend_record.matching_product_template:
+            code = record.get(self.backend_record.matching_product_ch)            
+            if self.backend_record.matching_product_ch == 'reference':    
+                if code:
+                    product = self.env['product.product'].search(
+                    [('default_code', '=', code)], limit=1)                    
+                    if product:
+                            return {'openerp_id': product.id}
+            if self.backend_record.matching_product_ch == 'ean13':
+                if code:
+                    product = self.env['product.product'].search(
+                    [('barcode', '=', code)], limit=1)
+                    if product:
+                        return {'openerp_id': product.id}                    
+        else:
+            return {}
+
+
     # DIMENSION PART, depends on product dimension
     
     @mapping
@@ -517,6 +547,7 @@ class ProductCombinationMapper(PrestashopImportMapper):
                 GenericAdapter, 'prestashop.product.template')
         main_template = backend_adapter.read(record['id_product'])
         return {'width': main_template['width']}
+    
     
 
 # COMBINATION OPTIONS AND VALUES    
@@ -726,6 +757,20 @@ class ProductCombinationOptionMapper(PrestashopImportMapper):
         return {'name': name}
 
 
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        """ Will bind the product attribute to an existing one with the same name """
+        if self.backend_record.matching_product_template:
+            name = self.name(record)['name']
+            
+            attribute = self.env['product.attribute'].search([('name', '=', name)])
+            
+            if len(attribute) == 1 :
+                return {'openerp_id': attribute.id}                    
+        else:
+            return {}
+
 @prestashop
 class ProductCombinationOptionValueAdapter(GenericAdapter):
     _model_name = 'prestashop.product.combination.option.value'
@@ -813,7 +858,21 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
 #        _logger.debug(record)
 #        return {}
     
-
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        """ Will bind the attribute value to an existing one with the same code """
+        if self.backend_record.matching_product_template:
+            name = record['name']
+            
+            attribute = self.env['product.attribute.value'].search([
+                            ('name', '=', name),
+                            ('attribute_id', '=', self.attribute_id(record)['attribute_id'])])
+            
+            if len(attribute) == 1 :
+                return {'openerp_id': attribute.id}                    
+        else:
+            return {}
     
     
     @mapping
