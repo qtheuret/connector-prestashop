@@ -143,10 +143,16 @@ class PrestashopProductCombination(models.Model):
     reference = fields.Char(string='Original reference')
 
     @api.multi
-    def recompute_prestashop_qty(self):
+    def recompute_prestashop_qty(self):        
         for product in self:
+            location_id = product.backend_id.warehouse_id.lot_stock_id.id
+            stock_field = product.backend_id.quantity_field
+            if stock_field == 'qty_available':
+                stock = product.with_context(location=location_id).qty_available
+            else:
+                stock = product.with_context(location=location_id).virtual_available
             product.write({
-                'quantity': product.qty_available
+                'quantity': stock
             })
         return True
 
