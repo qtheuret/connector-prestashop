@@ -152,11 +152,13 @@ class PrestashopProductCombination(models.Model):
 
     @api.model
     def _prestashop_qty(self, product):
-        stock_field = self.backend_record.quantity_field
+        location_id = self.backend_id.warehouse_id.lot_stock_id.id
+        stock_field = self.backend_id.quantity_field
+
         if stock_field == 'qty_available':
-            stock = product.qty_available
+            stock = product.with_context(location=location_id).qty_available
         else:
-            stock = product.virtual_available
+            stock = product.with_context(location=location_id).virtual_available
         
         return stock
 
