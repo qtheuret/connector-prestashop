@@ -151,6 +151,7 @@ class GenericAdapter(PrestaShopCRUDAdapter):
                                         self.prestashop.api_debug, 
 #                                        None,
 #                                        {'timeout': self.prestashop.api_timeout}
+                                        client_args={'disable_ssl_certificate_validation': self.prestashop.trust_certificate}
                                         )
 
     def search(self, filters=None):

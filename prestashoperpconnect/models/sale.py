@@ -389,7 +389,8 @@ class SaleOrderAdapter(GenericAdapter):
                 continue
 
             api = PrestaShopWebServiceDict(
-                '%s/api' % shop.default_url, self.prestashop.webservice_key
+                '%s/api' % shop.default_url, self.prestashop.webservice_key,
+                client_args={'disable_ssl_certificate_validation': self.prestashop.trust_certificate}
             )
             result += api.search(self._prestashop_model, filters)
         return result    

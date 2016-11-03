@@ -377,6 +377,9 @@ class PrestashopNewAPIBackend(models.Model):
                             , string="Matched field", help="Field that will be matched.")
     matching_customer_up = new_fields.Boolean(string="Keep the matching filed uptodate", )
     
+    trust_certificate = new_fields.Boolean("Don't validate cert and Trust Certificate", default=False)
+    
+
     
     
     @api.model
@@ -406,6 +409,7 @@ class PrestashopNewAPIBackend(models.Model):
                                         self.api_debug, 
 #                                        None,
 #                                        {'timeout': self.prestashop.api_timeout}
+                                        client_args={'disable_ssl_certificate_validation': self.trust_certificate}
                                         )
                                         
 
