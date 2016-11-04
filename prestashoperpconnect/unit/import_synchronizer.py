@@ -593,8 +593,9 @@ class TranslatableRecordImport(PrestashopImportSynchronizer):
 
     def find_each_language(self, record):
         languages = {}
-        for field in self._translatable_fields[self.environment.model_name]:
+        for field in self._translatable_fields[self.environment.model_name]:            
             # TODO FIXME in prestapyt
+            _logger.debug("FIELD %s " % field)
             if not isinstance(record[field]['language'], list):
                 record[field]['language'] = [record[field]['language']]
             for language in record[field]['language']:
@@ -607,6 +608,7 @@ class TranslatableRecordImport(PrestashopImportSynchronizer):
 
     def _split_per_language(self, record):
         splitted_record = {}
+        _logger.debug("RECORD LANGUAGE %s" % record)
         languages = self.find_each_language(record)
         model_name = self.environment.model_name
         for language_id, language_code in languages.items():
