@@ -78,12 +78,13 @@ class PrestaShopWebServiceImage(PrestaShopWebServiceDict):
 
 class PrestaShopLocation(object):
 
-    def __init__(self, location, webservice_key, api_debug, api_timeout):
+    def __init__(self, location, webservice_key, api_debug, api_timeout, trust_certificate):
         self.location = location
         self.webservice_key = webservice_key
         self.api_url = '%s/api' % location
         self.api_debug = api_debug
         self.api_timeout = api_timeout
+        self.trust_certificate = trust_certificate
 
 
 class PrestaShopCRUDAdapter(CRUDAdapter):
@@ -101,7 +102,8 @@ class PrestaShopCRUDAdapter(CRUDAdapter):
             self.backend_record.location,
             self.backend_record.webservice_key,
             self.backend_record.api_debug,
-            self.backend_record.api_timeout
+            self.backend_record.api_timeout,
+            self.backend_record.trust_certificate
         )
 
     def search(self, filters=None):
