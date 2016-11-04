@@ -40,6 +40,7 @@ from .unit.import_synchronizer import DelayedBatchImport
 from .unit.import_synchronizer import PrestashopImportSynchronizer
 from .unit.import_synchronizer import import_record
 from .unit.mapper import PrestashopImportMapper, only_create
+from openerp.addons.connector.unit.backend_adapter import BackendAdapter
 from .related_action import link
 
 try:
