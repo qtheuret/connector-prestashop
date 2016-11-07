@@ -215,8 +215,8 @@ class ProductCombinationRecordImport(PrestashopImportSynchronizer):
         )
         for option_value in option_values:
             option_value = backend_adapter.read(option_value['id'])
-#            _logger.debug("OPTION VALUE in COMBINATION: " + str(option_value['id']))
-#            _logger.debug(option_value)
+            _logger.debug("OPTION VALUE in COMBINATION: " + str(option_value['id']))
+            _logger.debug(option_value)
 #            self._import_dependency(
 #                option_value['id_attribute_group'],
 #                'prestashop.product.combination.option',
@@ -815,6 +815,8 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
                                          unwrap=True)
         _logger.debug("ATRIBUTE ID to filter on : ")
         _logger.debug(attribute_id)
+        _logger.debug("Record %s" % record)
+
         #Precise the filter so that the name searched appears for a specific attribute
         search_params = [('name', '=', record['name'])
                         ,('attribute_id', '=', attribute_id.id)]
@@ -822,6 +824,7 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
                                             search_params)
         name = record['name']
         
+        _logger.debug("search_params %s" % search_params)
         
         if duplicate_name:
             name = "%s-%s" % (record['name'], record['id'])
@@ -864,7 +867,7 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
         """ Will bind the attribute value to an existing one with the same code """
         if self.backend_record.matching_product_template:
             name = record['name']
-            
+            _logger.debug("Matching option for value %s is activated. Record %s" % (name, record))
             attribute = self.env['product.attribute.value'].search([
                             ('name', '=', name),
                             ('attribute_id', '=', self.attribute_id(record)['attribute_id'])])
