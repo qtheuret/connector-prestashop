@@ -824,15 +824,16 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
                                             search_params)
         name = record['name']
         
-        _logger.debug("DUPLICATE NAME %s" % duplicate_name)
-        value_binder = self.get_binder_for_model(
-            'prestashop.product.combination.option.value')
-        value_id = value_binder.to_openerp(duplicate_name,
-                                         unwrap=True)
         _logger.debug("SEARCH PARAMS %s" % search_params)
-        _logger.debug("VALUE_ID %s" % value_id)
         
         if duplicate_name:
+            _logger.debug("DUPLICATE NAME %s" % duplicate_name)
+            value_binder = self.get_binder_for_model(
+                'prestashop.product.combination.option.value')
+            value_id = value_binder.to_openerp(duplicate_name,
+                                         unwrap=True)
+            
+            _logger.debug("VALUE_ID %s" % value_id)
             name = "%s-%s" % (record['name'], record['id'])
         else:
             name = record['name']
@@ -846,8 +847,6 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
             'prestashop.product.combination.option')
         attribute_id = binder.to_openerp(record['id_attribute_group'],
                                          unwrap=True)
-        _logger.debug("ATRIBUTE ID FIND : ")
-        _logger.debug(attribute_id)
         return {'attribute_id': attribute_id.id,
                'id_attribute_group': attribute_id.id 
                }
@@ -873,7 +872,7 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
         _logger.debug("MATCHING %s" % self.backend_record.matching_product_template)
         if self.backend_record.matching_product_template:
             name = record['name']
-            _logger.debug("Matching option for value %s is activated. Record %s" % (name, record))
+            _logger.debug("MATCHING value %s is activated. Record %s" % (name, record))
             value = self.env['product.attribute.value'].search([
                             ('name', '=', name),
                             ('attribute_id', '=', self.attribute_id(record)['attribute_id'])])
@@ -882,6 +881,7 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
             if len(value) == 1 :
                 return {'openerp_id': value.id}                    
         else:
+            
             return {}
     
     
