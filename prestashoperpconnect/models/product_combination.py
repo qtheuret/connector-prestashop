@@ -805,6 +805,25 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
 
     direct = []
 
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        """ Will bind the attribute value to an existing one with the same code """
+        _logger.debug("MATCHING %s" % self.backend_record.matching_product_template)
+        if self.backend_record.matching_product_template:
+            name = record['name']
+            _logger.debug("MATCHING value %s is activated. Record %s" % (name, record))
+            value = self.env['product.attribute.value'].search([
+                            ('name', '=', name),
+                            ('attribute_id', '=', self.attribute_id(record)['attribute_id'])])
+            
+            _logger.debug("MATCHING %s" % value)
+            if len(value) == 1 :
+                return {'openerp_id': value.id}                    
+        else:
+            
+            return {}
+
     @mapping
     def name(self, record):
         #TODO : improve the search to prevent duplicates
@@ -828,12 +847,15 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
         
         if duplicate_name:
             _logger.debug("DUPLICATE NAME %s" % duplicate_name)
+            duplicate_name = self.env['product.attribute.value'].search(search_params)
             value_binder = self.get_binder_for_model(
                 'prestashop.product.combination.option.value')
-            value_id = value_binder.to_openerp(duplicate_name[0],
+            value_id = value_binder.to_openerp(duplicate_name[0].id,
                                          unwrap=True)
             
             _logger.debug("VALUE_ID %s" % value_id)
+            _logger.debug("VALUE_ID %s" % value_id.openerp_id)
+            _logger.debug("VALUE_ID %s" % value_id.backend_id)
             name = "%s-%s" % (record['name'], record['id'])
         else:
             name = record['name']
@@ -865,28 +887,12 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
 #        _logger.debug(record)
 #        return {}
     
-    @only_create
-    @mapping
-    def openerp_id(self, record):
-        """ Will bind the attribute value to an existing one with the same code """
-        _logger.debug("MATCHING %s" % self.backend_record.matching_product_template)
-        if self.backend_record.matching_product_template:
-            name = record['name']
-            _logger.debug("MATCHING value %s is activated. Record %s" % (name, record))
-            value = self.env['product.attribute.value'].search([
-                            ('name', '=', name),
-                            ('attribute_id', '=', self.attribute_id(record)['attribute_id'])])
-            
-            _logger.debug("MATCHING %s" % value)
-            if len(value) == 1 :
-                return {'openerp_id': value.id}                    
-        else:
-            
-            return {}
+
     
     
     @mapping
     def backend_id(self, record):
+        _logger.debug("BACKEND_ID %s" % self.backend_record)
         return {'backend_id': self.backend_record.id}
 
 
