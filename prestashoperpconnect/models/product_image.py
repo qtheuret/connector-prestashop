@@ -132,7 +132,8 @@ class ProductImageAdapter(PrestaShopCRUDAdapter):
 
     def read(self, product_tmpl_id, image_id, options=None):
         api = PrestaShopWebServiceImage(self.prestashop.api_url,
-                                        self.prestashop.webservice_key)
+                                        self.prestashop.webservice_key,
+                                        client_args={'disable_ssl_certificate_validation': self.prestashop.trust_certificate})
         return api.get_image(
             self._prestashop_image_model,
             product_tmpl_id,
@@ -141,7 +142,8 @@ class ProductImageAdapter(PrestaShopCRUDAdapter):
         )
     def create(self, attributes=None):
         api = PrestaShopWebServiceImage(self.prestashop.api_url,
-                                        self.prestashop.webservice_key)
+                                        self.prestashop.webservice_key,
+                                        client_args={'disable_ssl_certificate_validation': self.prestashop.trust_certificate})
         template_binder = self.get_binder_for_model(
             'prestashop.product.template')
         template = template_binder.to_backend(attributes['id_product'],

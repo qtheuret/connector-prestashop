@@ -279,7 +279,8 @@ class SupplierImageAdapter(PrestaShopCRUDAdapter):
 
     def read(self, supplier_id, options=None):
         api = PrestaShopWebServiceImage(self.prestashop.api_url,
-                                        self.prestashop.webservice_key)
+                                        self.prestashop.webservice_key
+                                        client_args={'disable_ssl_certificate_validation': self.prestashop.trust_certificate})
         res = api.get_image(
             self._prestashop_image_model,
             supplier_id,
