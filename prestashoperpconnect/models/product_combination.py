@@ -824,7 +824,13 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
                                             search_params)
         name = record['name']
         
-        _logger.debug("search_params %s" % search_params)
+        
+        value_binder = self.get_binder_for_model(
+            'prestashop.product.combination.option.value')
+        value_id = value_binder.to_openerp(duplicate_name,
+                                         unwrap=True)
+        _logger.debug("SEARCH PARAMS %s" % search_params)
+        _logger.debug("VALUE_ID %s" % value_id)
         
         if duplicate_name:
             name = "%s-%s" % (record['name'], record['id'])
@@ -865,7 +871,7 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
     @mapping
     def openerp_id(self, record):
         """ Will bind the attribute value to an existing one with the same code """
-        _logger.debug("self.backend_record.matching_product_template %s" % self.backend_record.matching_product_template)
+        _logger.debug("MATCHING %s" % self.backend_record.matching_product_template)
         if self.backend_record.matching_product_template:
             name = record['name']
             _logger.debug("Matching option for value %s is activated. Record %s" % (name, record))
@@ -873,6 +879,7 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
                             ('name', '=', name),
                             ('attribute_id', '=', self.attribute_id(record)['attribute_id'])])
             
+            _logger.debug("MATCHING %s" % value)
             if len(value) == 1 :
                 return {'openerp_id': value.id}                    
         else:
