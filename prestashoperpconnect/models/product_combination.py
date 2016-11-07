@@ -830,7 +830,7 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
             _logger.debug("DUPLICATE NAME %s" % duplicate_name)
             value_binder = self.get_binder_for_model(
                 'prestashop.product.combination.option.value')
-            value_id = value_binder.to_openerp(duplicate_name,
+            value_id = value_binder.to_openerp(duplicate_name[0],
                                          unwrap=True)
             
             _logger.debug("VALUE_ID %s" % value_id)
