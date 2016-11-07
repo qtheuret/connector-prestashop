@@ -204,11 +204,11 @@ class TemplateRecordImport(TranslatableRecordImport):
     def _after_import(self, erp_id):
         self.import_images(erp_id.id)
         # TODO : check what's wrong in this mapper
-#        self.import_default_image(erp_id.id)
-#        self.import_supplierinfo(erp_id.id)
+        self.import_default_image(erp_id.id)
+        self.import_supplierinfo(erp_id.id)
         self.import_combinations()
-#        self.attribute_line(erp_id.id)
-#        self.deactivate_default_product(erp_id.id)
+        self.attribute_line(erp_id.id)
+        self.deactivate_default_product(erp_id.id)
 
     def deactivate_default_product(self, erp_id):
         template = self.session.browse(
@@ -298,7 +298,7 @@ class TemplateRecordImport(TranslatableRecordImport):
 #        variant_adapter = self.get_connector_unit_for_model(
 #                ProductCombinationRecordImport, 'prestashop.product.combination')
 #        importer = self.unit_for(ProductCombinationBatchImporter, model='prestashop.product.combination')
-        
+        self.import_product_options()
         for combination in combinations:            
 #            variant_adapter._import_record(
 #                        combination['id'], priority

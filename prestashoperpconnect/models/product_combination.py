@@ -846,14 +846,15 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
         _logger.debug("SEARCH PARAMS %s" % search_params)
         
         if duplicate_name:
-            _logger.debug("DUPLICATE NAME %s" % duplicate_name)
+            
             duplicate_name = self.env['product.attribute.value'].search(search_params)
+            _logger.debug("DUPLICATE NAME %s" % duplicate_name)
             value_binder = self.get_binder_for_model(
                 'prestashop.product.combination.option.value')
             value_id = value_binder.to_openerp(duplicate_name[0].id,
                                          unwrap=True)
             
-            _logger.debug("VALUE_ID %s" % value_id)
+            _logger.debug("duplicate_name %s" % duplicate_name)
             _logger.debug("VALUE_ID %s" % value_id.openerp_id)
             _logger.debug("VALUE_ID %s" % value_id.backend_id)
             name = "%s-%s" % (record['name'], record['id'])
