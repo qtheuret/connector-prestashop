@@ -865,15 +865,16 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
     @mapping
     def openerp_id(self, record):
         """ Will bind the attribute value to an existing one with the same code """
+        _logger.debug("self.backend_record.matching_product_template %s" % self.backend_record.matching_product_template)
         if self.backend_record.matching_product_template:
             name = record['name']
             _logger.debug("Matching option for value %s is activated. Record %s" % (name, record))
-            attribute = self.env['product.attribute.value'].search([
+            value = self.env['product.attribute.value'].search([
                             ('name', '=', name),
                             ('attribute_id', '=', self.attribute_id(record)['attribute_id'])])
             
-            if len(attribute) == 1 :
-                return {'openerp_id': attribute.id}                    
+            if len(value) == 1 :
+                return {'openerp_id': value.id}                    
         else:
             return {}
     
