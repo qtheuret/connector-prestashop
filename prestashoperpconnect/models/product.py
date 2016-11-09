@@ -204,7 +204,7 @@ class TemplateRecordImport(TranslatableRecordImport):
     def _after_import(self, erp_id):
         self.import_images(erp_id.id)
         # TODO : check what's wrong in this mapper
-        self.import_default_image(erp_id.id)
+#        self.import_default_image(erp_id.id)
         self.import_supplierinfo(erp_id.id)
         self.import_combinations()
         self.attribute_line(erp_id.id)

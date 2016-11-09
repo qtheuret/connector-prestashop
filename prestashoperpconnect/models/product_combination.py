@@ -803,7 +803,9 @@ class ProductCombinationOptionValueRecordImport(TranslatableRecordImport):
 class ProductCombinationOptionValueMapper(PrestashopImportMapper):
     _model_name = 'prestashop.product.combination.option.value'
 
-    direct = []
+    direct = [
+    
+    ]
 
     @only_create
     @mapping
@@ -836,14 +838,38 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
         _logger.debug(attribute_id)
         _logger.debug("Record %s" % record)
 
+        if 'language' in record['name']:
+            language_binder = self.get_binder_for_model('prestashop.res.lang')
+            languages = record['name']['language']
+            if not isinstance(languages, list):
+                languages = [languages]
+            for lang in languages:
+                erp_language_id = language_binder.to_openerp(
+                    lang['attrs']['id'])
+                if not erp_language_id:
+                    continue
+                erp_lang = self.session.read(
+                    'prestashop.res.lang',
+                    erp_language_id.id,
+                    []
+                )
+                if erp_lang['code'] == 'en_US':
+                    name = lang['value']
+                    break
+            if name is None:
+                name = languages[0]['value']
+        else:
+            name = record['name']
+
         #Precise the filter so that the name searched appears for a specific attribute
-        search_params = [('name', '=', record['name'])
+        search_params = [('name', '=', name)
                         ,('attribute_id', '=', attribute_id.id)]
         duplicate_name = self.session.search('product.attribute.value',
                                             search_params)
-        name = record['name']
+        
         
         _logger.debug("SEARCH PARAMS %s" % search_params)
+        _logger.debug("CONTEXT %s" % self.session.context)
         
         if duplicate_name:
             
@@ -858,8 +884,8 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
             _logger.debug("VALUE_ID %s" % value_id.openerp_id)
             _logger.debug("VALUE_ID %s" % value_id.backend_id)
             name = "%s-%s" % (record['name'], record['id'])
-        else:
-            name = record['name']
+#        else:
+#            name = record['name']
 
         _logger.debug("FINAL NAME %s" % name)
         return {'name': name}
