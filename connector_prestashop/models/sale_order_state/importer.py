@@ -21,6 +21,19 @@ class SaleOrderStateMapper(ImportMapper):
     @mapping
     def company_id(self, record):
         return {'company_id': self.backend_record.company_id.id}
+    
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        """ Will bind the product attribute to an existing one with the same name """
+        name = record['name']
+            
+        state = self.env['sale.order.state'].search([('name', '=', name)])
+            
+        if state :
+                return {'openerp_id': state.id}                    
+        else:
+            return {}
 
 
 @prestashop
