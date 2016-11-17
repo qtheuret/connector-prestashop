@@ -20,7 +20,7 @@
 #                                                                             #
 ###############################################################################
 
-from prestapyt import PrestaShopWebServiceDict
+#from prestapyt import PrestaShopWebServiceDict
 import datetime
 import mimetypes
 import logging 
@@ -404,6 +404,14 @@ class TemplateAdapter(GenericAdapter):
     _prestashop_model = 'products'
     _export_node_name = 'product'
 
+
+    def read(self, id, attributes=None):
+        if attributes is None:
+            attributes = {}
+        
+        attributes['price[price][use_tax]'] = 1
+        _logger.debug("OPTIONS PASSED IN READ %s" % attributes)
+        return super(TemplateAdapter, self).read(id, attributes=attributes)
 
 @prestashop
 class ProductInventoryExport(ExportSynchronizer):

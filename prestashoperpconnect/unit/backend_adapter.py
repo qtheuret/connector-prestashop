@@ -29,9 +29,10 @@
 
 import base64
 import logging
-from prestapyt import PrestaShopWebServiceError, PrestaShopWebServiceDict
+from prestapyt import PrestaShopWebServiceError, PrestaShopWebServiceDict, PrestaShopWebService
 from openerp.addons.connector.unit.backend_adapter import CRUDAdapter
 from ..backend import prestashop
+
 
 _logger = logging.getLogger(__name__)
 # TODO : Fix this part https://github.com/pedrobaeza/connector-prestashop/commit/3226992f1ee3a3c74f388c65d174c96bcd5e14e7#commitcomment-13580782
@@ -43,6 +44,31 @@ _logger = logging.getLogger(__name__)
 #_logger.addHandler(handler)
 
 
+    
+class MyPrestaShopWebServiceDict(PrestaShopWebServiceDict):
+    
+    def _validate_query_options(self, options):
+        """
+        Check options against supported options
+        (reference : http://doc.prestashop.com/display/PS14/Cheat-sheet+-+Concepts+outlined+in+this+tutorial)
+        @param options: dict of options to use for the request
+        @return: True if valid, else raise an error PrestaShopWebServiceError
+        """
+        _logger.debug("======= Validate Options M&GO %s" % options)
+        if not isinstance(options, dict):
+            raise PrestaShopWebServiceError('Parameters must be a instance of dict')
+        supported = ('filter', 'display', 'sort', 'limit', 'schema', 'date', 'id_shop', 'price')
+        # filter[firstname] (as e.g.) is allowed, so check only the part before a [
+        unsupported = set([param.split('[')[0] for param in options]).difference(supported)
+        if unsupported:
+            raise PrestaShopWebServiceError('Unsupported parameters: %s'
+            % (', '.join(tuple(unsupported)),))
+        return True
+
+
+
+    
+    
 class PrestaShopWebServiceImage(PrestaShopWebServiceDict):
 
     def get_image(self, resource, resource_id=None, image_id=None,
@@ -74,6 +100,7 @@ class PrestaShopWebServiceImage(PrestaShopWebServiceDict):
             'id_' + resource[:-1]: resource_id,
             'id_image': image_id
         }
+
 
 
 class PrestaShopLocation(object):
@@ -148,7 +175,7 @@ class GenericAdapter(PrestaShopCRUDAdapter):
                         str(self.prestashop.api_debug),
                         str(self.prestashop.api_timeout)
                         )
-        return PrestaShopWebServiceDict(self.prestashop.api_url,
+        return MyPrestaShopWebServiceDict(self.prestashop.api_url,
                                         self.prestashop.webservice_key,
                                         self.prestashop.api_debug, 
 #                                        None,
