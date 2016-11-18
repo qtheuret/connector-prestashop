@@ -447,6 +447,7 @@ class PrestashopNewAPIBackend(models.Model):
                 'order_row': 'order_rows',
                 'tax': 'taxes',
                 'image': 'image',
+                'combination': 'combinations',
             },
         }
         if self.version == '1.6.0.9':

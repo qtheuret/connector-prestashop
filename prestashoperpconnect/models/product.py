@@ -239,8 +239,8 @@ class TemplateRecordImport(TranslatableRecordImport):
                 for attribute_value in product.attribute_value_ids:
                     attribute_ids.append(attribute_value.attribute_id.id)
                     # filter unique id for create relation
-            _logger.debug("Attributes to ADD")
-            _logger.debug(attribute_ids)
+#            _logger.debug("Attributes to ADD")
+#            _logger.debug(attribute_ids)
             if attribute_ids:
                 for attribute_id in set(attribute_ids):
                     value_ids = []
@@ -266,10 +266,10 @@ class TemplateRecordImport(TranslatableRecordImport):
         if not isinstance(option_values, list):
             option_values = [option_values]
         
-        _logger.debug("OPTIONS in TEMPLATE")
-        _logger.debug(prestashop_record)
-        _logger.debug(associations)
-        _logger.debug(option_values)
+#        _logger.debug("OPTIONS in TEMPLATE")
+#        _logger.debug(prestashop_record)
+#        _logger.debug(associations)
+#        _logger.debug(option_values)
         backend_adapter = self.get_connector_unit_for_model(
             BackendAdapter,
             'prestashop.product.combination.option.value'
@@ -285,12 +285,12 @@ class TemplateRecordImport(TranslatableRecordImport):
             )
     
     def import_combinations(self):
-        _logger.debug("IMPORT COMBINATIONS")
+        
         prestashop_record = self._get_prestashop_data()
         associations = prestashop_record.get('associations', {})
 
         combinations = associations.get('combinations', {}).get(
-            self.backend_record.get_version_ps_key('combination'), [])
+                                'combinations', [])
         if not isinstance(combinations, list):
             combinations = [combinations]
         
@@ -298,12 +298,14 @@ class TemplateRecordImport(TranslatableRecordImport):
 #        variant_adapter = self.get_connector_unit_for_model(
 #                ProductCombinationRecordImport, 'prestashop.product.combination')
 #        importer = self.unit_for(ProductCombinationBatchImporter, model='prestashop.product.combination')
-        self.import_product_options()
+#        self.import_product_options()
+        _logger.debug("IMPORT COMBINATIONS %s from associations %s" % (combinations, associations ))
         for combination in combinations:            
 #            variant_adapter._import_record(
 #                        combination['id'], priority
 #                        )
 #            priority += 15
+            _logger.debug("IMPORT COMBINATION %s From template %s" % (combination, prestashop_record))
             import_record(
                 self.session,
                 'prestashop.product.combination',

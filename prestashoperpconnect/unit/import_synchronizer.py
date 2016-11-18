@@ -596,7 +596,7 @@ class TranslatableRecordImport(PrestashopImportSynchronizer):
         languages = {}
         for field in self._translatable_fields[self.environment.model_name]:            
             # TODO FIXME in prestapyt
-            _logger.debug("FIELD %s " % field)
+#            _logger.debug("FIELD %s " % field)
             if not isinstance(record[field]['language'], list):
                 record[field]['language'] = [record[field]['language']]
             for language in record[field]['language']:
@@ -609,7 +609,7 @@ class TranslatableRecordImport(PrestashopImportSynchronizer):
 
     def _split_per_language(self, record):
         splitted_record = {}
-        _logger.debug("RECORD LANGUAGE %s" % record)
+#        _logger.debug("RECORD LANGUAGE %s" % record)
         languages = self.find_each_language(record)
         model_name = self.environment.model_name
         for language_id, language_code in languages.items():
@@ -677,12 +677,12 @@ class TranslatableRecordImport(PrestashopImportSynchronizer):
         context = self._context()
         context['lang'] = lang_code
         with self.session.change_context(lang=lang_code):
-            _logger.debug("RUN RECORD  %s" % self._context())
+            _logger.debug("RUN RECORD  %s with context %s " % (prestashop_record, self._context()))
             if erp_id:
-                _logger.debug("UPDATE PRODUCT with lang %s" % lang_code)
+#                _logger.debug("UPDATE PRODUCT with lang %s" % lang_code)
                 self._update(erp_id, record)
             else:
-                _logger.debug("CREATE PRODUCT with lang %s" % lang_code)
+#                _logger.debug("CREATE PRODUCT with lang %s" % lang_code)
                 erp_id = self._create(record)
 
         return erp_id

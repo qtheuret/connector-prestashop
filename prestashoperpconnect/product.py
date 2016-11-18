@@ -140,8 +140,8 @@ class TemplateMapper(PrestashopImportMapper):
         
         combinations = record.get('associations', {}).get(
             'combinations', {}).get('combination', [])
-        _logger.debug("len(combinations) %s" % len(combinations))
-        _logger.debug("COMBINATIONS ASSOCIATIONS %s" % record)            
+#        _logger.debug("len(combinations) %s" % len(combinations))
+#        _logger.debug("COMBINATIONS ASSOCIATIONS %s" % record)            
         
         return len(combinations) != 0
 
@@ -410,7 +410,7 @@ class TemplateAdapter(GenericAdapter):
             attributes = {}
         
         attributes['price[price][use_tax]'] = 1
-        _logger.debug("OPTIONS PASSED IN READ %s" % attributes)
+#        _logger.debug("OPTIONS PASSED IN READ %s" % attributes)
         return super(TemplateAdapter, self).read(id, attributes=attributes)
 
 @prestashop

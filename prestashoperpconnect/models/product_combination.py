@@ -182,22 +182,13 @@ class ProductCombinationAdapter(GenericAdapter):
     _prestashop_model = 'combinations'
     _export_node_name = 'combination'
 
-
-#@prestashop
-#class ProductCombinationBatchImporter(DelayedBatchImport):
-#    """ Import the Magento Product Categories.
-#
-#    For every product category in the list, a delayed job is created.
-#    A priority is set on the jobs according to their level to rise the
-#    chance to have the top level categories imported first.
-#    """
-#    _model_name = ['prestashop.product.product']
-#
-#    def _import_record(self, prestashop_id, priority=None):
-#        """ Delay a job for the import """
-#        super(ProductCombinationBatchImporter, self)._import_record(
-#            prestashop_id, priority=priority)
-
+    def read(self, id, attributes=None):
+        if attributes is None:
+            attributes = {}
+        
+        attributes['price[price][use_tax]'] = 1
+#        _logger.debug("OPTIONS PASSED IN READ %s" % attributes)
+        return super(ProductCombinationAdapter, self).read(id, attributes=attributes)
 
 @prestashop
 class ProductCombinationRecordImport(PrestashopImportSynchronizer):
@@ -475,6 +466,7 @@ class ProductCombinationMapper(PrestashopImportMapper):
     @mapping
     def default_code(self, record):        
         code = record.get('reference')
+        _logger.debug("REFERENCE COMBINATION %s" % code)
         if self.backend_record.matching_product_template:
             return {'default_code': code}
         if not code:
@@ -811,15 +803,15 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
     @mapping
     def openerp_id(self, record):
         """ Will bind the attribute value to an existing one with the same code """
-        _logger.debug("MATCHING %s" % self.backend_record.matching_product_template)
+#        _logger.debug("MATCHING %s" % self.backend_record.matching_product_template)
         if self.backend_record.matching_product_template:
             name = record['name']
-            _logger.debug("MATCHING value %s is activated. Record %s" % (name, record))
+#            _logger.debug("MATCHING value %s is activated. Record %s" % (name, record))
             value = self.env['product.attribute.value'].search([
                             ('name', '=', name),
                             ('attribute_id', '=', self.attribute_id(record)['attribute_id'])])
             
-            _logger.debug("MATCHING %s" % value)
+#            _logger.debug("MATCHING %s" % value)
             if len(value) == 1 :
                 return {'openerp_id': value.id}                    
         else:
@@ -834,9 +826,9 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
             'prestashop.product.combination.option')
         attribute_id = binder.to_openerp(record['id_attribute_group'],
                                          unwrap=True)
-        _logger.debug("ATRIBUTE ID to filter on : ")
-        _logger.debug(attribute_id)
-        _logger.debug("Record %s" % record)
+#        _logger.debug("ATRIBUTE ID to filter on : ")
+#        _logger.debug(attribute_id)
+#        _logger.debug("Record %s" % record)
 
         if 'language' in record['name']:
             language_binder = self.get_binder_for_model('prestashop.res.lang')
@@ -868,26 +860,26 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
                                             search_params)
         
         
-        _logger.debug("SEARCH PARAMS %s" % search_params)
-        _logger.debug("CONTEXT %s" % self.session.context)
+#        _logger.debug("SEARCH PARAMS %s" % search_params)
+#        _logger.debug("CONTEXT %s" % self.session.context)
         
         if duplicate_name:
             
             duplicate_name = self.env['product.attribute.value'].search(search_params)
-            _logger.debug("DUPLICATE NAME %s" % duplicate_name)
+#            _logger.debug("DUPLICATE NAME %s" % duplicate_name)
             value_binder = self.get_binder_for_model(
                 'prestashop.product.combination.option.value')
             value_id = value_binder.to_openerp(duplicate_name[0].id,
                                          unwrap=True)
             
-            _logger.debug("duplicate_name %s" % duplicate_name)
-            _logger.debug("VALUE_ID %s" % value_id.openerp_id)
-            _logger.debug("VALUE_ID %s" % value_id.backend_id)
+#            _logger.debug("duplicate_name %s" % duplicate_name)
+#            _logger.debug("VALUE_ID %s" % value_id.openerp_id)
+#            _logger.debug("VALUE_ID %s" % value_id.backend_id)
             name = "%s-%s" % (record['name'], record['id'])
 #        else:
 #            name = record['name']
 
-        _logger.debug("FINAL NAME %s" % name)
+#        _logger.debug("FINAL NAME %s" % name)
         return {'name': name}
 
     @mapping
@@ -919,7 +911,6 @@ class ProductCombinationOptionValueMapper(PrestashopImportMapper):
     
     @mapping
     def backend_id(self, record):
-        _logger.debug("BACKEND_ID %s" % self.backend_record)
         return {'backend_id': self.backend_record.id}
 
 

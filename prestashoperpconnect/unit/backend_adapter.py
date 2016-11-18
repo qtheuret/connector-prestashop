@@ -54,7 +54,7 @@ class MyPrestaShopWebServiceDict(PrestaShopWebServiceDict):
         @param options: dict of options to use for the request
         @return: True if valid, else raise an error PrestaShopWebServiceError
         """
-        _logger.debug("======= Validate Options M&GO %s" % options)
+#        _logger.debug("======= Validate Options M&GO %s" % options)
         if not isinstance(options, dict):
             raise PrestaShopWebServiceError('Parameters must be a instance of dict')
         supported = ('filter', 'display', 'sort', 'limit', 'schema', 'date', 'id_shop', 'price')
