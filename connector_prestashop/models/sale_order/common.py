@@ -10,6 +10,8 @@ from openerp import models, fields, api
 from ...unit.backend_adapter import GenericAdapter
 from ...backend import prestashop
 
+import logging
+_logger = logging.getLogger(__name__)
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
@@ -166,7 +168,10 @@ class SaleOrderAdapter(GenericAdapter):
     _export_node_name = 'order'
 
     def update_sale_state(self, prestashop_id, datas):
-        return self.client.add('order_histories', datas)
+        order_histories = 'order_histories'
+        order_histories = self.backend_record.get_version_ps_key('order_histories')
+        _logger.debug("order_histories %s" % order_histories)
+        return self.client.add(order_histories, datas)
 
     def search(self, filters=None):
         result = super(SaleOrderAdapter, self).search(filters=filters)

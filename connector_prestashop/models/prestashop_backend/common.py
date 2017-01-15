@@ -299,6 +299,7 @@ class PrestashopBackend(models.Model):
                 'order_row': 'order_rows',
                 'tax': 'taxes',
                 'image': 'images',
+                'order_histories': 'order_histories?sendmail=1'
             },
             # singular names as < 1.6.0.9
             '1.6.0.11': {},
