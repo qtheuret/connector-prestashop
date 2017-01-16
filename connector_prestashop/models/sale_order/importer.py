@@ -130,7 +130,8 @@ class SaleOrderMapper(ImportMapper):
         ('delivery_number', 'prestashop_delivery_number'),
         ('total_paid', 'total_amount'),
         ('total_shipping_tax_incl', 'total_shipping_tax_included'),
-        ('total_shipping_tax_excl', 'total_shipping_tax_excluded')
+        ('total_shipping_tax_excl', 'total_shipping_tax_excluded'),
+        ('mr_relay_number', 'mr_relay_number')
     ]
 
     def _get_sale_order_lines(self, record):

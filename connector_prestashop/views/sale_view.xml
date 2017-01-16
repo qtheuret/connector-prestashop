@@ -140,7 +140,7 @@
         <field name="arch" type="xml">
             <field name="name" position="before">
                 <field name="prestashop_order_id" string="Presta ID"
-                           attrs="{'invisible':[('prestashop_order_id','in',(False, 0))]}"/>
+                       attrs="{'invisible':[('prestashop_order_id','in',(False, 0))]}"/>
                     
             </field>
         </field>
@@ -165,6 +165,11 @@
                 </field>
 
             </page>
+             <field name="partner_shipping_id" position="after">
+                 <field name="mr_relay_number" attrs="{'invisible':[('mr_relay_number', '=', False)]}"/>
+                 
+            </field>
+            
         </field>
     </record>
 

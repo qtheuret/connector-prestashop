@@ -28,6 +28,8 @@ class SaleOrder(models.Model):
                     string="Order_id On prestashop",
                     default=False,
                     index=True)
+    
+    mr_relay_number = fields.Char("Mondial Relay")
 
 
 class PrestashopSaleOrder(models.Model):
