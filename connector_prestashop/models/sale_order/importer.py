@@ -130,8 +130,7 @@ class SaleOrderMapper(ImportMapper):
         ('delivery_number', 'prestashop_delivery_number'),
         ('total_paid', 'total_amount'),
         ('total_shipping_tax_incl', 'total_shipping_tax_included'),
-        ('total_shipping_tax_excl', 'total_shipping_tax_excluded'),
-        ('mr_relay_number', 'mr_relay_number')
+        ('total_shipping_tax_excl', 'total_shipping_tax_excluded')
     ]
 
     def _get_sale_order_lines(self, record):
@@ -187,6 +186,12 @@ class SaleOrderMapper(ImportMapper):
         ], limit=1)
         return len(sale_order) == 1
 
+    @mapping
+    def mondial_relay(self, record):
+        basename = record['mr_relay_number']
+        return {"mr_relay_number": basename}
+        
+    
     @mapping
     def name(self, record):
         basename = record['reference']
