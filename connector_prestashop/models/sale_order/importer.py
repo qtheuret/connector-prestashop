@@ -188,7 +188,7 @@ class SaleOrderMapper(ImportMapper):
 
     @mapping
     def mondial_relay(self, record):
-        basename = record['mr_relay_number']
+        basename = record['mr_relay_number']['value']
         return {"mr_relay_number": basename}
         
     
