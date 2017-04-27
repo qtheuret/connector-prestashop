@@ -832,7 +832,7 @@ def import_orders_since(session, backend_id, since_date=None):
 
     filters = None
     if since_date:
-        date_str = since_date.strftime('%Y-%m-%d %H:%M:%S')
+#        date_str = since_date.strftime('%Y-%m-%d %H:%M:%S')
 #        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (date_str)}
         filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (since_date)}
     import_batch(
