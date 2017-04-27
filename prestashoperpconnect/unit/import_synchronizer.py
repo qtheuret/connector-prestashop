@@ -801,8 +801,9 @@ def import_customers_since(session, backend_id, since_date=None):
 
     filters = None
     if since_date:
-        date_str = since_date.strftime('%Y-%m-%d %H:%M:%S')
-        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (date_str)}
+#        date_str = since_date.strftime('%Y-%m-%d %H:%M:%S')
+#        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (date_str)}
+        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (since_date)}
     now_fmt = datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
     
     import_batch.delay(
@@ -832,7 +833,8 @@ def import_orders_since(session, backend_id, since_date=None):
     filters = None
     if since_date:
         date_str = since_date.strftime('%Y-%m-%d %H:%M:%S')
-        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (date_str)}
+#        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (date_str)}
+        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (since_date)}
     import_batch(
         session,
         'prestashop.sale.order',
@@ -843,7 +845,8 @@ def import_orders_since(session, backend_id, since_date=None):
     )
 
     if since_date:
-        filters = {'date': '1', 'filter[date_add]': '>[%s]' % date_str}
+#        filters = {'date': '1', 'filter[date_add]': '>[%s]' % date_str}
+        filters = {'date': '1', 'filter[date_add]': '>[%s]' % (since_date)}
     try:
         import_batch(session, 'prestashop.mail.message', backend_id, filters)
     except:
@@ -863,8 +866,9 @@ def import_orders_since(session, backend_id, since_date=None):
 def import_products(session, backend_id, since_date):
     filters = None
     if since_date:
-        date_str = since_date.strftime('%Y-%m-%d %H:%M:%S')
-        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (date_str)}
+#        date_str = since_date.strftime('%Y-%m-%d %H:%M:%S')
+#        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (date_str)}
+        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (since_date)}
     now_fmt = datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
     import_batch(
         session,
@@ -893,8 +897,9 @@ def import_products(session, backend_id, since_date):
 def import_refunds(session, backend_id, since_date):
     filters = None
     if since_date:
-        date_str = since_date.strftime('%Y-%m-%d %H:%M:%S')
-        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (date_str)}
+#        date_str = since_date.strftime('%Y-%m-%d %H:%M:%S')
+#        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (date_str)}
+        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (since_date)}
     now_fmt = datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
     import_batch(session, 'prestashop.refund', backend_id, filters)
     session.pool.get('prestashop.backend').write(
@@ -910,8 +915,9 @@ def import_refunds(session, backend_id, since_date):
 def import_suppliers(session, backend_id, since_date):
     filters = None
     if since_date:
-        date_str = since_date.strftime('%Y-%m-%d %H:%M:%S')
-        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (date_str)}
+#        date_str = since_date.strftime('%Y-%m-%d %H:%M:%S')
+#        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (date_str)}
+        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (since_date)}
     now_fmt = datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
     import_batch(session, 'prestashop.supplier', backend_id, filters)
     import_batch(session, 'prestashop.product.supplierinfo', backend_id)

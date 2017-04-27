@@ -276,7 +276,8 @@ class TemplateRecordImport(TranslatableRecordImport):
         )
         for option_value in option_values:
             option = backend_adapter.read(option_value['id'])
-
+            
+            #TODO: S'assurer qu'on n'importe pas inutilement
             import_record(
                 self.session,
                 'prestashop.product.combination.option.value',
