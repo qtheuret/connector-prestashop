@@ -113,8 +113,6 @@ class PrestashopProductTemplate(models.Model):
         digits=dp.get_precision('Product Price'),
     )
 
-    RECOMPUTE_QTY_STEP = 1000
-
     @api.multi
     def recompute_prestashop_qty(self):
         # group products by backend
@@ -128,28 +126,7 @@ class PrestashopProductTemplate(models.Model):
 
     @api.multi
     def _recompute_prestashop_qty_backend(self, backend):
-        root_location = (backend.stock_location_id or
-                         backend.warehouse_id.lot_stock_id)
-        locations = self.env['stock.location'].search([
-            ('id', 'child_of', root_location.id),
-            ('prestashop_synchronized', '=', True),
-            ('usage', '=', 'internal'),
-        ])
-        # if we choosed a location but none where flagged
-        # 'prestashop_synchronized', consider we want all of them in the tree
-        if not locations:
-            locations = self.env['stock.location'].search([
-                ('id', 'child_of', root_location.id),
-                ('usage', '=', 'internal'),
-            ])
-        if not locations:
-            # we must not pass an empty location or we would have the
-            # stock for every warehouse, which is the last thing we
-            # expect
-            raise exceptions.UserError(
-                _('No internal location found to compute the product '
-                  'quantity.')
-            )
+        locations = backend._get_locations_for_stock_quantities()
         self_loc = self.with_context(location=locations.ids,
                                      compute_child=False)
         for product in self_loc:
@@ -160,35 +137,6 @@ class PrestashopProductTemplate(models.Model):
 
     def _prestashop_qty(self):
         return self.qty_available
-
-    @job(default_channel='root.prestashop')
-    def import_products(self, backend, since_date=None, **kwargs):
-        filters = None
-        if since_date:
-            filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (since_date)}
-        now_fmt = fields.Datetime.now()
-        self.env['prestashop.product.category'].with_delay(
-            priority=15
-        ).import_batch(backend=backend, filters=filters, **kwargs)
-        self.env['prestashop.product.template'].with_delay(
-            priority=15
-        ).import_batch(backend, filters, **kwargs)
-        backend.import_products_since = now_fmt
-        return True
-
-    @job(default_channel='root.prestashop')
-    def export_inventory(self, backend, fields=None, **kwargs):
-        """ Export the inventory configuration and quantity of a product. """
-        env = backend.get_environment(self._name)
-        inventory_exporter = env.get_connector_unit(ProductInventoryExporter)
-        return inventory_exporter.run(self.id, fields, **kwargs)
-
-    @api.model
-    @job(default_channel='root.prestashop')
-    def export_product_quantities(self, backend):
-        self.search([
-            ('backend_id', 'in', self.env.backend.ids),
-        ]).recompute_prestashop_qty()
 
 
 @prestashop
