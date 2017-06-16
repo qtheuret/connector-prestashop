@@ -109,7 +109,9 @@ class prestashop_backend(orm.Model):
                     help="""Allow to choose wether the default_code or the default variant is used"""),
         'quantity_field' : fields.selection(
                             [('qty_available','Available Quantity'),
-                            ('virtual_available','Forecast quantity')],
+                            ('virtual_available','Forecast quantity'),
+                            ('immediately_usable_qty','Avalable for sale (Exclude Incoming)'),
+                            ],
                             string='Field use for quantity update',
                             required=True, 
                             default='virtual_available'
