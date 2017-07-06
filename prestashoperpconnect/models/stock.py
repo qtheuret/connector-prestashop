@@ -39,8 +39,11 @@ class StockMove(Model):
         warehouse_obj = self.pool['stock.warehouse']
         backend_obj = self.pool['prestashop.backend']
         backend_ids = backend_obj.search(cr, uid, [], context=context)
+        backend_ids_ids = backend_obj.browse(
+            cr, uid, backend_ids, context=context
+        )
         #active_warehouse_ids = backend_obj.search()
-        warehouse_ids = [b.warehouse_id.id for b in backend_ids]
+        warehouse_ids = [b.warehouse_id.id for b in backend_ids_ids]
         
 #        warehouse_ids = warehouse_obj.search(cr, uid, [], context=context)
         warehouses = warehouse_obj.browse(
