@@ -29,13 +29,20 @@ from openerp.osv.orm import Model
 class StockMove(Model):
     _inherit = 'stock.move'
 
+    
     def update_prestashop_quantities(self, cr, uid, ids, context=None):
         for move in self.browse(cr, uid, ids, context=context):
             move.product_id.update_prestashop_quantities()
 
     def get_stock_location_ids(self, cr, uid, context=None):
+        #TODO : Deal with available warehouses
         warehouse_obj = self.pool['stock.warehouse']
-        warehouse_ids = warehouse_obj.search(cr, uid, [], context=context)
+        backend_obj = self.pool['prestashop.backend']
+        backend_ids = backend_obj.search(cr, uid, [], context=context)
+        #active_warehouse_ids = backend_obj.search()
+        warehouse_ids = [b.warehouse_id.id for b in backend_ids]
+        
+#        warehouse_ids = warehouse_obj.search(cr, uid, [], context=context)
         warehouses = warehouse_obj.browse(
             cr, uid, warehouse_ids, context=context
         )
