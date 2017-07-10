@@ -39,6 +39,7 @@ the main product.
 
 import logging
 from openerp.osv import fields, orm
+from openerp import  api
 
 from openerp.addons.connector.session import ConnectorSession
 
@@ -159,6 +160,7 @@ class prestashop_product_combination(orm.Model):
             )
         return True
 
+    @api.v7
     def _prestashop_qty(self, cr, uid, product, context=None):
         if context is None:
             context = {}
@@ -168,8 +170,11 @@ class prestashop_product_combination(orm.Model):
         location_ctx = context.copy()
         location_ctx['location'] = stock.id
         product_stk = self.read(
-            cr, uid, product.id, [stock_field], context=location_ctx
+            cr, uid, product.id, [stock_field, 'qty_available', 'virtual_available'], context=location_ctx
         )
+        _logger.debug("product_stk %s" % product_stk) 
+        _logger.debug("product_stk qty available %s" % product_stk['qty_available']) 
+        _logger.debug("product_stk forecast %s" % product_stk['virtual_available']) 
         return product_stk[stock_field]
 
 #        return product.qty_available
