@@ -428,10 +428,16 @@ class ProductInventoryExport(ExportSynchronizer):
     def run(self, binding_id, fields):
         """ Export the product inventory to Prestashop """
         template = self.session.browse(self.model._name, binding_id)
+        #Refresh the values
+        template.openerp_id.with_context(connector_no_export=True).update_prestashop_quantities()
+        #Re-read the datas
+        template = self.session.browse(self.model._name, binding_id)
+        #template.
         adapter = self.get_connector_unit_for_model(
             GenericAdapter, '_import_stock_available'
         )
         filter = self.get_filter(template)
+        
         adapter.export_quantity(filter, int(template.quantity))
 
 
@@ -634,15 +640,18 @@ class ProductInventoryAdapter(GenericAdapter):
 INVENTORY_FIELDS = ('quantity',)
 
 #    'prestashop.product.template',
-#@on_record_write(model_names=[
-#    'prestashop.product.combination'
-#])
+@on_record_write(model_names=[
+    'prestashop.product.combination'
+])
 def prestashop_product_stock_updated(session, model_name, record_id,
                                      fields=None):
     if session.context.get('connector_no_export'):
         return
     inventory_fields = list(set(fields).intersection(INVENTORY_FIELDS))
     if inventory_fields:
+        combination = session.browse(model_name, record_id)
+        backend_id = combination.backend_id
+        backend_id.import_sale_orders()
         export_inventory.delay(session, model_name,
                                record_id, fields=inventory_fields,
                                priority=20)
@@ -656,6 +665,8 @@ def export_inventory(session, model_name, record_id, fields=None):
     backend_id = template.backend_id.id
     env = get_environment(session, model_name, backend_id)
     inventory_exporter = env.get_connector_unit(ProductInventoryExport)
+    #import_sale_orders
+    
     return inventory_exporter.run(record_id, fields)
 
 
