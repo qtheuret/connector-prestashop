@@ -72,11 +72,23 @@ class product_template(orm.Model):
 
     def update_prestashop_quantities(self, cr, uid, ids, context=None):
         for template in self.browse(cr, uid, ids, context=context):
-            for prestashop_template in template.prestashop_bind_ids:
-                prestashop_template.recompute_prestashop_qty()
-            prestashop_combinations = template.product_variant_ids
-            for prestashop_combination in prestashop_combinations:
-                prestashop_combination.recompute_prestashop_qty()
+#             for prestashop_template in template.prestashop_bind_ids:
+#                 prestashop_template.recompute_prestashop_qty()
+#             prestashop_combinations = template.product_variant_ids
+#             for prestashop_combination in prestashop_combinations:
+#                 prestashop_combination.recompute_prestashop_qty()
+                
+            prestashop_combinations = (
+                len(template.product_variant_ids) > 1
+                and template.product_variant_ids) or []
+            if not prestashop_combinations:
+                for prestashop_product in template.prestashop_bind_ids:
+                    prestashop_product.recompute_prestashop_qty()
+            else:
+                for prestashop_combination in prestashop_combinations:
+                    for combination_binding in \
+                            prestashop_combination.prestashop_bind_ids:
+                        combination_binding.recompute_prestashop_qty()
         return True
 
 
