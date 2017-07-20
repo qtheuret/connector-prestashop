@@ -352,7 +352,8 @@ class AddressImportMapper(PrestashopImportMapper):
         ('date_add', 'date_add'),
         ('date_upd', 'date_upd'),
         ('id_customer', 'prestashop_partner_id'),
-        ('alias', 'address_alias')
+        ('alias', 'address_alias'),
+        ('company', 'company')
     ]
 
     @mapping

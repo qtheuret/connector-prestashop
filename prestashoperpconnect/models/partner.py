@@ -65,8 +65,17 @@ class res_partner(orm.Model):
             string="PrestaShop Address Bindings"
         ),
         'address_alias': fields.char('Alias in prestashop'),
+        'ext_company_name': fields.related(
+                'prestashop_address_bind_ids',
+            'company',
+            type='char',
+            relation='prestashop.address',
+            string='Prestashop Company for delivery',
+            store=False
+        )
     }
 
+    
 
 class prestashop_res_partner(orm.Model):
     _name = 'prestashop.res.partner'
@@ -236,6 +245,7 @@ class prestashop_address(orm.Model):
             readonly=True
         ),
         'vat_number': fields.char('PrestaShop VAT'),
+        'company': fields.char('Company')
     }
 
     _sql_constraints = [
