@@ -154,7 +154,7 @@ class sale_order(models.Model):
             new_name = self.name
             if self.prestashop_order_id and self.prestashop_order_id > 0 :
                 new_name = `self.prestashop_order_id` + '-'+  new_name                    
-            inv_ids.write({'internal_number' :self.prestashop_invoice_number,
+                inv_ids.write({'internal_number' :self.prestashop_invoice_number,
                             'origin' : new_name,
                             })
         
