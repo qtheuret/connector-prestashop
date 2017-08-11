@@ -233,11 +233,24 @@ class prestashop_backend(orm.Model):
         if not hasattr(ids, '__iter__'):
             ids = [ids]
         session = ConnectorSession(cr, uid, context=context)
+        queue_model = session.pool.get('queue.job')
         for backend_record in self.browse(cr, uid, ids, context=context):
 #            since_date = self._date_as_user_tz(
 #                cr, uid, backend_record.import_orders_since
 #            )
             since_date = backend_record.import_partners_since
+            
+            jobs = queue_model.search(
+                session.cr, session.uid,
+                [('func_string', 'ilike', 'import_orders_since'),
+                 ('func_string', 'ilike', since_date),
+                 ('state', 'not in', ['done', 'failed'])
+                 ],
+                context=session.context
+            )
+            if len(jobs) != 0 : 
+                return True
+                    
             import_orders_since.delay(
                 session,
                 backend_record.id,
