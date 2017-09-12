@@ -191,7 +191,12 @@ class AddressImportMapper(ImportMapper):
     def parent_id(self, record):
         binder = self.binder_for('prestashop.res.partner')
         parent = binder.to_openerp(record['id_customer'], unwrap=True)
-        return {'parent_id': parent.id}
+        vals = {'parent_id': parent.id}
+        if parent and not parent.phone and record['phone']:
+            parent.phone = record['phone']
+        if parent and parent.email and not record['email']:
+            vals.update({'email': parent.email})
+        return vals
 
     @mapping
     def name(self, record):
