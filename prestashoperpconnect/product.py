@@ -645,12 +645,14 @@ INVENTORY_FIELDS = ('quantity',)
 ])
 def prestashop_product_stock_updated(session, model_name, record_id,
                                      fields=None):
-    if session.context.get('connector_no_export'):
+    _logger.debug("prestashop_product_stock_updated context %s and datas %s" % (context, ids))
+    if session.context.get('connector_no_export', False):
         return
     inventory_fields = list(set(fields).intersection(INVENTORY_FIELDS))
     if inventory_fields:
         combination = session.browse(model_name, record_id)
         backend_id = combination.backend_id
+        _logger.debug("Run the import orders context %s" % combination)
         backend_id.import_sale_orders()
         export_inventory.delay(session, model_name,
                                record_id, fields=inventory_fields,

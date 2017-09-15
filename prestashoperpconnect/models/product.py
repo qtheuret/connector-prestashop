@@ -71,6 +71,7 @@ class product_template(orm.Model):
         )
 
     def update_prestashop_quantities(self, cr, uid, ids, context=None):
+        _logger.debug("update_prestashop_quantities context %s and datas %s" % (context, ids))
         for template in self.browse(cr, uid, ids, context=context):
 #             for prestashop_template in template.prestashop_bind_ids:
 #                 prestashop_template.recompute_prestashop_qty()

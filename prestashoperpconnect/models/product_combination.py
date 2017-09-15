@@ -109,6 +109,7 @@ class product_product(orm.Model):
         )
         
     def update_prestashop_quantities(self, cr, uid, ids, context=None):
+        _logger.debug("update_prestashop_quantities context %s and datas %s" % (context, ids))
         for product in self.browse(cr, uid, ids, context=context):
             product_template = product.product_tmpl_id
             prestashop_combinations = (
@@ -151,6 +152,7 @@ class prestashop_product_combination(orm.Model):
     }
 
     def recompute_prestashop_qty(self, cr, uid, ids, context=None):
+        _logger.debug("recompute_prestashop_qty combination context %s and datas %s" % (context, ids))
         if not hasattr(ids, '__iter__'):
             ids = [ids]
         for product in self.browse(cr, uid, ids, context=context):
