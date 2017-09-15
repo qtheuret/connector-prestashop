@@ -429,7 +429,9 @@ class ProductInventoryExport(ExportSynchronizer):
         """ Export the product inventory to Prestashop """
         template = self.session.browse(self.model._name, binding_id)
         #Refresh the values
-        template.openerp_id.with_context(connector_no_export=True).update_prestashop_quantities()
+        template_id = template.openerp_id.with_context(connector_no_export=True)
+        _logger.debug("Here we're supposed to have no_export in context")
+        template_id.update_prestashop_quantities()
         #Re-read the datas
         template = self.session.browse(self.model._name, binding_id)
         #template.
@@ -645,7 +647,7 @@ INVENTORY_FIELDS = ('quantity',)
 ])
 def prestashop_product_stock_updated(session, model_name, record_id,
                                      fields=None):
-    _logger.debug("prestashop_product_stock_updated session %s and record_id %s" % (session, record_id))
+    _logger.debug("prestashop_product_stock_updated session %s model_name %s and record_id %s" % (session.context, model_name, record_id))
     if session.context.get('connector_no_export', False):
         return
     inventory_fields = list(set(fields).intersection(INVENTORY_FIELDS))
@@ -653,7 +655,7 @@ def prestashop_product_stock_updated(session, model_name, record_id,
         combination = session.browse(model_name, record_id)
         backend_id = combination.backend_id
         _logger.debug("Run the import orders context %s" % combination)
-        backend_id.import_sale_orders()
+        #T000708 backend_id.import_sale_orders()
         export_inventory.delay(session, model_name,
                                record_id, fields=inventory_fields,
                                priority=20)
