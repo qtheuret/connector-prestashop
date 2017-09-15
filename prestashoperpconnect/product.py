@@ -645,7 +645,7 @@ INVENTORY_FIELDS = ('quantity',)
 ])
 def prestashop_product_stock_updated(session, model_name, record_id,
                                      fields=None):
-    _logger.debug("prestashop_product_stock_updated context %s and datas %s" % (context, ids))
+    _logger.debug("prestashop_product_stock_updated session %s and record_id %s" % (session, record_id))
     if session.context.get('connector_no_export', False):
         return
     inventory_fields = list(set(fields).intersection(INVENTORY_FIELDS))
