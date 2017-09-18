@@ -468,6 +468,7 @@ class PrestashopNewAPIBackend(models.Model):
                 'tax': 'taxes',
                 'image': 'image',
                 'combination': 'combinations',
+                'order_histories': 'order_histories?sendemail=1'
             },
         }
         if self.version == '1.6.0.9':
