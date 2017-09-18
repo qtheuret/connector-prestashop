@@ -813,9 +813,9 @@ def import_customers_since(session, backend_id, since_date=None):
     import_batch.delay(
         session, 'prestashop.res.partner', backend_id, filters, priority=15
     )
-#     import_batch(
-#         session, 'prestashop.address', backend_id, filters, priority = 20
-#     )
+    import_batch.delay(
+         session, 'prestashop.address', backend_id, filters, priority = 20
+    )
 
     session.pool.get('prestashop.backend').write(
         session.cr,
