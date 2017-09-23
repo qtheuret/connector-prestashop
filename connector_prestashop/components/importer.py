@@ -5,17 +5,17 @@ import logging
 from contextlib import closing, contextmanager
 
 import odoo
-from odoo import _
+from odoo import _, fields
 
 from odoo.addons.queue_job.job import job
-from odoo.addons.connector.unit.synchronizer import Importer
-from odoo.addons.connector.connector import ConnectorUnit, Binder
-from odoo.addons.connector.connector import ConnectorEnvironment
 from odoo.addons.queue_job.exception import (
     RetryableJobError,
     FailedJobError,
 )
 
+from odoo.addons.component.core import AbstractComponent, Component
+from odoo.addons.connector.exception import IDMissingInBackend
+from odoo.addons.queue_job.exception import NothingToDoJob
 
 _logger = logging.getLogger(__name__)
 
@@ -23,7 +23,11 @@ RETRY_ON_ADVISORY_LOCK = 1  # seconds
 RETRY_WHEN_CONCURRENT_DETECTED = 1  # seconds
 
 
-class PrestashopBaseImporter(Importer):
+class PrestashopBaseImporter(AbstractComponent):
+
+    _name = 'prestashop.base.importer'
+    _inherit = ['base.importer', 'base.prestashop.connector']
+    _usage = 'record.importer'
 
     def _import_dependency(self, prestashop_id, binding_model,
                            importer_class=None, always=False,
@@ -58,8 +62,11 @@ class PrestashopBaseImporter(Importer):
             importer.run(prestashop_id, **kwargs)
 
 
-class PrestashopImporter(PrestashopBaseImporter):
+class PrestashopImporter(AbstractComponent):
     """ Base importer for PrestaShop """
+
+    _name = 'prestashop.importer'
+    _inherit = 'prestashop.base.importer'
 
     def __init__(self, environment):
         """
@@ -283,11 +290,15 @@ class PrestashopImporter(PrestashopBaseImporter):
         self._after_import(binding)
 
 
-class BatchImporter(Importer):
+class BatchImporter(AbstractComponent):
     """ The role of a BatchImporter is to search for a list of
     items to import, then it can either import them directly or delay
     the import of each item separately.
     """
+    _name = 'prestashop.batch.importer'
+    _inherit = ['base.importer', 'base.prestashop.connector']
+    _usage = 'batch.importer'
+
     page_size = 1000
 
     def run(self, filters=None, **kwargs):
@@ -320,7 +331,7 @@ class BatchImporter(Importer):
 
 
 # TODO 2016-10-25: is this used at all somewhere???
-class AddCheckpoint(ConnectorUnit):
+class AddCheckpoint(AbstractComponent):
     """ Add a connector.checkpoint on the underlying model
     (not the prestashop.* but the _inherits'ed model) """
 
@@ -335,12 +346,14 @@ class AddCheckpoint(ConnectorUnit):
         )
 
 
-class DirectBatchImporter(BatchImporter):
+class DirectBatchImporter(AbstractComponent):
     """ Import the PrestaShop Shop Groups + Shops
 
     They are imported directly because this is a rare and fast operation,
     performed from the UI.
     """
+    _name = 'prestashop.direct.batch.importer'
+    _inherit = 'prestashop.batch.importer'
     _model_name = None
 
     def _import_record(self, record):
@@ -350,8 +363,11 @@ class DirectBatchImporter(BatchImporter):
             prestashop_id=record)
 
 
-class DelayedBatchImporter(BatchImporter):
+class DelayedBatchImporter(AbstractComponent):
     """ Delay import of the records """
+
+    _name = 'prestashop.delayed.batch.importer'
+    _inherit = 'prestashop.batch.importer'
     _model_name = None
 
     def _import_record(self, record, **kwargs):
@@ -362,8 +378,11 @@ class DelayedBatchImporter(BatchImporter):
             **kwargs)
 
 
-class TranslatableRecordImporter(PrestashopImporter):
+class TranslatableRecordImporter(AbstractComponent):
     """ Import one translatable record """
+    _name = 'translatable.record.importer'
+    _inherit = 'prestashop.importer'
+
     _model_name = []
 
     _translatable_fields = {}
