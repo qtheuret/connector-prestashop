@@ -63,14 +63,3 @@ class DeliveryCarrierBatchImporter(DelayedBatchImporter):
                      filters, record_ids)
         for record_id in record_ids:
             self._import_record(record_id, **kwargs)
-
-
-@job(default_channel='root.prestashop')
-def import_carriers(session, backend_id, **kwargs):
-    return import_batch(
-        session,
-        'prestashop.delivery.carrier',
-        backend_id,
-        priority=5,
-        **kwargs
-    )

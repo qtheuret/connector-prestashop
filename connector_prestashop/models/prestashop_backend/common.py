@@ -191,9 +191,10 @@ class PrestashopBackend(models.Model):
 
     @api.multi
     def import_carriers(self):
-        session = ConnectorSession.from_env(self.env)
         for backend_record in self:
-            import_carriers.delay(session, backend_record.id, priority=10)
+            self.env['prestashop.delivery.carrier'].import_batch(
+                backend_record,
+            )
         return True
 
     @api.multi

@@ -40,6 +40,15 @@ class PrestashopDeliveryCarrier(models.Model):
         string='Export tracking numbers to PrestaShop',
     )
 
+    def import_carriers(self, backend, **kwargs):
+        return import_batch(
+            session,
+            'prestashop.delivery.carrier',
+            backend_id,
+            priority=5,
+            **kwargs
+        )
+
 
 class DeliveryCarrier(models.Model):
     _inherit = "delivery.carrier"
