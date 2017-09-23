@@ -139,6 +139,21 @@ class PrestashopProductTemplate(models.Model):
     def _prestashop_qty(self):
         return self.qty_available
 
+    def import_products(self, backend, since_date=None, **kwargs):
+        filters = None
+        if since_date:
+            filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (since_date)}
+        now_fmt = fields.Datetime.now()
+
+        result = self.env['prestashop.product.category'].with_delay(
+            priority=10).import_batch(backend, filters=filters) or ''
+
+        result += self.env['prestashop.product.template'].with_delay(
+            priority=15).import_batch(backend, filters=filters) or ''
+
+        backend.import_products_since = now_fmt
+        return result
+
 
 @prestashop
 class ProductInventoryAdapter(GenericAdapter):
