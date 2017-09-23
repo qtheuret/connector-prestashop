@@ -31,9 +31,8 @@ class PrestashopBackend(models.Model):
     _description = 'PrestaShop Backend Configuration'
     _inherit = 'connector.backend'
 
-    _backend_type = 'prestashop'
-
-    def _select_versions(self):
+    @api.model
+    def select_versions(self):
         """ Available versions
 
         Can be inherited to add custom versions.
@@ -44,8 +43,9 @@ class PrestashopBackend(models.Model):
             ('1.6.0.11', '>= 1.6.0.11 - <1.6.1.2'),
             ('1.6.1.2', '=1.6.1.2')
         ]
+
     version = fields.Selection(
-        selection='_select_versions',
+        selection='select_versions',
         string='Version',
         required=True,
     )
@@ -140,7 +140,7 @@ class PrestashopBackend(models.Model):
                 # import directly, do not delay because this
                 # is a fast operation, a direct return is fine
                 # and it is simpler to import them sequentially
-                self.env[model_name].import_batch(backend=backend)
+                self.env[model_name].import_batch(backend)
         return True
 
     @api.multi
@@ -152,13 +152,11 @@ class PrestashopBackend(models.Model):
                 'prestashop.res.currency',
                 'prestashop.account.tax',
             ]:
-                env = backend.get_environment(model_name)
-                importer = env.get_connector_unit(AutoMatchingImporter)
-                importer.run()
-            self.env['prestashop.account.tax.group'].import_batch(
-                backend=backend)
-            self.env['prestashop.sale.order.state'].import_batch(
-                backend=backend)
+                with backend.work_on(model_name) as work:
+                    importer = work.component(usage='record.importer')
+                    importer.run()
+            self.env['prestashop.account.tax.group'].import_batch(backend)
+            self.env['prestashop.sale.order.state'].import_batch(backend)
         return True
 
     @api.multi
@@ -177,12 +175,10 @@ class PrestashopBackend(models.Model):
     @api.multi
     def import_customers_since(self):
         for backend_record in self:
-            connector_env = backend_record.get_environment('res.partner')
             since_date = backend_record.import_partners_since
-            connector_env.env['res.partner'].with_delay(
-                priority=10
-            ).import_customers_since(
-                backend_record=backend_record, since_date=since_date)
+            backend_record.with_delay(priority=10).import_customers_since(
+                backend_record=backend_record,
+                since_date=since_date)
         return True
 
     @api.multi

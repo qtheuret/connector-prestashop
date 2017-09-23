@@ -23,26 +23,6 @@ class ResPartner(models.Model):
         string='PrestaShop Address Bindings',
     )
 
-    # TODO: Implemented here or in prestashop.res.partner model?
-    @job(default_channel='root.prestashop')
-    def import_customers_since(
-        self, backend_record=None, since_date=None, **kwargs):
-        """ Prepare the import of partners modified on PrestaShop """
-        filters = None
-        if since_date:
-            filters = {
-                'date': '1',
-                'filter[date_upd]': '>[%s]' % since_date}
-        now_fmt = fields.Datetime.now()
-        self.env['prestashop.res.partner.category'].with_delay(
-            priority=10
-        ).import_batch(backend=backend_record, filters=filters, **kwargs)
-        self.env['prestashop.res.partner'].with_delay(
-            priority=15
-        ).import_batch(backend=backend_record, filters=filters, **kwargs)
-        backend_record.import_partners_since = now_fmt
-        return True
-
 
 class PrestashopPartnerMixin(models.AbstractModel):
     _name = 'prestashop.partner.mixin'
@@ -106,6 +86,24 @@ class PrestashopResPartner(models.Model):
     )
     newsletter = fields.Boolean(string='Newsletter')
     birthday = fields.Date(string='Birthday')
+
+    def import_customers_since(
+        self, backend_record=None, since_date=None, **kwargs):
+        """ Prepare the import of partners modified on PrestaShop """
+        filters = None
+        if since_date:
+            filters = {
+                'date': '1',
+                'filter[date_upd]': '>[%s]' % since_date}
+        now_fmt = fields.Datetime.now()
+        self.env['prestashop.res.partner.category'].with_delay(
+            priority=10
+        ).import_batch(backend=backend_record, filters=filters, **kwargs)
+        self.env['prestashop.res.partner'].with_delay(
+            priority=15
+        ).import_batch(backend=backend_record, filters=filters, **kwargs)
+        backend_record.import_partners_since = now_fmt
+        return True
 
 
 class PrestashopAddressMixin(models.AbstractModel):
