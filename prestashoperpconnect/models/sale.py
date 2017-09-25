@@ -376,7 +376,7 @@ class SaleOrderAdapter(GenericAdapter):
     def update_sale_state(self, prestashop_id, datas):
         api = self.connect()        
         #order_histories = self.backend_record.get_version_ps_key('order_histories')
-        resource =  self.backend_record.get_version_ps_key('order_histories', 'order_histories')
+        resource =  self.backend_record.get_version_ps_key('order_histories')
         return api.add(resource, datas)
 
     def search(self, filters=None):
