@@ -377,6 +377,7 @@ class SaleOrderAdapter(GenericAdapter):
         api = self.connect()        
         #order_histories = self.backend_record.get_version_ps_key('order_histories')
         resource =  self.backend_record.get_version_ps_key('order_histories')
+        _logger.debug("Resource found %s" % resource)
         return api.add(resource, datas)
 
     def search(self, filters=None):

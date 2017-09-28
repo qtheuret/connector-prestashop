@@ -471,7 +471,8 @@ class PrestashopNewAPIBackend(models.Model):
                 'order_histories': 'order_histories?sendemail=1'
             },
         }
-        if self.version == '1.6.0.9':
+        _logger.debug("Key conversion input %s for version %s : %s" , (key, self.version, keys_conversion[self.version][key]))
+        if self.version in [ '1.6.0.9', '1.6.0.11']:
             key = keys_conversion[self.version][key]
         return key
 
