@@ -463,6 +463,7 @@ class PrestashopNewAPIBackend(models.Model):
                 'product_option_value': 'product_option_values',
                 'order_slip_detail': 'order_slip_details',
                 'group': 'groups',
+                'category': 'categories',
                 'combination': 'combination',
                 'order_row': 'order_rows',
                 'tax': 'taxes',
