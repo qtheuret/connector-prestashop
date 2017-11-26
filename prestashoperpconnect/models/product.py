@@ -170,12 +170,14 @@ class prestashop_product_template(orm.Model):
             ids = [ids]
 
         for product in self.browse(cr, uid, ids, context=context):
+            
             new_qty = self._prestashop_qty(cr, uid, product, context=context)
             self.write(
                 cr, uid, product.id,
                 {'quantity': new_qty},
                 context=context
             )
+            
         return True
 
     def _prestashop_qty(self, cr, uid, product, context=None):

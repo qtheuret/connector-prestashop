@@ -370,13 +370,17 @@ class PartnerImportMapper(PrestashopImportMapper):
     @mapping
     def name(self, record):
         name = ""
+        data = {}
         if record['firstname']:
             name += record['firstname']
+            data.update({'firstname': record['firstname']})
         if record['lastname']:
             if len(name) != 0:
                 name += " "
             name += record['lastname']
-        return {'name': name}
+            data.update({'lastname': record['lastname']})
+        data.update({'name': name})
+        return data
 
     #TODO : find the problem with synchronous call orf category   
 #    @mapping
