@@ -388,23 +388,27 @@ class AddressImportMapper(PrestashopImportMapper):
             vat_number,
             context=self.session.context
         )
-
+  
     @mapping
     def name(self, record):
         name = ""
+        data = {}
         alias = ""
         if record['firstname']:
             name += record['firstname']
+            data.update({'firstname': record['firstname']})
         if record['lastname']:
-            if name:
+            if len(name) != 0:
                 name += " "
             name += record['lastname']
-#        if record['alias']:
+            data.update({'lastname': record['lastname']})
+        data.update({'name': name})
+#         if record['alias']:
 ##            if name:
 ##                name += " "
 ##            name += '(' + record['alias'] + ')'
 #            alias += record['alias']
-        return {'name': name}
+        return data
 
     @mapping
     def customer(self, record):
