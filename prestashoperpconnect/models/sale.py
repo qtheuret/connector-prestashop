@@ -133,7 +133,7 @@ class sale_order(models.Model):
 #            comodel_name="stock.picking", 
             string='Main picking',            
             readonly=True,
-            store=True
+#             store=True
         )
     
     @api.multi
