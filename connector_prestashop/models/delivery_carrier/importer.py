@@ -6,7 +6,7 @@ from odoo.addons.queue_job.job import job
 from odoo.addons.connector.unit.mapper import (mapping,
                                                   ImportMapper,
                                                   )
-from ...unit.importer import (
+from ...components.importer import (
     DelayedBatchImporter,
     PrestashopImporter,
     import_batch,

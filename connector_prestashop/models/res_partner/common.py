@@ -4,9 +4,9 @@
 from odoo import models, fields
 
 from odoo.addons.queue_job.job import job
-from ...unit.backend_adapter import GenericAdapter
+from ...components.backend_adapter import GenericAdapter
 from ...backend import prestashop
-from ...unit.importer import import_batch
+from ...components.importer import import_batch
 
 
 class ResPartner(models.Model):

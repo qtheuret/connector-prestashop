@@ -335,6 +335,7 @@ class AddCheckpoint(AbstractComponent):
     """ Add a connector.checkpoint on the underlying model
     (not the prestashop.* but the _inherits'ed model) """
 
+    _name = 'connector_prestashop_component'
     _model_name = []
 
     def run(self, binding_id):
@@ -507,17 +508,3 @@ class TranslatableRecordImporter(AbstractComponent):
                 lang=lang_code,
                 connector_no_export=True,
             ).write(map_record.values())
-
-# TODO: Remove when all imports has been changed
-@job(default_channel='root.prestashop')
-def import_batch(env, filters=None, **kwargs):
-    """ Prepare a batch import of records from PrestaShop """
-    importer = env.get_connector_unit(BatchImporter)
-    return importer.run(filters=filters, **kwargs)
-
-
-@job(default_channel='root.prestashop')
-def import_record(env, model_name, backend_id, prestashop_id, **kwargs):
-    """ Import a record from PrestaShop """
-    importer = env.get_connector_unit(PrestashopImporter)
-    return importer.run(prestashop_id, **kwargs)

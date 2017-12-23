@@ -4,7 +4,7 @@
 from odoo import api, fields, models
 
 from ...backend import prestashop
-from ...unit.backend_adapter import GenericAdapter
+from ...components.backend_adapter import GenericAdapter
 
 
 class AccountInvoice(models.Model):

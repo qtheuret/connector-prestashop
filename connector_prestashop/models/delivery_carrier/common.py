@@ -6,7 +6,7 @@ import logging
 from odoo import models, fields
 
 from ...backend import prestashop
-from ...unit.backend_adapter import GenericAdapter
+from ...components.backend_adapter import GenericAdapter
 
 _logger = logging.getLogger(__name__)
 

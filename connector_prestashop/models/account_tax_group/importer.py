@@ -6,7 +6,7 @@ from odoo.addons.connector.unit.mapper import (
     mapping,
     only_create,
 )
-from ...unit.importer import PrestashopImporter, DirectBatchImporter
+from ...components.importer import PrestashopImporter, DirectBatchImporter
 from ...backend import prestashop
 
 

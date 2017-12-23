@@ -3,7 +3,7 @@
 
 from odoo import models, fields, api
 from odoo.addons.queue_job.job import job
-from ...unit.importer import import_record
+from ...components.importer import import_record
 
 
 class PrestashopBinding(models.AbstractModel):

@@ -7,7 +7,7 @@ from odoo import _, api, exceptions, fields, models
 from odoo.addons import decimal_precision as dp
 
 from odoo.addons.queue_job.job import job
-from ...unit.backend_adapter import GenericAdapter
+from ...components.backend_adapter import GenericAdapter
 from ...backend import prestashop
 from exporter import ProductInventoryExporter
 

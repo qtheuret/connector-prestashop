@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from ...backend import prestashop
-from ...unit.importer import DirectBatchImporter
+from ...components.importer import DirectBatchImporter
 
 
 @prestashop

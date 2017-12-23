@@ -5,7 +5,7 @@ from odoo import _
 from odoo.addons.connector.unit.mapper import (mapping,
                                                   ImportMapper)
 from odoo.addons.connector.unit.mapper import external_to_m2o
-from ...unit.importer import TranslatableRecordImporter, DelayedBatchImporter
+from ...components.importer import TranslatableRecordImporter, DelayedBatchImporter
 from ...backend import prestashop
 
 import datetime

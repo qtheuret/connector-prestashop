@@ -12,7 +12,7 @@ from odoo.addons.connector.unit.mapper import (
 )
 
 from ...backend import prestashop
-from ...unit.importer import (
+from ...components.importer import (
     PrestashopImporter,
     import_batch,
     DelayedBatchImporter,

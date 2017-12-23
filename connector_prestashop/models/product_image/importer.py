@@ -7,7 +7,7 @@ from odoo.addons.connector.unit.mapper import (mapping,
                                                   ImportMapper)
 
 from ...backend import prestashop
-from ...unit.importer import PrestashopImporter
+from ...components.importer import PrestashopImporter
 
 import mimetypes
 import logging

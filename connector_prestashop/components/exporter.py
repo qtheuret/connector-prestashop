@@ -29,8 +29,8 @@ _logger = logging.getLogger(__name__)
 class PrestashopBaseExporter(AbstractComponent):
     """ Base exporter for PrestaShop """
 
-    _name = 'prestaShop.base.exporter'
-    _inherit = ['base.exporter', 'base.prestaShop.connector']
+    _name = 'prestashop.base.exporter'
+    _inherit = ['base.exporter', 'base.prestashop.connector']
     _usage = 'record.exporter'
 
     def __init__(self, environment):

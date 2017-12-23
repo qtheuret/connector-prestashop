@@ -7,19 +7,15 @@ from contextlib import contextmanager
 from odoo import models, fields, api, exceptions, _
 
 from odoo.addons.connector.connector import ConnectorEnvironment
-from ...unit.importer import import_batch, import_record
-from ...unit.auto_matching_importer import AutoMatchingImporter
-from ...unit.backend_adapter import GenericAdapter, api_handle_errors
-from ...unit.version_key import VersionKey
+from ...components.importer import import_batch, import_record
+from ...components.auto_matching_importer import AutoMatchingImporter
+from ...components.backend_adapter import GenericAdapter, api_handle_errors
+from ...components.version_key import VersionKey
 from ...backend import prestashop
 
-from ..product_template.exporter import export_product_quantities
 from ..product_template.importer import import_inventory
-from ..res_partner.importer import import_customers_since
-from ..delivery_carrier.importer import import_carriers
 from ..product_supplierinfo.importer import import_suppliers
 from ..account_invoice.importer import import_refunds
-from ..product_template.importer import import_products
 from ..sale_order.importer import import_orders_since
 
 

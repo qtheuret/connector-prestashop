@@ -9,7 +9,7 @@ from odoo.addons.connector.unit.mapper import (
     ImportMapper
 )
 
-from ...unit.importer import (
+from ...components.importer import (
     DelayedBatchImporter,
     import_record,
     import_batch,
@@ -18,7 +18,7 @@ from ...unit.importer import (
     TranslatableRecordImporter,
 )
 from odoo.addons.connector.unit.mapper import external_to_m2o
-from ...unit.backend_adapter import GenericAdapter
+from ...components.backend_adapter import GenericAdapter
 from ...backend import prestashop
 from ..product_image.importer import (
     import_product_image,
