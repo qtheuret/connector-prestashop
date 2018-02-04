@@ -22,6 +22,10 @@ _logger = logging.getLogger(__name__)
 RETRY_ON_ADVISORY_LOCK = 1  # seconds
 RETRY_WHEN_CONCURRENT_DETECTED = 1  # seconds
 
+def import_record():
+    pass
+def import_batch():
+    pass
 
 class PrestashopBaseImporter(AbstractComponent):
 
@@ -359,7 +363,7 @@ class DirectBatchImporter(AbstractComponent):
 
     def _import_record(self, record):
         """ Import the record directly """
-        self.env[self.model._name].with_delay().import_record(
+        self.env[self.model._name].import_record(
             backend=self.backend_record,
             prestashop_id=record)
 

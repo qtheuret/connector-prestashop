@@ -16,6 +16,8 @@ class PrestashopModelBinder(Component):
     """
     _name = 'prestashop.binder'
     _inherit = ['base.binder', 'base.prestashop.connector']
+    _external_field = 'prestashop_id'
+
     _apply_on = [
         'prestashop.shop.group',
         'prestashop.shop',

@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 import logging
+from odoo.addons.component.core import Component
 from contextlib import contextmanager
 
 from odoo import models, fields, api, exceptions, _
@@ -158,10 +159,10 @@ class PrestashopBackend(models.Model):
     @api.multi
     def _check_connection(self):
         self.ensure_one()
-        env = self.get_environment(self._name)
-        adapter = env.get_connector_unit(GenericAdapter)
-        with api_handle_errors('Connection failed'):
-            adapter.head()
+        with self.work_on('prestashop.backend') as work:
+            component = work.component_by_name(name='prestashop.adapter')
+            with api_handle_errors('Connection failed'):
+                component.head()
 
     @api.multi
     def button_check_connection(self):
@@ -334,14 +335,17 @@ class PrestashopShopGroup(models.Model):
     )
 
 
-@prestashop
-class NoModelAdapter(GenericAdapter):
+class NoModelAdapter(Component):
     """ Used to test the connection """
+    _name = 'prestashop.adapter.test'
+    _inherit = 'prestashop.adapter'
     _model_name = 'prestashop.backend'
     _prestashop_model = ''
 
 
-@prestashop
-class ShopGroupAdapter(GenericAdapter):
+class ShopGroupAdapter(Component):
+    _name = 'prestashop.shop.group'
+    _inherit = 'prestashop.adapter'
     _model_name = 'prestashop.shop.group'
+    _apply_on = 'prestashop.shop.group'
     _prestashop_model = 'shop_groups'
