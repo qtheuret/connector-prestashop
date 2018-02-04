@@ -172,12 +172,14 @@ class PrestashopImporter(AbstractComponent):
                 try:
                     new_env = odoo.api.Environment(cr, self.env.uid,
                                                       self.env.context)
-                    connector_env = self.connector_env.create_environment(
-                        self.backend_record.with_env(new_env),
-                        model_name or self.model._name,
-                        connector_env=self.connector_env
-                    )
-                    yield connector_env
+                    # connector_env = self.connector_env.create_environment(
+                    #     self.backend_record.with_env(new_env),
+                    #     model_name or self.model._name,
+                    #     connector_env=self.connector_env
+                    # )
+                    with self.backend_record.with_env(
+                        new_env).work_on(self.model._name) as work2:
+                        yield work2
                 except:
                     cr.rollback()
                     raise
@@ -227,7 +229,8 @@ class PrestashopImporter(AbstractComponent):
             # a Retryable error so T2 is rollbacked and retried
             # later (and the new T3 will be aware of the category X
             # from the its inception).
-            binder = new_connector_env.get_connector_unit(Binder)
+            binder = self.binder_for(model=self.model._name)
+            # binder = new_connector_env.get_connector_unit(Binder)
             if binder.to_internal(self.prestashop_id):
                 raise RetryableJobError(
                     'Concurrent error. The job will be retried later',

@@ -4,9 +4,7 @@
 import logging
 
 from odoo import models, fields
-
-from ...backend import prestashop
-from ...components.backend_adapter import GenericAdapter
+from odoo.addons.component.core import Component
 
 _logger = logging.getLogger(__name__)
 
@@ -65,8 +63,11 @@ class DeliveryCarrier(models.Model):
     )
 
 
-@prestashop
-class DeliveryCarrierAdapter(GenericAdapter):
+class DeliveryCarrierAdapter(Component):
+    _name = 'prestashop.delivery.carrier.adapter'
+    _inherit = 'prestashop.adapter'
+    _apply_on = 'prestashop.delivery.carrier'
+
     _model_name = 'prestashop.delivery.carrier'
     _prestashop_model = 'carriers'
 
@@ -74,5 +75,4 @@ class DeliveryCarrierAdapter(GenericAdapter):
         if filters is None:
             filters = {}
         filters['filter[deleted]'] = 0
-
         return super(DeliveryCarrierAdapter, self).search(filters)

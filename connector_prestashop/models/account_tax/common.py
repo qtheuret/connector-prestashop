@@ -34,7 +34,7 @@ class AccountTax(models.Model):
 
 
 class AccountTaxAdapter(Component):
-    name = 'prestashop.account.tax.adapter'
+    _name = 'prestashop.account.tax.adapter'
     _inherit = 'prestashop.adapter'
     _apply_on = 'prestashop.account.tax'
 
