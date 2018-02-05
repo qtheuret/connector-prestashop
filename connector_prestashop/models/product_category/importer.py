@@ -6,7 +6,6 @@ from odoo.addons.connector.unit.mapper import (mapping,
                                                   ImportMapper)
 from odoo.addons.connector.unit.mapper import external_to_m2o
 from ...components.importer import TranslatableRecordImporter, DelayedBatchImporter
-from ...backend import prestashop
 from odoo.addons.component.core import Component
 
 import datetime

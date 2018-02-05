@@ -1,16 +1,10 @@
 # -*- coding: utf-8 -*-
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
-# TODO: Continue here
 
 import base64
-
 from odoo import models, fields
-
-from ...components.backend_adapter import (
-    PrestaShopCRUDAdapter,
-    PrestaShopWebServiceImage,
-)
-from ...backend import prestashop
+from odoo.addons.component.core import AbstractComponent
+from ...components.backend_adapter import PrestaShopWebServiceImage
 
 
 class ProductImage(models.Model):
@@ -37,8 +31,10 @@ class PrestashopProductImage(models.Model):
     )
 
 
-@prestashop
-class ProductImageAdapter(PrestaShopCRUDAdapter):
+class ProductImageAdapter(AbstractComponent):
+    _name = 'prestashop.product.image.adapter'
+    _inherit = 'prestashop.crud.adapter'
+
     _model_name = 'prestashop.product.image'
     _prestashop_image_model = 'products'
     _prestashop_model = '/images/products'
