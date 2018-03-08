@@ -135,6 +135,7 @@ class sale_order(models.Model):
             readonly=True,
 #             store=True
         )
+    code_shipping_point = fields.Char('Code Shipping Point')
     
     @api.multi
     def action_invoice_create(self, grouped=False, states=['confirmed', 'done', 'exception'], date_invoice = False, context=None):

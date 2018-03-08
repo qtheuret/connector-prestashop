@@ -478,7 +478,8 @@ class SaleOrderMapper(PrestashopImportMapper):
         ('delivery_number', 'prestashop_delivery_number'),
         ('total_paid', 'total_amount'),
         ('total_shipping_tax_incl', 'total_shipping_tax_included'),
-        ('total_shipping_tax_excl', 'total_shipping_tax_excluded')
+        ('total_shipping_tax_excl', 'total_shipping_tax_excluded'),
+
     ]
 
     def _get_sale_order_lines(self, record):
@@ -562,7 +563,13 @@ class SaleOrderMapper(PrestashopImportMapper):
             ('company_id', '=', self.backend_record.company_id.id),
         ])
         return len(ids) == 1
-
+    
+    @mapping
+    def  code_shipping_point(self, record):
+        csp = record['code_shipping_point']
+        
+        return {'code_shipping_point': csp['value']} 
+        
     @mapping
     def name(self, record):
         basename = record['reference']
