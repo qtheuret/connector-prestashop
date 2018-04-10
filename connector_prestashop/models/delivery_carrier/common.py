@@ -38,6 +38,8 @@ class PrestashopDeliveryCarrier(models.Model):
         string='Export tracking numbers to PrestaShop',
     )
 
+    #Check with @bguillot where is it now 
+    #https://github.com/Tecnativa/connector-prestashop/pull/6/files#diff-befe8c6495c83e59d4cc839009d90adaL41
     def import_carriers(self, backend, **kwargs):
         return import_batch(
             session,

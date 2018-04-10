@@ -4,12 +4,6 @@
 from odoo import _, models, fields
 from odoo.addons.queue_job.job import job
 
-from odoo.addons.connector.unit.mapper import (
-    mapping,
-    only_create,
-    ImportMapper
-)
-
 from ...components.importer import (
     DelayedBatchImporter,
     import_record,
@@ -18,7 +12,6 @@ from ...components.importer import (
     PrestashopBaseImporter,
     TranslatableRecordImporter,
 )
-# from odoo.addons.connector.unit.mapper import external_to_m2o
 from ...components.backend_adapter import GenericAdapter
 from ...backend import prestashop
 from ..product_image.importer import (
@@ -28,7 +21,8 @@ from ..product_image.importer import (
 
 
 from odoo.addons.component.core import Component
-from odoo.addons.connector.components.mapper import mapping, external_to_m2o
+from odoo.addons.connector.components.mapper import (
+    mapping, external_to_m2o, only_create)
 
 
 
@@ -51,10 +45,7 @@ try:
 except ImportError:
     _logger.debug('Cannot import from `prestapyt`')
 
-
-# # @prestashop
 class TemplateMapper(Component):
-    #_model_name = 'prestashop.product.template'
     _name = 'prestashop.product.template.mapper'
     _inherit = 'prestashop.import.mapper'
     _apply_on = ['prestashop.product.template']
@@ -96,7 +87,9 @@ class TemplateMapper(Component):
         associations = record.get('associations', {})
         tags = associations.get('tags', {}).get(
             self.backend_record.get_version_ps_key('tag'), [])
-        tag_adapter = self.unit_for(GenericAdapter, '_prestashop_product_tag')
+        tag_adapter = self.component(
+            usage='prestashop.adapter', model_name='_prestashop_product_tag'
+        )
         if not isinstance(tags, list):
             tags = [tags]
         if tags:
@@ -323,26 +316,12 @@ class ManufacturerProductImportMapper(Component):
         return {}
 
 
-# # @prestashop
-class TemplateAdapter(Component):
-    _name = 'prestashop.product.template.adapter'
-    _inherit = 'prestashop.adapter'
-    _apply_on = 'prestashop.product.template'
-
-    _prestashop_model = 'products'
-    _export_node_name = 'product'
-
-    
-
-
 class ImportInventory(models.TransientModel):
     # In actual connector version is mandatory use a model
     _name = '_import_stock_available'
 
 
-# # @prestashop
 class ProductInventoryBatchImporter(Component):
-#     _model_name = ['_import_stock_available']
     _name = 'prestashop._import_stock_available.batch.importer'
     _inherit = 'prestashop.delayed.batch.importer'
     _apply_on = '_import_stock_available'
@@ -548,10 +527,9 @@ class ProductTemplateImporter(Component):
                                 **kwargs)
 
     def _delay_product_image_variant(self, combinations, **kwargs):
-        set_product_image_variant.delay(
-            self.session,
-            'prestashop.product.combination',
-            self.backend_record.id,
+        delayable = self.env['prestashop.product.combination'].with_delay(priority=15)
+        delayable.set_product_image_variant(
+            self.backend_record,
             combinations,
             priority=15,
             **kwargs
@@ -580,17 +558,6 @@ class ProductTemplateImporter(Component):
             if combinations and associations['images'].get('image'):
                 self._delay_product_image_variant(combinations)
 
-    def _delay_import_product_image(self, prestashop_record, image, **kwargs):
-        import_product_image.delay(
-            self.session,
-            'prestashop.product.image',
-            self.backend_record.id,
-            prestashop_record['id'],
-            image['id'],
-            priority=10,
-            **kwargs
-        )
-
     def import_images(self, binding):
         prestashop_record = self._get_prestashop_data()
         associations = prestashop_record.get('associations', {})
@@ -600,7 +567,12 @@ class ProductTemplateImporter(Component):
             images = [images]
         for image in images:
             if image.get('id'):
-                self._delay_import_product_image(prestashop_record, image)
+                delayable = self.env['prestashop.product.image'].with_delay(priority=10)
+                delayable.import_product_image(
+                    self.backend_record,
+                    prestashop_record['id'],
+                    image['id'],
+                    **kwargs)
 
     def import_supplierinfo(self, binding):
         ps_id = self._get_prestashop_data()['id']
@@ -662,18 +634,8 @@ class ProductTemplateImporter(Component):
                                     'prestashop.product.category')
 
 
-@job(default_channel='root.prestashop')
-def import_inventory(session, backend_id):
-    backend = session.env['prestashop.backend'].browse(backend_id)
-    env = backend.get_environment('_import_stock_available', session=session)
-    inventory_importer = env.get_connector_unit(ProductInventoryBatchImporter)
-    return inventory_importer.run()
 
-
-# # @prestashop
 class ProductTemplateBatchImporter(Component):
-    #_model_name = 'prestashop.product.template'
-    
     _name = 'prestashop.product.template.batch.importer'
     _inherit = 'prestashop.delayed.batch.importer'
     _apply_on = 'prestashop.product.template'

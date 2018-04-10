@@ -1,16 +1,11 @@
 # -*- coding: utf-8 -*-
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
-# from odoo.addons.connector.unit.mapper import ImportMapper, mapping
-# from ...components.importer import PrestashopImporter, DirectBatchImporter
-# from odoo.addons.connector.unit.mapper import external_to_m2o
-# from ...backend import prestashop
-
 
 from odoo.addons.component.core import Component
 from odoo.addons.connector.components.mapper import mapping, external_to_m2o
 
-# # @prestashop
+
 class ShopImporter(Component):
     _name = 'prestashop.shop.importer'
     _inherit = 'prestashop.importer'

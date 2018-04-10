@@ -4,7 +4,6 @@
 from odoo import fields
 from odoo.addons.queue_job.exception import FailedJobError
 from odoo.addons.queue_job.job import job
-from odoo.addons.connector.unit.mapper import ImportMapper, mapping
 
 from ...components.backend_adapter import PrestaShopCRUDAdapter
 from ...components.importer import (
@@ -26,8 +25,6 @@ except:
 
 # # @prestashop
 class SupplierMapper(Component):
-#     _model_name = 'prestashop.supplier'
-
     _name = 'prestashop.supplier.mapper'
     _inherit = 'prestashop.import.mapper'
     _apply_on = 'prestashop.supplier'
@@ -69,7 +66,6 @@ class SupplierMapper(Component):
 # # @prestashop
 class SupplierImporter(Component):
     """ Import one simple record """
-#    _model_name = 'prestashop.supplier'
     _name = 'prestashop.supplier.importer'
     _inherit = 'prestashop.importer'
     _apply_on = 'prestashop.supplier'
@@ -96,18 +92,14 @@ class SupplierImporter(Component):
         )
 
 
-# # @prestashop
 class SupplierBatchImporter(Component):
-#     _model_name = 'prestashop.supplier'
     _name = 'prestashop.supplier.batch.importer'
     _inherit = 'prestashop.delayed.batch.importer'
     _apply_on = 'prestashop.supplier'
 
 
 
-# # @prestashop
 class SupplierInfoMapper(Component):
-#     _model_name = 'prestashop.product.supplierinfo'
     _name = 'prestashop.product.supplierinfo.mapper'
     _inherit = 'prestashop.import.mapper'
     _apply_on = 'prestashop.product.supplierinfo'
@@ -181,35 +173,10 @@ class SupplierInfoImporter(Component):
             raise FailedJobError('Error fetching a dependency')
 
 
-# # @prestashop
 class SupplierInfoBatchImporter(Component):
-#     _model_name = 'prestashop.product.supplierinfo'
     _name = 'prestashop.product.supplierinfo.batch.importer'
     _inherit = 'prestashop.delayed.batch.importer'
     _apply_on = 'prestashop.product.supplierinfo'
 
 
 
-@job(default_channel='root.prestashop')
-def import_suppliers(session, backend_id, since_date, **kwargs):
-    filters = None
-    if since_date:
-        filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (since_date)}
-    now_fmt = fields.Datetime.now()
-    result = import_batch(
-        session,
-        'prestashop.supplier',
-        backend_id,
-        filters,
-        **kwargs
-    ) or ''
-    result += import_batch(
-        session,
-        'prestashop.product.supplierinfo',
-        backend_id,
-        **kwargs
-    ) or ''
-    session.env['prestashop.backend'].browse(backend_id).write({
-        'import_suppliers_since': now_fmt
-    })
-    return result

@@ -2,10 +2,9 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
 from odoo import _
-from odoo.addons.connector.unit.mapper import (mapping,
-                                                  ImportMapper)
 
-from ...components.importer import TranslatableRecordImporter, DelayedBatchImporter
+
+#from ...components.importer import TranslatableRecordImporter, DelayedBatchImporter
 
 from odoo.addons.component.core import Component
 from odoo.addons.connector.components.mapper import mapping, external_to_m2o
@@ -75,7 +74,7 @@ class ProductCategoryMapper(Component):
 
 class ProductCategoryImporter(TranslatableRecordImporter):
     _name = 'prestashop.product.category.importer'
-    _inherit = 'translatable.record.importer'
+    _inherit = 'prestashop.translatable.record.importer'
     _apply_on = 'prestashop.product.category'
     _model_name = 'prestashop.product.category'
 

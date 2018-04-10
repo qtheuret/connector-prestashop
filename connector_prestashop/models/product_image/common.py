@@ -31,6 +31,16 @@ class PrestashopProductImage(models.Model):
     )
 
 
+    @job(default_channel='root.prestashop')
+    @api.multi
+    def import_product_image(self, backend, product_tmpl_id, image_id, **kwargs):
+        """Import a product image"""
+        self.ensure_one()
+        with backend.work_on(self._name) as work:
+            importer = work.component(usage='prestashop.importer')
+            return importer.run(product_tmpl_id, image_id)
+
+
 class ProductImageAdapter(AbstractComponent):
     _name = 'prestashop.product.image.adapter'
     _inherit = 'prestashop.crud.adapter'

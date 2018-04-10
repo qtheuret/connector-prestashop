@@ -37,9 +37,7 @@ class AutoMatchingImporter(Component):
         erp_ids = model.search([])
         erp_list_dict = erp_ids.read()
         
-        
-        # TODO: Fix
-#         adapter = self.unit_for(BackendAdapter)
+
         adapter = self.component(usage='backend.adapter')
         # Get the IDS from PS
         ps_ids = adapter.search()

@@ -142,10 +142,11 @@ class PrestashopBackend(models.Model):
     def _default_pricelist_id(self):
         return self.env['product.pricelist'].search([], limit=1)
 
-    @api.multi
-    def get_environment(self, model_name,):
+    def add_checkpoint(self, record):
         self.ensure_one()
-        return ConnectorEnvironment(self, model_name)
+        record.ensure_one()
+        return checkpoint.add_checkpoint(self.env, record._name, record.id,
+                                         self._name, self.id)
 
     @api.multi
     def button_reset_to_draft(self):
@@ -202,7 +203,7 @@ class PrestashopBackend(models.Model):
     def import_customers_since(self):
         for backend_record in self:
             since_date = backend_record.import_partners_since
-            backend_record.with_delay(priority=10).import_customers_since(
+            self.env['prestashop.res.partner'].import_customers_since(
                 backend_record=backend_record,
                 since_date=since_date)
         return True
@@ -211,8 +212,8 @@ class PrestashopBackend(models.Model):
     def import_products(self):
         for backend_record in self:
             since_date = backend_record.import_products_since
-            backend_record.env['prestashop.product.template'].with_delay(
-                priority=10).import_products(backend_record, since_date)
+            self.env['prestashop.product.template'].import_products(
+                backend_record, since_date)
         return True
 
     @api.multi
@@ -236,7 +237,8 @@ class PrestashopBackend(models.Model):
     def import_stock_qty(self):
         session = ConnectorSession.from_env(self.env)
         for backend_record in self:
-            import_inventory.delay(session, backend_record.id)
+            backend_record.env['prestashop.product.template']\
+                .with_delay().import_inventory(backend_record)
 
     @api.multi
     def import_sale_orders(self):
@@ -255,8 +257,8 @@ class PrestashopBackend(models.Model):
     def import_payment_modes(self):
         session = ConnectorSession.from_env(self.env)
         for backend_record in self:
-            import_batch.delay(session, 'account.payment.mode',
-                               backend_record.id)
+            backend_record.env['account.payment.mode'].import_batch(
+                backend_record.id)
         return True
 
     @api.multi
@@ -264,7 +266,8 @@ class PrestashopBackend(models.Model):
         session = ConnectorSession.from_env(self.env)
         for backend_record in self:
             since_date = backend_record.import_refunds_since
-            import_refunds.delay(session, backend_record.id, since_date)
+            backend_record.env['prestashop.refund'].import_refunds(
+                backend_record, since_date)
         return True
 
     @api.multi
@@ -272,7 +275,8 @@ class PrestashopBackend(models.Model):
         session = ConnectorSession.from_env(self.env)
         for backend_record in self:
             since_date = backend_record.import_suppliers_since
-            import_suppliers.delay(session, backend_record.id, since_date)
+            backend_record.env['prestashop.supplier'].import_suppliers(
+                backend_record, since_date)
         return True
 
     def get_version_ps_key(self, key):
