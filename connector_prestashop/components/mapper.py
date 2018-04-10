@@ -11,6 +11,11 @@ class PrestashopImportMapper(AbstractComponent):
     _usage = 'import.mapper'
 
 
+    @mapping
+    def backend_id(self, record):
+        return {'backend_id': self.backend_record.id}
+
+
 class PrestashopExportMapper(AbstractComponent):
     _name = 'prestashop.export.mapper'
     _inherit = ['base.prestashop.connector', 'base.export.mapper']
