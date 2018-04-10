@@ -7,7 +7,7 @@ from odoo.addons.component.core import Component
 from ...components.backend_adapter import (
     PrestaShopWebServiceImage,
 )
-from ...backend import prestashop
+from odoo.addons.component.core import Component
 
 
 class ResPartner(models.Model):
@@ -75,11 +75,11 @@ class PrestashopProductSupplierinfo(models.Model):
     )
 
 
-@prestashop
-class SupplierImageAdapter(Component):
+class SupplierImageAdapter(PrestaShopCRUDAdapter):
     _name = 'prestashop.supplier.image.adapter'
     _inherit = 'prestashop.adapter'
     _apply_on = 'prestashop.supplier.image'
+
     _prestashop_image_model = 'suppliers'
 
     def read(self, supplier_id, options=None):
@@ -93,7 +93,6 @@ class SupplierImageAdapter(Component):
         return res['content']
 
 
-@prestashop
 class SupplierAdapter(Component):
     _name = 'prestashop.supplier.adapter'
     _inherit = 'prestashop.adapter'
@@ -101,7 +100,6 @@ class SupplierAdapter(Component):
     _prestashop_model = 'suppliers'
 
 
-@prestashop
 class SupplierInfoAdapter(Component):
     _name = 'prestashop.product.supplierinfo.adapter'
     _inherit = 'prestashop.adapter'

@@ -5,7 +5,6 @@ from odoo import models, fields
 
 from odoo.addons.queue_job.job import job
 from odoo.addons.component.core import Component
-from ...backend import prestashop
 from ...components.importer import import_batch
 
 
@@ -158,7 +157,6 @@ class PrestashopAddress(models.Model):
     vat_number = fields.Char('PrestaShop VAT')
 
 
-@prestashop
 class PartnerAdapter(Component):
     _name = 'prestashop.res.partner.adapter'
     _inherit = 'prestashop.adapter'
@@ -166,7 +164,6 @@ class PartnerAdapter(Component):
     _prestashop_model = 'customers'
 
 
-@prestashop
 class PartnerAddressAdapter(Component):
     _name = 'prestashop.address.adapter'
     _inherit = 'prestashop.adapter'

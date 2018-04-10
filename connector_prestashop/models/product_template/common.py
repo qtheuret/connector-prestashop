@@ -8,7 +8,6 @@ from odoo.addons import decimal_precision as dp
 
 from odoo.addons.queue_job.job import job
 from odoo.addons.component.core import Component
-from ...backend import prestashop
 from exporter import ProductInventoryExporter
 
 import logging
@@ -161,7 +160,6 @@ class PrestashopProductTemplate(models.Model):
             return importer.set_variant_images()
 
 
-@prestashop
 class TemplateAdapter(Component):
     _name = 'prestashop.product.template.adapter'
     _inherit = 'prestashop.adapter'
@@ -170,7 +168,6 @@ class TemplateAdapter(Component):
     _export_node_name = 'product'
 
 
-@prestashop
 class ProductInventoryAdapter(Component):
     _name = '_import_stock_available.adapter'
     _inherit = 'prestashop.adapter'
@@ -211,7 +208,6 @@ class ProductInventoryAdapter(Component):
             })
 
 
-@prestashop
 class PrestashopProductTags(Component):
     _name = 'prestashop.product.tag.adapter'
     _inherit = 'prestashop.adapter'

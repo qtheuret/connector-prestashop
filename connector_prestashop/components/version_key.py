@@ -4,7 +4,6 @@
 
 from odoo import models
 from odoo.addons.component.core import Component
-from ..backend import prestashop, prestashop_1_6_0_9, prestashop_1_6_1_2
 
 
 class VersionKeyModel(models.TransientModel):
@@ -12,7 +11,6 @@ class VersionKeyModel(models.TransientModel):
     _name = '_prestashop.version.key'
 
 
-@prestashop
 class VersionKey(Component):
     _name = '_prestashop.version.key'
     _apply_on = '_prestashop.version.key'
@@ -24,7 +22,6 @@ class VersionKey(Component):
         return self.keys.get(key) or key
 
 
-@prestashop_1_6_0_9
 class VersionKey_1_6_0_9(Component):
     _name = '_prestashop.version.key.1.6.0.9'
     _inherit = '_prestashop.version.key'
@@ -45,7 +42,6 @@ class VersionKey_1_6_0_9(Component):
     }
 
 
-@prestashop_1_6_1_2
 class VersionKey_1_6_1_2(Component):
     _name = '_prestashop.version.key.1.6.1.2'
     _inherit = '_prestashop.version.key'

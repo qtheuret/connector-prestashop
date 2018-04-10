@@ -5,14 +5,12 @@ import re
 
 from odoo import fields, _
 from odoo.addons.queue_job.job import job
-from odoo.addons.connector.components.mapper import (mapping, only_create)
-from ...components.importer import import_batch
-from ...backend import prestashop
-from odoo.addons.connector.unit.mapper import external_to_m2o
+
 from odoo.addons.component.core import Component
+from odoo.addons.connector.components.mapper import (
+    mapping, external_to_m2o, only_create)
 
 
-@prestashop
 class PartnerImportMapper(Component):
     _name = 'prestashop.res.partner.mapper'
     _inherit = 'prestashop.import.mapper'
@@ -99,7 +97,6 @@ class PartnerImportMapper(Component):
         return {'company_id': self.backend_record.company_id.id}
 
 
-@prestashop
 class ResPartnerImporter(Component):
     _name = 'prestashop.res.partner.importer'
     _inherit = 'prestashop.importer'
@@ -124,14 +121,12 @@ class ResPartnerImporter(Component):
             filters={'filter[id_customer]': '%d' % (ps_id,)})
 
 
-@prestashop
 class PartnerBatchImporter(Component):
     _name = 'prestashop.res.partner.batch.importer'
-    _inherit = 'prestashop.direct.batch.importer'
+    _inherit = 'prestashop.delayed.batch.importer'
     _apply_on = 'prestashop.res.partner'
 
 
-@prestashop
 class AddressImportMapper(Component):
     _name = 'prestashop.address.mappper'
     _inherit = 'prestashop.import.mapper'
@@ -192,7 +187,6 @@ class AddressImportMapper(Component):
         return {'type': 'other'}
 
 
-@prestashop
 class AddressImporter(Component):
     _name = 'prestashop.address.importer'
     _inherit = 'prestashop.importer'
@@ -228,26 +222,7 @@ class AddressImporter(Component):
                 )
 
 
-@prestashop
 class AddressBatchImporter(Component):
     _name = 'prestashop.address.batch.importer'
     _inherit = 'prestashop.direct.batch.importer'
     _apply_on = 'prestashop.address'
-
-
-@job(default_channel='root.prestashop')
-def import_customers_since(env, since_date=None, **kwargs):
-    """ Prepare the import of partners modified on PrestaShop """
-    filters = None
-    if since_date:
-        filters = {
-            'date': '1',
-            'filter[date_upd]': '>[%s]' % since_date}
-    now_fmt = fields.Datetime.now()
-    result = import_batch(env, filters, **kwargs) or ''
-    result += import_batch(env, filters, priority=15, **kwargs) or ''
-    env.backend_record.import_partners_since = now_fmt
-    # env['prestashop.backend'].browse(backend_id).write({
-    #     'import_partners_since': now_fmt,
-    # })
-    return result

@@ -11,9 +11,10 @@ from ...components.importer import (
     import_record,
     import_batch,
 )
-from odoo.addons.connector.unit.mapper import external_to_m2o
 from odoo.addons.component.core import Component
-from ...backend import prestashop
+from odoo.addons.connector.components.mapper import (
+    mapping, external_to_m2o, only_create)
+
 
 import datetime
 import logging
@@ -35,7 +36,6 @@ except ImportError:
     _logger.debug('Cannot import from `prestapyt`')
 
 
-@prestashop
 class TemplateMapper(Component):
     _name = 'prestashop.product.template.mapper'
     _inherit = 'prestashop.import.mapper'
@@ -272,7 +272,6 @@ class TemplateMapper(Component):
         return mapper.map_record(record).values(**self.options)
 
 
-@prestashop
 class FeaturesProductImportMapper(Component):
     # To extend in connector_prestashop_feature module. In this way we
     # dependencies on other modules like product_custom_info
@@ -286,7 +285,6 @@ class FeaturesProductImportMapper(Component):
         return {}
 
 
-@prestashop
 class ManufacturerProductDependency(Component):
     # To extend in connector_prestashop_feature module. In this way we
     # dependencies on other modules like product_manufacturer
@@ -299,7 +297,6 @@ class ManufacturerProductDependency(Component):
         return
 
 
-@prestashop
 class ManufacturerProductImportMapper(Component):
     # To extend in connector_prestashop_manufacturer module. In this way we
     # dependencies on other modules like product_manufacturer
@@ -318,9 +315,8 @@ class ImportInventory(models.TransientModel):
     _name = '_import_stock_available'
 
 
-@prestashop
 class ProductInventoryBatchImporter(Component):
-    _name = '_import_stock_available.batch.importer'
+    _name = 'prestashop._import_stock_available.batch.importer'
     _inherit = 'prestashop.delayed.batch.importer'
     _apply_on = '_import_stock_available'
 
@@ -350,11 +346,10 @@ class ProductInventoryBatchImporter(Component):
         )
 
 
-@prestashop
 class ProductInventoryImporter(Component):
-    _name = 'prestashop.product.inventory.importer'
+    _name = 'prestashop._import_stock_available.importer'
     _inherit = 'prestashop.importer'
-    _apply_on = ['_import_stock_available']
+    _apply_on = '_import_stock_available'
 
     def _get_quantity(self, record):
         filters = {
@@ -427,7 +422,6 @@ class ProductInventoryImporter(Component):
             ).change_product_qty()
 
 
-@prestashop
 class ProductTemplateImporter(Component):
     """ Import one translatable record """
     _name = 'prestashop.product.template.importer'
@@ -622,7 +616,6 @@ class ProductTemplateImporter(Component):
                                     'prestashop.product.category')
 
 
-@prestashop
 class ProductTemplateBatchImporter(Component):
     _name = 'prestashop.product.template.batch.importer'
     _inherit = 'prestashop.delayed.batch.importer'

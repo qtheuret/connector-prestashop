@@ -28,7 +28,6 @@ def import_batch():
     pass
 
 class PrestashopBaseImporter(AbstractComponent):
-
     _name = 'prestashop.base.importer'
     _inherit = ['base.importer', 'base.prestashop.connector']
 

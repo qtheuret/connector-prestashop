@@ -3,10 +3,8 @@
 
 
 from ...components.auto_matching_importer import AutoMatchingImporter
-from ...backend import prestashop
 
 
-@prestashop
 class ResCurrencyImporter(AutoMatchingImporter):
     _name = 'prestashop.res.currency.importer'
     _apply_on = 'prestashop.res.currency'

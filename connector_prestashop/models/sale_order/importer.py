@@ -11,7 +11,6 @@ from odoo.addons.connector_ecommerce.components.sale_order_onchange import (
 )
 from ...components.importer import import_batch
 from ...components.exception import OrderImportRuleRetry
-from ...backend import prestashop
 
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -24,12 +23,10 @@ except:
     _logger.debug('Cannot import from `prestapyt`')
 
 
-@prestashop
 class PrestaShopSaleOrderOnChange(SaleOrderOnChange):
     _model_name = 'prestashop.sale.order'
 
 
-@prestashop
 class SaleImportRule(Component):
     _name = 'prestashop.sale.import.rule'
     _inherit = 'base.prestashop.connector'
@@ -141,8 +138,7 @@ class SaleImportRule(Component):
                 ) % record['id'])
 
 
-@prestashop
-class SaleOrderMapper(Component):
+class SaleOrderImportMapper(Component):
     _name = 'prestashop.sale.order.mapper'
     _inherit = 'prestashop.import.mapper'
     _apply_on = 'prestashop.sale.order'
@@ -283,7 +279,6 @@ class SaleOrderMapper(Component):
         return onchange.play(values, values['prestashop_order_line_ids'])
 
 
-@prestashop
 class SaleOrderImporter(Component):
     _name = 'prestashop.sale.order.importer'
     _inherit = 'prestashop.importer'
@@ -372,14 +367,12 @@ class SaleOrderImporter(Component):
             return err.message
 
 
-@prestashop
 class SaleOrderBatchImporter(Component):
     _name = 'prestashop.sale.order.batch.importer'
     _inherit = 'prestashop.direct.batch.importer'
     _apply_on = 'prestashop.sale.order'
 
 
-@prestashop
 class SaleOrderLineMapper(Component):
     _name = 'prestashop.sale.order.line.mapper'
     _inherit = 'prestashop.import.mapper'
@@ -457,7 +450,6 @@ class SaleOrderLineMapper(Component):
         return {'backend_id': self.backend_record.id}
 
 
-@prestashop
 class SaleOrderLineDiscountMapper(Component):
     _name = 'prestashop.sale.order.discount.importer'
     _inherit = 'prestashop.import.mapper'

@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
-
 from odoo import models, fields
-
 from odoo.addons.component.core import Component
-from ...backend import prestashop
 
 
 class PrestashopResLang(models.Model):
@@ -37,10 +34,8 @@ class ResLang(models.Model):
     )
 
 
-@prestashop
 class ResLangAdapter(Component):
     _name = 'prestashop.res.lang.adapter'
     _inherit = 'prestashop.adapter'
     _apply_on = 'prestashop.res.lang'
-
     _prestashop_model = 'languages'

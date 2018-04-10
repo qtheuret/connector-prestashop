@@ -4,7 +4,6 @@
 from odoo import fields, models
 
 from odoo.addons.component.core import Component
-from ...backend import prestashop
 
 
 class ProductPricelist(models.Model):
@@ -31,7 +30,6 @@ class PrestashopGroupsPricelist(models.Model):
     )
 
 
-@prestashop
 class PricelistAdapter(Component):
     _name = 'prestashop.groups.pricelist.adapter'
     _inherit = 'prestashop.adapter'

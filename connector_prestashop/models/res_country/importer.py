@@ -5,7 +5,6 @@ from ...components.auto_matching_importer import AutoMatchingImporter
 from ...backend import prestashop
 
 
-@prestashop
 class CountryImporter(AutoMatchingImporter):
     _name = 'prestashop.res.country.importer'
     _apply_on = 'prestashop.res.country'

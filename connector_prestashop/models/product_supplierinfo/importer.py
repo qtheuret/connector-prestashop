@@ -11,7 +11,6 @@ from ...components.backend_adapter import PrestaShopCRUDAdapter
 from ...components.importer import (
     import_batch,
 )
-from ...backend import prestashop
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -21,7 +20,6 @@ except:
     _logger.debug('Cannot import from `prestapyt`')
 
 
-@prestashop
 class SupplierMapper(Component):
     _name = 'prestashop.supplier.mapper'
     _inherit = 'prestashop.import.mapper'
@@ -60,12 +58,12 @@ class SupplierMapper(Component):
             return {}
 
 
-@prestashop
 class SupplierImporter(Component):
     """ Import one simple record """
     _name = 'prestashop.supplier.importer'
     _inherit = 'prestashop.importer'
     _apply_on = 'prestashop.supplier'
+
 
     def _create(self, record):
         try:
@@ -87,14 +85,12 @@ class SupplierImporter(Component):
         )
 
 
-@prestashop
 class SupplierBatchImporter(Component):
     _name = 'prestashop.supplier.batch.importer'
     _inherit = 'prestashop.delayed.batch.importer'
     _apply_on = 'prestashop.supplier'
 
 
-@prestashop
 class SupplierInfoMapper(Component):
     _name = 'prestashop.product.supplierinfo.mapper'
     _inherit = 'prestashop.import.mapper'
@@ -140,7 +136,6 @@ class SupplierInfoMapper(Component):
         return {'min_qty': 0.0, 'delay': 1}
 
 
-@prestashop
 class SupplierInfoImporter(Component):
     _name = 'prestashop.product.supplierinfo.importer'
     _inherit = 'prestashop.importer'
@@ -165,7 +160,6 @@ class SupplierInfoImporter(Component):
             raise FailedJobError('Error fetching a dependency')
 
 
-@prestashop
 class SupplierInfoBatchImporter(Component):
     _name = 'prestashop.product.supplierinfo.batch.importer'
     _inherit = 'prestashop.delayed.batch.importer'

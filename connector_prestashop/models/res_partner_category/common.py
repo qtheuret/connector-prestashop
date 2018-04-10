@@ -4,7 +4,6 @@
 from odoo import fields, models
 
 from odoo.addons.component.core import Component
-from ...backend import prestashop
 
 
 class ResPartnerCategory(models.Model):
@@ -46,7 +45,6 @@ class PrestashopResPartnerCategory(models.Model):
     # check if we can drop this!
 
 
-@prestashop
 class PartnerCategoryAdapter(Component):
     _name = 'prestashop.res.partner.category.adapter'
     _inherit = 'prestashop.adapter'
