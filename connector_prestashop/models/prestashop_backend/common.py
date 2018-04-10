@@ -40,6 +40,14 @@ class PrestashopBackend(models.Model):
             ('1.6.0.11', '>= 1.6.0.11 - <1.6.1.2'),
             ('1.6.1.2', '=1.6.1.2')
         ]
+        
+    @api.model
+    def _select_state(self):
+        """Available States for this Backend"""
+        return [('draft', 'Draft'),
+                ('checked', 'Checked'),
+                ('production', 'In Production'),]
+        
 
     version = fields.Selection(
         selection='select_versions',
@@ -117,6 +125,18 @@ class PrestashopBackend(models.Model):
         string='Importable sale order states',
         help="If valued only orders matching these states will be imported.",
     )
+    active = fields.Boolean(
+        string='Active',
+        default=True
+    )
+    state = fields.Selection(
+        selection='_select_state',
+        string='State',
+        default='draft'
+    )
+
+    verbose = fields.Boolean(help="Output requests details in the logs")
+    debug = fields.Boolean(help="Activate PrestaShop's webservice debug mode")
 
     @api.model
     def _default_pricelist_id(self):
@@ -126,6 +146,11 @@ class PrestashopBackend(models.Model):
     def get_environment(self, model_name,):
         self.ensure_one()
         return ConnectorEnvironment(self, model_name)
+
+    @api.multi
+    def button_reset_to_draft(self):
+        self.ensure_one()
+        self.write({'state': 'draft'})
 
     @api.multi
     def synchronize_metadata(self):
@@ -155,6 +180,8 @@ class PrestashopBackend(models.Model):
             self.env['prestashop.account.tax.group'].import_batch(backend)
             self.env['prestashop.sale.order.state'].import_batch(backend)
         return True
+    
+
 
     @api.multi
     def _check_connection(self):
@@ -163,11 +190,13 @@ class PrestashopBackend(models.Model):
             component = work.component_by_name(name='prestashop.adapter')
             with api_handle_errors('Connection failed'):
                 component.head()
+                
 
     @api.multi
     def button_check_connection(self):
         self._check_connection()
-        raise exceptions.UserError(_('Connection successful'))
+        #raise exceptions.UserError(_('Connection successful'))
+        self.write({'state': 'checked'})
 
     @api.multi
     def import_customers_since(self):
@@ -316,24 +345,6 @@ class PrestashopBackend(models.Model):
         return locations
 
 
-class PrestashopShopGroup(models.Model):
-    _name = 'prestashop.shop.group'
-    _inherit = 'prestashop.binding'
-    _description = 'PrestaShop Shop Group'
-
-    name = fields.Char('Name', required=True)
-    shop_ids = fields.One2many(
-        comodel_name='prestashop.shop',
-        inverse_name='shop_group_id',
-        readonly=True,
-        string="Shops",
-    )
-    company_id = fields.Many2one(
-        related='backend_id.company_id',
-        comodel_name="res.company",
-        string='Company'
-    )
-
 
 class NoModelAdapter(Component):
     """ Used to test the connection """
@@ -343,9 +354,3 @@ class NoModelAdapter(Component):
     _prestashop_model = ''
 
 
-class ShopGroupAdapter(Component):
-    _name = 'prestashop.shop.group'
-    _inherit = 'prestashop.adapter'
-    _model_name = 'prestashop.shop.group'
-    _apply_on = 'prestashop.shop.group'
-    _prestashop_model = 'shop_groups'
