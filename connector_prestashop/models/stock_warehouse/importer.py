@@ -4,6 +4,7 @@
 from odoo.addons.component.core import Component
 from odoo.addons.connector.components.mapper import mapping, external_to_m2o
 
+
 class ShopImportMapper(Component):
     _name = 'prestashop.shop.mapper'
     _inherit = 'prestashop.import.mapper'
@@ -34,10 +35,4 @@ class ShopImportMapper(Component):
 class ShopImporter(Component):
     _name = 'prestashop.shop.importer'
     _inherit = 'prestashop.importer'
-    _apply_on = 'prestashop.shop'
-
-
-class ShopBatchImporter(Component):
-    _name = 'prestashop.shop.batch.importer'
-    _inherit = 'prestashop.direct.batch.importer'
     _apply_on = 'prestashop.shop'
