@@ -9,6 +9,7 @@ from odoo.addons.connector.unit.mapper import (
     ImportMapper
 )
 
+from odoo.addons.component.core import Component
 from ...components.importer import (
     DelayedBatchImporter,
     import_record,
@@ -353,8 +354,10 @@ class ProductInventoryBatchImporter(DelayedBatchImporter):
 
 
 @prestashop
-class ProductInventoryImporter(PrestashopImporter):
-    _model_name = ['_import_stock_available']
+class ProductInventoryImporter(Component):
+    _name = 'prestashop.product.inventory.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = ['_import_stock_available']
 
     def _get_quantity(self, record):
         filters = {
@@ -640,5 +643,7 @@ def import_inventory(session, backend_id):
 
 
 @prestashop
-class ProductTemplateBatchImporter(DelayedBatchImporter):
-    _model_name = 'prestashop.product.template'
+class ProductTemplateBatchImporter(Component):
+    _name = 'prestashop.product.template.batch.importer'
+    _inherit = 'prestashop.delayed.batch.importer'
+    _apply_on = 'prestashop.product.template'

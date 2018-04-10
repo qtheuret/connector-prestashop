@@ -4,7 +4,8 @@
 from odoo import fields
 from odoo.addons.queue_job.exception import FailedJobError
 from odoo.addons.queue_job.job import job
-from odoo.addons.connector.unit.mapper import ImportMapper, mapping
+from odoo.addons.component.core import Component
+from odoo.addons.connector.components.mapper import mapping
 
 from ...components.backend_adapter import PrestaShopCRUDAdapter
 from ...components.importer import (
@@ -23,8 +24,10 @@ except:
 
 
 @prestashop
-class SupplierMapper(ImportMapper):
-    _model_name = 'prestashop.supplier'
+class SupplierMapper(Component):
+    _name = 'prestashop.supplier.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = 'prestashop.supplier'
 
     direct = [
         ('name', 'name'),
@@ -60,9 +63,11 @@ class SupplierMapper(ImportMapper):
 
 
 @prestashop
-class SupplierImporter(PrestashopImporter):
+class SupplierImporter(Component):
     """ Import one simple record """
-    _model_name = 'prestashop.supplier'
+    _name = 'prestashop.supplier.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = 'prestashop.supplier'
 
     def _create(self, record):
         try:
@@ -85,13 +90,17 @@ class SupplierImporter(PrestashopImporter):
 
 
 @prestashop
-class SupplierBatchImporter(DelayedBatchImporter):
-    _model_name = 'prestashop.supplier'
+class SupplierBatchImporter(Component):
+    _name = 'prestashop.supplier.batch.importer'
+    _inherit = 'prestashop.delayed.batch.importer'
+    _apply_on = 'prestashop.supplier'
 
 
 @prestashop
-class SupplierInfoMapper(ImportMapper):
-    _model_name = 'prestashop.product.supplierinfo'
+class SupplierInfoMapper(Component):
+    _name = 'prestashop.product.supplierinfo.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = 'prestashop.product.supplierinfo'
 
     direct = [
         ('product_supplier_reference', 'product_code'),
@@ -134,8 +143,10 @@ class SupplierInfoMapper(ImportMapper):
 
 
 @prestashop
-class SupplierInfoImporter(PrestashopImporter):
-    _model_name = 'prestashop.product.supplierinfo'
+class SupplierInfoImporter(Component):
+    _name = 'prestashop.product.supplierinfo.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = 'prestashop.product.supplierinfo'
 
     def _import_dependencies(self):
         record = self.prestashop_record
@@ -157,8 +168,10 @@ class SupplierInfoImporter(PrestashopImporter):
 
 
 @prestashop
-class SupplierInfoBatchImporter(DelayedBatchImporter):
-    _model_name = 'prestashop.product.supplierinfo'
+class SupplierInfoBatchImporter(Component):
+    _name = 'prestashop.product.supplierinfo.batch.importer'
+    _inherit = 'prestashop.delayed.batch.importer'
+    _apply_on = 'prestashop.product.supplierinfo'
 
 
 @job(default_channel='root.prestashop')

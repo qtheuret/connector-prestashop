@@ -70,7 +70,7 @@ class ProductCategoryMapper(Component):
 
 class ProductCategoryImporter(TranslatableRecordImporter):
     _name = 'prestashop.product.category.importer'
-    _inherit = 'translatable.record.importer'
+    _inherit = 'prestashop.translatable.record.importer'
     _apply_on = 'prestashop.product.category'
     _model_name = 'prestashop.product.category'
 

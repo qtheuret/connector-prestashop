@@ -5,7 +5,7 @@ import openerp.addons.decimal_precision as dp
 
 from odoo import models, fields, api
 
-from ...components.backend_adapter import GenericAdapter
+from odoo.addons.component.core import Component
 from ...backend import prestashop
 
 import logging
@@ -142,8 +142,10 @@ class PrestashopSaleOrderLineDiscount(models.Model):
 
 
 @prestashop
-class SaleOrderAdapter(GenericAdapter):
-    _model_name = 'prestashop.sale.order'
+class SaleOrderAdapter(Component):
+    _name = 'prestashop.sale.order.adapter'
+    _inherit = 'prestashop.adapter'
+    _apply_on = 'prestashop.sale.order'
     _prestashop_model = 'orders'
     _export_node_name = 'order'
 
@@ -152,18 +154,24 @@ class SaleOrderAdapter(GenericAdapter):
 
 
 @prestashop
-class SaleOrderLineAdapter(GenericAdapter):
-    _model_name = 'prestashop.sale.order.line'
+class SaleOrderLineAdapter(Component):
+    _name = 'prestashop.sale.order.line.adapter'
+    _inherit = 'prestashop.adapter'
+    _apply_on = 'prestashop.sale.order.line'
     _prestashop_model = 'order_details'
 
 
 @prestashop
-class OrderPaymentAdapter(GenericAdapter):
-    _model_name = '__not_exist_prestashop.payment'
+class OrderPaymentAdapter(Component):
+    _name = '__not_exist_prestashop.payment.adapter'
+    _inherit = 'prestashop.adapter'
+    _apply_on = '__not_exist_prestashop.payment'
     _prestashop_model = 'order_payments'
 
 
 @prestashop
-class OrderDiscountAdapter(GenericAdapter):
-    _model_name = 'prestashop.sale.order.line.discount'
+class OrderDiscountAdapter(Component):
+    _name = 'prestashop.sale.order.line.discount.adapter'
+    _inherit = 'prestashop.adapter'
+    _apply_on = 'prestashop.sale.order.line.discount'
     _prestashop_model = 'order_discounts'

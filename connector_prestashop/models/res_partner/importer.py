@@ -17,11 +17,14 @@ from ...components.importer import (
 )
 from ...backend import prestashop
 from odoo.addons.connector.unit.mapper import external_to_m2o
+from odoo.addons.component.core import Component
 
 
 @prestashop
-class PartnerImportMapper(ImportMapper):
-    _model_name = 'prestashop.res.partner'
+class PartnerImportMapper(Component):
+    _name = 'prestashop.res.partner.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = 'prestashop.res.partner'
 
     direct = [
         ('date_add', 'date_add'),
@@ -105,8 +108,10 @@ class PartnerImportMapper(ImportMapper):
 
 
 @prestashop
-class ResPartnerImporter(PrestashopImporter):
-    _model_name = 'prestashop.res.partner'
+class ResPartnerImporter(Component):
+    _name = 'prestashop.res.partner.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = 'prestashop.res.partner'
 
     def _import_dependencies(self):
         groups = self.prestashop_record.get('associations', {}) \
@@ -128,13 +133,17 @@ class ResPartnerImporter(PrestashopImporter):
 
 
 @prestashop
-class PartnerBatchImporter(DelayedBatchImporter):
-    _model_name = 'prestashop.res.partner'
+class PartnerBatchImporter(Component):
+    _name = 'prestashop.res.partner.batch.importer'
+    _inherit = 'prestashop.direct.batch.importer'
+    _apply_on = 'prestashop.res.partner'
 
 
 @prestashop
-class AddressImportMapper(ImportMapper):
-    _model_name = 'prestashop.address'
+class AddressImportMapper(Component):
+    _name = 'prestashop.address.mappper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = 'prestashop.address'
 
     direct = [
         ('address1', 'street'),
@@ -192,8 +201,10 @@ class AddressImportMapper(ImportMapper):
 
 
 @prestashop
-class AddressImporter(PrestashopImporter):
-    _model_name = 'prestashop.address'
+class AddressImporter(Component):
+    _name = 'prestashop.address.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = 'prestashop.address'
 
     def _check_vat(self, vat):
         vat_country, vat_number = vat[:2].lower(), vat[2:]
@@ -226,8 +237,10 @@ class AddressImporter(PrestashopImporter):
 
 
 @prestashop
-class AddressBatchImporter(DelayedBatchImporter):
-    _model_name = 'prestashop.address'
+class AddressBatchImporter(Component):
+    _name = 'prestashop.address.batch.importer'
+    _inherit = 'prestashop.direct.batch.importer'
+    _apply_on = 'prestashop.address'
 
 
 @job(default_channel='root.prestashop')

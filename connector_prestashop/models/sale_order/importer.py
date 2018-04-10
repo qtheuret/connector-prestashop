@@ -3,9 +3,9 @@
 
 from odoo import _, fields
 from odoo.addons.queue_job.job import job
-from odoo.addons.connector.connector import ConnectorUnit
+from odoo.addons.component.core import Component
+from odoo.addons.connector.components.mapper import mapping
 from odoo.addons.queue_job.exception import FailedJobError, NothingToDoJob
-from odoo.addons.connector.unit.mapper import ImportMapper, mapping
 from odoo.addons.connector_ecommerce.unit.sale_order_onchange import (
     SaleOrderOnChange,
 )
@@ -35,8 +35,11 @@ class PrestaShopSaleOrderOnChange(SaleOrderOnChange):
 
 
 @prestashop
-class SaleImportRule(ConnectorUnit):
-    _model_name = ['prestashop.sale.order']
+class SaleImportRule(Component):
+    _name = 'prestashop.sale.import.rule'
+    _inherit = 'base.prestashop.connector'
+    _apply_on = 'prestashop.sale.order'
+    _usage = 'sale.import.rule'
 
     def _rule_always(self, record, mode):
         """ Always import the order """
@@ -145,8 +148,10 @@ class SaleImportRule(ConnectorUnit):
 
 
 @prestashop
-class SaleOrderMapper(ImportMapper):
-    _model_name = 'prestashop.sale.order'
+class SaleOrderMapper(Component):
+    _name = 'prestashop.sale.order.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = 'prestashop.sale.order'
 
     direct = [
         ('date_add', 'date_order'),
@@ -281,8 +286,10 @@ class SaleOrderMapper(ImportMapper):
 
 
 @prestashop
-class SaleOrderImporter(PrestashopImporter):
-    _model_name = ['prestashop.sale.order']
+class SaleOrderImporter(Component):
+    _name = 'prestashop.sale.order.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = 'prestashop.sale.order'
 
     def __init__(self, environment):
         """
@@ -368,13 +375,17 @@ class SaleOrderImporter(PrestashopImporter):
 
 
 @prestashop
-class SaleOrderBatchImporter(DelayedBatchImporter):
-    _model_name = 'prestashop.sale.order'
+class SaleOrderBatchImporter(Component):
+    _name = 'prestashop.sale.order.batch.importer'
+    _inherit = 'prestashop.direct.batch.importer'
+    _apply_on = 'prestashop.sale.order'
 
 
 @prestashop
-class SaleOrderLineMapper(ImportMapper):
-    _model_name = 'prestashop.sale.order.line'
+class SaleOrderLineMapper(Component):
+    _name = 'prestashop.sale.order.line.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = 'prestashop.sale.order.line'
 
     direct = [
         ('product_name', 'name'),
@@ -449,8 +460,10 @@ class SaleOrderLineMapper(ImportMapper):
 
 
 @prestashop
-class SaleOrderLineDiscountMapper(ImportMapper):
-    _model_name = 'prestashop.sale.order.line.discount'
+class SaleOrderLineDiscountMapper(Component):
+    _name = 'prestashop.sale.order.discount.importer'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = 'prestashop.sale.order.line.discount'
 
     direct = []
 
