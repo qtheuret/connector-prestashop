@@ -21,6 +21,13 @@ class PrestashopBackend(models.Model):
     _description = 'PrestaShop Backend Configuration'
     _inherit = 'connector.backend'
 
+    _versions = {
+        '1.5': 'prestashop.version.key',
+        '1.6.0.9': 'prestashop.version.key.1.6.0.9',
+        '1.6.0.11': 'prestashop.version.key.1.6.0.9',
+        '1.6.1.2': 'prestashop.version.key.1.6.1.2'
+    }
+
     @api.model
     def select_versions(self):
         """ Available versions
@@ -240,9 +247,9 @@ class PrestashopBackend(models.Model):
 
     def get_version_ps_key(self, key):
         self.ensure_one()
-        env = self.get_environment('_prestashop.version.key')
-        keys = env.get_connector_unit(VersionKey)
-        return keys.get_key(key)
+        with self.work_on('_prestashop.version.key') as work:
+            keys = work.component(usage=self._versions[self.version])
+            return keys.get_key(key)
 
     @api.model
     def _scheduler_update_product_stock_qty(self, domain=None):

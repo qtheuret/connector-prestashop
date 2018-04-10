@@ -5,7 +5,6 @@ from odoo import models, fields
 
 from odoo.addons.component.core import Component
 from ...components.backend_adapter import (
-    PrestaShopCRUDAdapter,
     PrestaShopWebServiceImage,
 )
 from ...backend import prestashop

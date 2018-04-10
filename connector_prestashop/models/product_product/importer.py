@@ -39,8 +39,9 @@ class ProductCombinationImporter(Component):
             'product_option_values', {}).get(ps_key, [])
         if not isinstance(option_values, list):
             option_values = [option_values]
-        backend_adapter = self.unit_for(
-            BackendAdapter, 'prestashop.product.combination.option.value')
+        backend_adapter = self.component(
+            usage='prestashop.adapter',
+            model_name='prestashop.product.combination.option.value')
         for option_value in option_values:
             option_value = backend_adapter.read(option_value['id'])
             self._import_dependency(
@@ -55,8 +56,9 @@ class ProductCombinationImporter(Component):
         self.import_supplierinfo(binding)
 
     def set_variant_images(self, combinations):
-        backend_adapter = self.unit_for(
-            PrestaShopCRUDAdapter, 'prestashop.product.combination')
+        backend_adapter = self.component(
+            usage='prestashop.adapter',
+            model_name='prestashop.product.combination')
         for combination in combinations:
             try:
                 record = backend_adapter.read(combination['id'])

@@ -9,9 +9,7 @@ from odoo.addons.connector.components.mapper import mapping
 
 from ...components.backend_adapter import PrestaShopCRUDAdapter
 from ...components.importer import (
-    PrestashopImporter,
     import_batch,
-    DelayedBatchImporter,
 )
 from ...backend import prestashop
 
@@ -53,8 +51,8 @@ class SupplierMapper(Component):
 
     @mapping
     def image(self, record):
-        supplier_image_adapter = self.unit_for(
-            PrestaShopCRUDAdapter, 'prestashop.supplier.image'
+        supplier_image_adapter = self.component(
+            usage='prestashop.adapter', model_name='prestashop.supplier.image'
         )
         try:
             return {'image': supplier_image_adapter.read(record['id'])}

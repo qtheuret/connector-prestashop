@@ -6,7 +6,7 @@ from odoo.addons.queue_job.job import job
 from odoo.addons.component.core import Component
 from odoo.addons.connector.components.mapper import mapping
 from odoo.addons.queue_job.exception import FailedJobError, NothingToDoJob
-from odoo.addons.connector_ecommerce.unit.sale_order_onchange import (
+from odoo.addons.connector_ecommerce.components.sale_order_onchange import (
     SaleOrderOnChange,
 )
 from ...components.importer import import_batch
@@ -280,7 +280,7 @@ class SaleOrderMapper(Component):
         return {'total_amount_tax': tax}
 
     def finalize(self, map_record, values):
-        onchange = self.unit_for(SaleOrderOnChange)
+        onchange = self.component('ecommerce.onchange.manager.sale.order')
         return onchange.play(values, values['prestashop_order_line_ids'])
 
 
@@ -363,7 +363,7 @@ class SaleOrderImporter(Component):
         """ Return True if the import can be skipped """
         if self._get_binding():
             return True
-        rules = self.unit_for(SaleImportRule)
+        rules = self.component(usage='sale.import.rule')
         try:
             return rules.check(self.prestashop_record)
         except NothingToDoJob as err:

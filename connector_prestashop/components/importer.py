@@ -61,7 +61,7 @@ class PrestashopBaseImporter(AbstractComponent):
             importer_class = PrestashopImporter
         binder = self.binder_for(binding_model)
         if always or not binder.to_internal(prestashop_id):
-            importer = self.unit_for(importer_class, model=binding_model)
+            importer = self.component(usage='prestashop.importer', model_name=binding_model)
             importer.run(prestashop_id, **kwargs)
 
 

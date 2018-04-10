@@ -8,12 +8,8 @@ from odoo.addons.connector.components.mapper import (
     only_create,
 )
 from ...components.importer import (
-    DelayedBatchImporter,
     import_record,
     import_batch,
-    PrestashopImporter,
-    PrestashopBaseImporter,
-    TranslatableRecordImporter,
 )
 from odoo.addons.connector.unit.mapper import external_to_m2o
 from odoo.addons.component.core import Component
@@ -267,12 +263,12 @@ class TemplateMapper(Component):
 
     @mapping
     def extras_features(self, record):
-        mapper = self.unit_for(FeaturesProductImportMapper)
+        mapper = self.component(usage='feature.product.import.mapper')
         return mapper.map_record(record).values(**self.options)
 
     @mapping
     def extras_manufacturer(self, record):
-        mapper = self.unit_for(ManufacturerProductImportMapper)
+        mapper = self.component(usage='manufacturer.product.import.mapper')
         return mapper.map_record(record).values(**self.options)
 
 
@@ -283,6 +279,7 @@ class FeaturesProductImportMapper(Component):
     _name = 'prestashop.product.template.mapper'
     _inherit = 'prestashop.import.mapper'
     _apply_on = 'prestashop.product.template'
+    _usage = 'feature.product.import.mapper'
 
     @mapping
     def extras_features(self, record):
@@ -290,10 +287,13 @@ class FeaturesProductImportMapper(Component):
 
 
 @prestashop
-class ManufacturerProductDependency(PrestashopBaseImporter):
+class ManufacturerProductDependency(Component):
     # To extend in connector_prestashop_feature module. In this way we
     # dependencies on other modules like product_manufacturer
-    _model_name = 'prestashop.product.template'
+    _name = 'prestashop.product.template.manufacturer.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = 'prestashop.product.template'
+    _usage = 'manufacturer.product.importer'
 
     def import_manufacturer(self, manufacturer_id):
         return
@@ -306,6 +306,7 @@ class ManufacturerProductImportMapper(Component):
     _name = 'prestashop.product.template.mapper'
     _inherit = 'prestashop.import.mapper'
     _apply_on = 'prestashop.product.template'
+    _usage = 'manufacturer.product.import.mapper'
 
     @mapping
     def extras_manufacturer(self, record):
@@ -318,8 +319,10 @@ class ImportInventory(models.TransientModel):
 
 
 @prestashop
-class ProductInventoryBatchImporter(DelayedBatchImporter):
-    _model_name = ['_import_stock_available']
+class ProductInventoryBatchImporter(Component):
+    _name = '_import_stock_available.batch.importer'
+    _inherit = 'prestashop.delayed.batch.importer'
+    _apply_on = '_import_stock_available'
 
     def run(self, filters=None, **kwargs):
         if filters is None:
@@ -586,7 +589,7 @@ class ProductTemplateImporter(Component):
         self._import_manufacturer()
 
     def _import_manufacturer(self):
-        self.unit_for(ManufacturerProductDependency).import_manufacturer(
+        self.component(usage='manufacturer.product.importer').import_manufacturer(
             self.prestashop_record.get('id_manufacturer')
         )
 
