@@ -5,16 +5,8 @@ import re
 
 from odoo import fields, _
 from odoo.addons.queue_job.job import job
-from odoo.addons.connector.unit.mapper import (
-    ImportMapper,
-    mapping,
-    only_create,
-)
-from ...components.importer import (
-    PrestashopImporter,
-    import_batch,
-    DelayedBatchImporter,
-)
+from odoo.addons.connector.components.mapper import (mapping, only_create)
+from ...components.importer import import_batch
 from ...backend import prestashop
 from odoo.addons.connector.unit.mapper import external_to_m2o
 from odoo.addons.component.core import Component

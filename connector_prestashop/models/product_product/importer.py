@@ -4,10 +4,9 @@
 from odoo import models
 
 from odoo.addons.connector.unit.backend_adapter import BackendAdapter
-from odoo.addons.connector.unit.mapper import (
+from odoo.addons.connector.components.mapper import (
     mapping,
     only_create,
-    ImportMapper,
 )
 from ...components.importer import (
     PrestashopImporter,
@@ -15,7 +14,7 @@ from ...components.importer import (
     TranslatableRecordImporter,
     DelayedBatchImporter,
 )
-from ...components.backend_adapter import GenericAdapter, PrestaShopCRUDAdapter
+from ...components.backend_adapter import PrestaShopCRUDAdapter
 from ...backend import prestashop
 from odoo.addons.component.core import Component
 
@@ -221,8 +220,10 @@ class ProductCombinationMapper(Component):
         barcode = record.get('barcode') or record.get('ean13')
         check_ean = self.env['barcode.nomenclature'].check_ean
         if barcode in ['', '0']:
-            backend_adapter = self.unit_for(
-                GenericAdapter, 'prestashop.product.template')
+            backend_adapter = self.component(
+                usage='prestashop.adapter',
+                model_name='prestashop.product.template'
+            )
             template = backend_adapter.read(record['id_product'])
             barcode = template.get('barcode') or template.get('ean13')
         if barcode and barcode != '0' and check_ean(barcode):
@@ -230,8 +231,8 @@ class ProductCombinationMapper(Component):
         return {}
 
     def _get_tax_ids(self, record):
-        product_tmpl_adapter = self.unit_for(
-            GenericAdapter, 'prestashop.product.template')
+        product_tmpl_adapter = self.component(
+            usage='prestashop.adapter', model_name='prestashop.product.template')
         tax_group = product_tmpl_adapter.read(record['id_product'])
         tax_group = self.binder_for('prestashop.account.tax.group').to_internal(
             tax_group['id_tax_rules_group'], unwrap=True)

@@ -7,7 +7,6 @@ from odoo.addons.component.core import Component
 from ...components.backend_adapter import (
     PrestaShopCRUDAdapter,
     PrestaShopWebServiceImage,
-    GenericAdapter,
 )
 from ...backend import prestashop
 
@@ -34,6 +33,23 @@ class PrestashopSupplier(models.Model):
         ondelete='cascade',
         oldname='openerp_id',
     )
+
+    def import_suppliers(self, backend, since_date, **kwargs):
+        filters = None
+        if since_date:
+            filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (since_date)}
+        now_fmt = fields.Datetime.now()
+        self.env['prestashop.supplier'].with_delay().import_batch(
+            backend,
+            filters,
+            **kwargs
+        )
+        self.env['prestashop.product.supplierinfo'].with_delay().import_batch(
+            backend,
+            **kwargs
+        )
+        backend.import_suppliers_since = now_fmt
+        return True
 
 
 class ProductSupplierinfo(models.Model):
