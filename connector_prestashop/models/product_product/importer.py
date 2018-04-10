@@ -15,8 +15,12 @@ from ...components.importer import (
     TranslatableRecordImporter,
     DelayedBatchImporter,
 )
-from ...components.backend_adapter import GenericAdapter, PrestaShopCRUDAdapter
-from ...backend import prestashop
+# from ...components.backend_adapter import GenericAdapter, PrestaShopCRUDAdapter
+# from ...backend import prestashop
+
+from odoo.addons.component.core import Component
+from odoo.addons.connector.components.mapper import mapping, external_to_m2o
+
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -26,9 +30,15 @@ except:
     _logger.debug('Cannot import from `prestapyt`')
 
 
-@prestashop
-class ProductCombinationImporter(PrestashopImporter):
-    _model_name = 'prestashop.product.combination'
+# # @prestashop
+class ProductCombinationImporter(Component):
+    #_model_name = 'prestashop.product.combination'
+    _name = 'prestashop.product.combination.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = 'prestashop.product.combination'
+
+
+    
 
     def _import_dependencies(self):
         record = self.prestashop_record
@@ -105,9 +115,14 @@ class ProductCombinationImporter(PrestashopImporter):
                 ps_supplierinfo.odoo_id.unlink()
 
 
-@prestashop
-class ProductCombinationMapper(ImportMapper):
-    _model_name = 'prestashop.product.combination'
+# # @prestashop
+class ProductCombinationMapper(Component):
+    #_model_name = 'prestashop.product.combination'
+        
+    _name = 'prestashop.product.combination.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = 'prestashop.product.combination'
+
 
     direct = [
     ]
@@ -271,9 +286,14 @@ class ProductCombinationMapper(ImportMapper):
             return {'odoo_id': product.id}
 
 
-@prestashop
-class ProductCombinationOptionImporter(PrestashopImporter):
-    _model_name = 'prestashop.product.combination.option'
+# # @prestashop
+class ProductCombinationOptionImporter(Component):
+#    _model_name = 'prestashop.product.combination.option'
+
+    _name = 'prestashop.product.combination.option.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = 'prestashop.product.combination.option'
+
 
     def _import_values(self, attribute_binding):
         record = self.prestashop_record
@@ -293,9 +313,14 @@ class ProductCombinationOptionImporter(PrestashopImporter):
         self._import_values(binding)
 
 
-@prestashop
-class ProductCombinationOptionMapper(ImportMapper):
-    _model_name = 'prestashop.product.combination.option'
+# # @prestashop
+class ProductCombinationOptionMapper(Component):
+#    _model_name = 'prestashop.product.combination.option'
+    _name = 'prestashop.product.combination.option.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = 'prestashop.product.combination.option'
+
+
 
     direct = []
 
@@ -337,25 +362,40 @@ class ProductCombinationOptionMapper(ImportMapper):
         return {'name': name}
 
 
-@prestashop
-class ProductCombinationOptionValueAdapter(GenericAdapter):
-    _model_name = 'prestashop.product.combination.option.value'
+# # @prestashop
+class ProductCombinationOptionValueAdapter(Component):
+    #_model_name = 'prestashop.product.combination.option.value'
+    
+    _name = 'prestashop.product.combination.option.value.adapter'
+    _inherit = 'prestashop.adapter'
+    _apply_on = 'prestashop.product.combination.option.value'
+
     _prestashop_model = 'product_option_values'
     _export_node_name = 'product_option_value'
+    
 
 
-@prestashop
-class ProductCombinationOptionValueImporter(TranslatableRecordImporter):
-    _model_name = 'prestashop.product.combination.option.value'
+# # @prestashop
+class ProductCombinationOptionValueImporter(Component):
+    #_model_name = 'prestashop.product.combination.option.value'
+    _name = 'prestashop.product.combination.option.value.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = 'prestashop.product.combination.option.value'
+
+    _usage= "translate"
 
     _translatable_fields = {
         'prestashop.product.combination.option.value': ['name'],
     }
 
 
-@prestashop
-class ProductCombinationOptionValueMapper(ImportMapper):
-    _model_name = 'prestashop.product.combination.option.value'
+# # @prestashop
+class ProductCombinationOptionValueMapper(Component):
+#     _model_name = 'prestashop.product.combination.option.value'
+    _name = 'prestashop.product.combination.option.value.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = 'prestashop.product.combination.option.value'
+
 
     direct = [
         ('name', 'name'),
@@ -391,6 +431,11 @@ class ProductCombinationOptionValueMapper(ImportMapper):
         return {'backend_id': self.backend_record.id}
 
 
-@prestashop
-class ProductProductBatchImporter(DelayedBatchImporter):
-    _model_name = 'prestashop.product.product'
+# # @prestashop
+class ProductProductBatchImporter(Component):
+    #_model_name = 'prestashop.product.product'
+    
+    _name = 'prestashop.product.product.batch.importer'
+    _inherit = 'prestashop.delayed.batch.importer'
+    _apply_on = 'prestashop.product.product'
+    

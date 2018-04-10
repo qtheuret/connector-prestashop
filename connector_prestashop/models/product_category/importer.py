@@ -4,9 +4,14 @@
 from odoo import _
 from odoo.addons.connector.unit.mapper import (mapping,
                                                   ImportMapper)
-from odoo.addons.connector.unit.mapper import external_to_m2o
+
 from ...components.importer import TranslatableRecordImporter, DelayedBatchImporter
+
 from odoo.addons.component.core import Component
+from odoo.addons.connector.components.mapper import mapping, external_to_m2o
+
+
+
 
 import datetime
 import logging
