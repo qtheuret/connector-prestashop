@@ -75,7 +75,7 @@ class PrestashopSaleOrder(models.Model):
             filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (since_date)}
         now_fmt = fields.Datetime.now()
         self.env['prestashop.sale.order'].with_delay(
-            priority=5, max_retries=0).import_batch(backend, filters=filters or '')
+            priority=5, max_retries=0).import_batch(backend, filters=filters)
         if since_date:
             filters = {'date': '1', 'filter[date_add]': '>[%s]' % since_date}
 #        try:
@@ -164,6 +164,11 @@ class PrestashopSaleOrderLineDiscount(models.Model):
         ], limit=1)
         vals['order_id'] = ps_sale_order.odoo_id.id
         return super(PrestashopSaleOrderLineDiscount, self).create(vals)
+
+
+class OrderPaymentModel(models.TransientModel):
+    # In actual connector version is mandatory use a model
+    _name = '__not_exist_prestashop.payment'
 
 
 @prestashop

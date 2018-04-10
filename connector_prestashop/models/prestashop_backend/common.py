@@ -12,6 +12,7 @@ from ...components.auto_matching_importer import AutoMatchingImporter
 from ...components.backend_adapter import api_handle_errors
 from ...components.version_key import VersionKey
 from ...backend import prestashop
+from odoo.addons.connector.checkpoint import checkpoint
 
 _logger = logging.getLogger(__name__)
 
@@ -225,8 +226,9 @@ class PrestashopBackend(models.Model):
     @api.multi
     def import_payment_modes(self):
         for backend_record in self:
-            backend_record.env['account.payment.mode'].import_batch(
-                backend_record.id)
+            with backend_record.work_on('account.payment.mode') as work:
+                importer = work.component(usage='batch.importer')
+                importer.run(filters={})
         return True
 
     @api.multi

@@ -54,7 +54,6 @@ class SaleImportRule(Component):
 
     def _get_paid_amount(self, record):
         payment_adapter = self.component(
-            usage='prestashop.adapter',
             model_name='__not_exist_prestashop.payment'
         )
         payment_ids = payment_adapter.search({
@@ -126,7 +125,7 @@ class SaleImportRule(Component):
         if self.backend_record.importable_order_state_ids:
             ps_state_id = record['current_state']
             state = self.binder_for(
-                'prestashop.sale.order.state').to_odoo(ps_state_id, unwrap=1)
+                'prestashop.sale.order.state').to_internal(ps_state_id, unwrap=1)
             if not state:
                 raise FailedJobError(_(
                     "The configuration is missing "
