@@ -7,8 +7,7 @@ from odoo import _, api, exceptions, fields, models
 from odoo.addons import decimal_precision as dp
 
 from odoo.addons.queue_job.job import job
-from ...components.backend_adapter import GenericAdapter
-from ...backend import prestashop
+from odoo.addons.component.core import Component
 from exporter import ProductInventoryExporter
 
 import logging
@@ -145,19 +144,28 @@ class PrestashopProductTemplate(models.Model):
             filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (since_date)}
         now_fmt = fields.Datetime.now()
 
-        result = self.env['prestashop.product.category'].with_delay(
-            priority=10).import_batch(backend, filters=filters) or ''
+        self.env['prestashop.product.category'].with_delay(
+            priority=10).import_batch(backend, filters=filters or '')
 
-        result += self.env['prestashop.product.template'].with_delay(
-            priority=15).import_batch(backend, filters=filters) or ''
+        self.env['prestashop.product.template'].with_delay(
+            priority=15).import_batch(backend, filters=filters or '')
 
         backend.import_products_since = now_fmt
-        return result
+        return True
+    
+    
+    @job(default_channel='root.prestashop')
+    def import_inventory(sel, backend):
+        with backend.work_on('_import_stock_available') as work:
+            importer = work.component(usage='prestashop.importer')
+            return importer.set_variant_images()
 
 
-@prestashop
-class ProductInventoryAdapter(GenericAdapter):
-    _model_name = '_import_stock_available'
+class ProductInventoryAdapter(Component):
+    _name = '_import_stock_available.adapter'
+    _inherit = 'prestashop.adapter'
+    _apply_on = '_import_stock_available'
+        
     _prestashop_model = 'stock_availables'
     _export_node_name = 'stock_available'
 
@@ -194,9 +202,11 @@ class ProductInventoryAdapter(GenericAdapter):
             })
 
 
-@prestashop
-class PrestashopProductTags(GenericAdapter):
-    _model_name = '_prestashop_product_tag'
+class PrestashopProductTags(Component):
+    _name = '_prestashop_product_tag.adapter'
+    _inherit = 'prestashop.adapter'
+    _apply_on = '_prestashop_product_tag'
+    
     _prestashop_model = 'tags'
     _export_node_name = 'tag'
 

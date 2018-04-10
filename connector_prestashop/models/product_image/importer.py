@@ -3,12 +3,10 @@
 
 
 from odoo.addons.queue_job.job import job
-from odoo.addons.connector.unit.mapper import (mapping,
-                                                  ImportMapper)
-from odoo.addons.component.core import Component
 
-from ...backend import prestashop
-from ...components.importer import PrestashopImporter
+from odoo.addons.component.core import Component
+from odoo.addons.connector.components.mapper import mapping, external_to_m2o
+
 
 import mimetypes
 import logging
@@ -103,23 +101,4 @@ class ProductImageImporter(Component):
                 ) % (image_id, template_id, error.msg)
                 self.backend_record.add_checkpoint(message=msg)
 
-# TODO: Continue here
-@job(default_channel='root.prestashop')
-def import_product_image(session, model_name, backend_id, product_tmpl_id,
-                         image_id, **kwargs):
-    """Import a product image"""
-    ctx = dict(session.context, **kwargs)
-    backend = session.env['prestashop.backend'].browse(backend_id)
-    env = backend.get_environment(model_name, session=session)
-    with env.session.change_context(ctx):
-        importer = env.get_connector_unit(PrestashopImporter)
-        return importer.run(product_tmpl_id, image_id)
 
-
-@job(default_channel='root.prestashop')
-def set_product_image_variant(
-        session, model_name, backend_id, combination_ids, **kwargs):
-    backend = session.env['prestashop.backend'].browse(backend_id)
-    env = backend.get_environment(model_name, session=session)
-    importer = env.get_connector_unit(PrestashopImporter)
-    importer.set_variant_images(combination_ids, **kwargs)

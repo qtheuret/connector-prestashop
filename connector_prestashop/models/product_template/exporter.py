@@ -9,7 +9,7 @@ from ...components.backend_adapter import GenericAdapter
 from ...backend import prestashop
 
 
-@prestashop
+# # @prestashop
 class ProductInventoryExporter(Exporter):
     _model_name = ['prestashop.product.template']
 
@@ -24,7 +24,9 @@ class ProductInventoryExporter(Exporter):
     def run(self, binding_id, fields, **kwargs):
         """ Export the product inventory to PrestaShop """
         template = self.model.browse(binding_id)
-        adapter = self.unit_for(GenericAdapter, '_import_stock_available')
+        adapter = self.component(
+            usage='prestashop.adapter', model_name='_import_stock_available'
+        )
         filter = self.get_filter(template)
         adapter.export_quantity(filter, int(template.quantity))
 

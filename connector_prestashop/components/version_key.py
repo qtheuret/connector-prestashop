@@ -6,7 +6,7 @@ from odoo.addons.connector.connector import ConnectorUnit
 from ..backend import prestashop, prestashop_1_6_0_9, prestashop_1_6_1_2
 
 
-@prestashop
+# # @prestashop
 class VersionKey(ConnectorUnit):
     _model_name = '_prestashop.version.key'
 
@@ -16,7 +16,7 @@ class VersionKey(ConnectorUnit):
         return self.keys.get(key) or key
 
 
-@prestashop_1_6_0_9
+# # @prestashop_1_6_0_9
 class VersionKey_1_6_0_9(VersionKey):
 
     keys = {
@@ -34,7 +34,7 @@ class VersionKey_1_6_0_9(VersionKey):
     }
 
 
-@prestashop_1_6_1_2
+# # @prestashop_1_6_1_2
 class VersionKey_1_6_1_2(VersionKey):
 
     # keys checked in 1.6.1.9:
