@@ -16,7 +16,13 @@ from ...components.importer import (
     DelayedBatchImporter,
 )
 from ...components.exception import OrderImportRuleRetry
-from ...backend import prestashop
+# from ...backend import prestashop
+
+#New API imports
+from odoo.addons.component.core import Component
+from odoo.addons.connector.components.mapper import mapping
+
+
 
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -29,14 +35,17 @@ except:
     _logger.debug('Cannot import from `prestapyt`')
 
 
-@prestashop
+# # # @prestashop
 class PrestaShopSaleOrderOnChange(SaleOrderOnChange):
     _model_name = 'prestashop.sale.order'
 
 
-@prestashop
-class SaleImportRule(ConnectorUnit):
-    _model_name = ['prestashop.sale.order']
+# # # # @prestashop
+class SaleImportRule(Component):
+    _name = 'prestashop.sale.import.rule'
+    _inherit = 'base.prestashop.connector'
+    _apply_on = 'prestashop.sale.order'
+    _usage = 'sale.import.rule'
 
     def _rule_always(self, record, mode):
         """ Always import the order """
@@ -144,9 +153,12 @@ class SaleImportRule(ConnectorUnit):
                 ) % record['id'])
 
 
-@prestashop
-class SaleOrderMapper(ImportMapper):
-    _model_name = 'prestashop.sale.order'
+# # # @prestashop
+class SaleOrderImportMapper(Component):
+#     _model_name = 'prestashop.sale.order'
+    _name = 'prestashop.sale.order.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = 'prestashop.sale.order'
 
     direct = [
         ('date_add', 'date_order'),
@@ -280,9 +292,12 @@ class SaleOrderMapper(ImportMapper):
         return onchange.play(values, values['prestashop_order_line_ids'])
 
 
-@prestashop
-class SaleOrderImporter(PrestashopImporter):
-    _model_name = ['prestashop.sale.order']
+# # # @prestashop
+class SaleOrderImporter(Component):
+#     _model_name = ['prestashop.sale.order']
+    _name = 'prestashop.sale.order.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = ['prestashop.sale.order']
 
     def __init__(self, environment):
         """
@@ -367,14 +382,18 @@ class SaleOrderImporter(PrestashopImporter):
             return err.message
 
 
-@prestashop
-class SaleOrderBatchImporter(DelayedBatchImporter):
-    _model_name = 'prestashop.sale.order'
+# # # @prestashop
+class SaleOrderBatchImporter(Component):
+    _name = 'prestashop.sale.order.batch.importer'
+    _inherit = 'prestashop.delayed.batch.importer'
+    _apply_on = ['prestashop.sale.order']
 
 
-@prestashop
-class SaleOrderLineMapper(ImportMapper):
-    _model_name = 'prestashop.sale.order.line'
+# # # @prestashop
+class SaleOrderLineMapper(Component):
+    _name = 'prestashop.sale.order.line.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = ['prestashop.sale.order.line']
 
     direct = [
         ('product_name', 'name'),
@@ -448,9 +467,10 @@ class SaleOrderLineMapper(ImportMapper):
         return {'backend_id': self.backend_record.id}
 
 
-@prestashop
 class SaleOrderLineDiscountMapper(ImportMapper):
-    _model_name = 'prestashop.sale.order.line.discount'
+    _name = 'prestashop.sale.order.line.discount.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = ['prestashop.sale.order.line.discount']
 
     direct = []
 

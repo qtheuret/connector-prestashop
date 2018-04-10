@@ -9,7 +9,7 @@ class AccountTaxImporter(Component):
     _inherit = 'prestashop.auto.matching.importer'
     _apply_on = 'prestashop.account.tax'
 
-    _model_name = 'prestashop.account.tax'
+#     _model_name = 'prestashop.account.tax'
     _erp_field = 'amount'
     _ps_field = 'rate'
 

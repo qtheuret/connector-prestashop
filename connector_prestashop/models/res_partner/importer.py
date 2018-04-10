@@ -15,13 +15,19 @@ from ...components.importer import (
     import_batch,
     DelayedBatchImporter,
 )
-from ...backend import prestashop
-from odoo.addons.connector.unit.mapper import external_to_m2o
+# from ...backend import prestashop
+# from odoo.addons.connector.unit.mapper import external_to_m2o
+
+from odoo.addons.component.core import Component
+from odoo.addons.connector.components.mapper import mapping, external_to_m2o
 
 
-@prestashop
-class PartnerImportMapper(ImportMapper):
-    _model_name = 'prestashop.res.partner'
+# # @prestashop
+class PartnerImportMapper(Component):
+    #_model_name = 'prestashop.res.partner'
+    _name = 'prestashop.res.partner.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = ['prestashop.res.partner']
 
     direct = [
         ('date_add', 'date_add'),
@@ -104,9 +110,14 @@ class PartnerImportMapper(ImportMapper):
         return {'company_id': self.backend_record.company_id.id}
 
 
-@prestashop
-class ResPartnerImporter(PrestashopImporter):
-    _model_name = 'prestashop.res.partner'
+# # @prestashop
+class ResPartnerImporter(Component):
+    #_model_name = 'prestashop.res.partner'
+    _name = 'prestashop.res.partner.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = ['prestashop.res.partner']
+
+
 
     def _import_dependencies(self):
         groups = self.prestashop_record.get('associations', {}) \
@@ -127,14 +138,22 @@ class ResPartnerImporter(PrestashopImporter):
             filters={'filter[id_customer]': '%d' % (ps_id,)})
 
 
-@prestashop
-class PartnerBatchImporter(DelayedBatchImporter):
-    _model_name = 'prestashop.res.partner'
+# # @prestashop
+class PartnerBatchImporter(Component):
+#     _model_name = 'prestashop.res.partner'
+    _name = 'prestashop.res.partner.batch.importer'
+    _inherit = 'prestashop.delayed.batch.importer'
+    _apply_on = ['prestashop.res.partner']
 
 
-@prestashop
-class AddressImportMapper(ImportMapper):
-    _model_name = 'prestashop.address'
+
+# # @prestashop
+class AddressImportMapper(Component):
+    #_model_name = 'prestashop.address'
+    _name = 'prestashop.address.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = ['prestashop.address']
+
 
     direct = [
         ('address1', 'street'),
@@ -191,9 +210,14 @@ class AddressImportMapper(ImportMapper):
         return {'type': 'other'}
 
 
-@prestashop
-class AddressImporter(PrestashopImporter):
-    _model_name = 'prestashop.address'
+# # @prestashop
+class AddressImporter(Component):
+#    _model_name = 'prestashop.address'
+    _name = 'prestashop.address.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = ['prestashop.address']
+
+
 
     def _check_vat(self, vat):
         vat_country, vat_number = vat[:2].lower(), vat[2:]
@@ -225,9 +249,13 @@ class AddressImporter(PrestashopImporter):
                 )
 
 
-@prestashop
-class AddressBatchImporter(DelayedBatchImporter):
-    _model_name = 'prestashop.address'
+# # @prestashop
+class AddressBatchImporter(Component):
+    #_model_name = 'prestashop.address'
+    _name = 'prestashop.address.mapper'
+    _inherit = 'prestashop.delayed.batch.importer'
+    _apply_on = ['prestashop.address']
+
 
 
 @job(default_channel='root.prestashop')

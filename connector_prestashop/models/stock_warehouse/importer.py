@@ -1,15 +1,26 @@
 # -*- coding: utf-8 -*-
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
-from odoo.addons.connector.unit.mapper import ImportMapper, mapping
-from ...components.importer import PrestashopImporter, DirectBatchImporter
-from odoo.addons.connector.unit.mapper import external_to_m2o
-from ...backend import prestashop
+# from odoo.addons.connector.unit.mapper import ImportMapper, mapping
+# from ...components.importer import PrestashopImporter, DirectBatchImporter
+# from odoo.addons.connector.unit.mapper import external_to_m2o
+# from ...backend import prestashop
 
 
-@prestashop
-class ShopImportMapper(ImportMapper):
-    _model_name = 'prestashop.shop'
+from odoo.addons.component.core import Component
+from odoo.addons.connector.components.mapper import mapping, external_to_m2o
+
+# # @prestashop
+class ShopImporter(Component):
+    _name = 'prestashop.shop.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = 'prestashop.shop'
+
+
+class ShopImportMapper(Component):
+    _name = 'prestashop.shop.import.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = ['prestashop.shop']
 
     direct = [
         ('name', 'name'),
@@ -33,11 +44,16 @@ class ShopImportMapper(ImportMapper):
         return {'odoo_id': self.backend_record.warehouse_id.id}
 
 
-@prestashop
-class ShopImporter(PrestashopImporter):
-    _model_name = 'prestashop.shop'
+# # @prestashop
+class ShopImporter(Component):
+    _name = 'prestashop.shop.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = ['prestashop.shop']
 
 
-@prestashop
-class ShopBatchImporter(DirectBatchImporter):
-    _model_name = 'prestashop.shop'
+# # # @prestashop
+# class ShopBatchImporter(DirectBatchImporter):
+#     _model_name = 'prestashop.shop'
+#     
+#     
+

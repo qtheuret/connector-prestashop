@@ -9,10 +9,21 @@ from ...components.importer import (
 )
 from ...backend import prestashop
 
+from odoo.addons.component.core import Component
+from odoo.addons.connector.components.mapper import mapping
 
-@prestashop
-class PartnerCategoryImportMapper(ImportMapper):
-    _model_name = 'prestashop.res.partner.category'
+
+class PartnerCategoryBatchImporter(Component):
+    _name = 'prestashop.res.partner.category.batch.importer'
+    _inherit = 'prestashop.batch.importer'
+    _apply_on = 'prestashop.res.partner.category'
+
+
+
+class PartnerCategoryImportMapper(Component):
+    _name = 'prestashop.res.partner.category.import.mapper'
+    _inherit = 'prestashop.import.mapper'
+    _apply_on = 'prestashop.res.partner.category'
 
     direct = [
         ('name', 'name'),
@@ -29,29 +40,32 @@ class PartnerCategoryImportMapper(ImportMapper):
         return {'backend_id': self.backend_record.id}
 
 
-@prestashop
-class PartnerCategoryImporter(TranslatableRecordImporter):
-    """ Import one translatable record """
-    _model_name = [
-        'prestashop.res.partner.category',
-    ]
+# # @prestashop
+#TODO : Deal with this upgrade
+# class PartnerCategoryImporter(TranslatableRecordImporter):
+#     """ Import one translatable record """
+# #     _model_name = [
+# #         'prestashop.res.partner.category',
+# #     ]
+#     _name = 'prestashop.res.partner.category.import.mapper'
+#     _inherit = 'prestashop.import.mapper'
+#     _apply_on = 'prestashop.res.partner.category'
+#  
+#     
+# 
+#     _translatable_fields = {
+#         'prestashop.res.partner.category': ['name'],
+#     }
+# 
+#     def _after_import(self, binding):
+#         super(PartnerCategoryImporter, self)._after_import(binding)
+#         record = self.prestashop_record
+#         if float(record['reduction']):
+#             import_record(
+#                 self.session,
+#                 'prestashop.groups.pricelist',
+#                 self.backend_record.id,
+#                 record['id']
+#             )
 
-    _translatable_fields = {
-        'prestashop.res.partner.category': ['name'],
-    }
 
-    def _after_import(self, binding):
-        super(PartnerCategoryImporter, self)._after_import(binding)
-        record = self.prestashop_record
-        if float(record['reduction']):
-            import_record(
-                self.session,
-                'prestashop.groups.pricelist',
-                self.backend_record.id,
-                record['id']
-            )
-
-
-@prestashop
-class PartnerCategoryBatchImporter(DelayedBatchImporter):
-    _model_name = 'prestashop.res.partner.category'
