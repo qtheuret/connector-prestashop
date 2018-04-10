@@ -207,16 +207,13 @@ class PrestashopProductCombination(models.Model):
     @job(default_channel='root.prestashop')
     def set_product_image_variant(self, backend, combination_ids, **kwargs):
         with backend.work_on(self._name) as work:
-            importer = work.component(usage='prestashop.importer')
+            importer = work.component(usage='record.importer')
             return importer.set_variant_images(combination_ids, **kwargs)
-
-
-
 
     @job(default_channel='root.prestashop')
     def set_product_image_variant(self, backend, combination_ids, **kwargs):
         with backend.work_on(self._name) as work:
-            importer = work.component(usage='prestashop.importer')
+            importer = work.component(usage='record.importer')
             return importer.set_variant_images(combination_ids, **kwargs)
 
 

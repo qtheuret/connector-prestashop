@@ -25,7 +25,7 @@ class ProductInventoryExporter(Exporter):
         """ Export the product inventory to PrestaShop """
         template = self.model.browse(binding_id)
         adapter = self.component(
-            usage='prestashop.adapter', model_name='_import_stock_available'
+            usage='backend.adapter', model_name='_import_stock_available'
         )
         filter = self.get_filter(template)
         adapter.export_quantity(filter, int(template.quantity))

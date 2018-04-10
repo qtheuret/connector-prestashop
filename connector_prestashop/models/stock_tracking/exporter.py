@@ -27,7 +27,7 @@ class PrestashopTrackingExporter(Exporter):
         """ Export the tracking number of a picking to Magento """
         # verify the picking is done + magento id exists
         tracking_adapter = self.component(
-            usage='prestashop.adapter',
+            usage='backend.adapter',
             model_name='__not_exit_prestashop.order_carrier')
 
         self.binding = self.model.browse(binding_id)

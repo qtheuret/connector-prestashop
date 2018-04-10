@@ -74,6 +74,11 @@ class PrestashopProductSupplierinfo(models.Model):
     )
 
 
+class SupplierImageModel(models.TransientModel):
+    # In actual connector version is mandatory use a model
+    _name = 'prestashop.supplier.image'
+
+
 class SupplierImageAdapter(Component):
     _name = 'prestashop.supplier.image.adapter'
     _inherit = 'prestashop.adapter'

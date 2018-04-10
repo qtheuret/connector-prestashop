@@ -34,7 +34,7 @@ class ProductCombinationImporter(Component):
         if not isinstance(option_values, list):
             option_values = [option_values]
         backend_adapter = self.component(
-            usage='prestashop.adapter',
+            usage='backend.adapter',
             model_name='prestashop.product.combination.option.value')
         for option_value in option_values:
             option_value = backend_adapter.read(option_value['id'])
@@ -51,7 +51,7 @@ class ProductCombinationImporter(Component):
 
     def set_variant_images(self, combinations):
         backend_adapter = self.component(
-            usage='prestashop.adapter',
+            usage='backend.adapter',
             model_name='prestashop.product.combination')
         for combination in combinations:
             try:
@@ -87,10 +87,8 @@ class ProductCombinationImporter(Component):
             # 'filter[id_product]': ps_id,
             'filter[id_product_attribute]': ps_id
         }
-        import_batch(
-            self.session,
-            'prestashop.product.supplierinfo',
-            self.backend_record.id,
+        self.env['prestashop.product.supplierinfo'].with_delay().import_batch(
+            self.backend_record,
             filters=filters
         )
         ps_product_template = binding
@@ -183,7 +181,7 @@ class ProductCombinationMapper(Component):
         return {'main_template_id': template_binding.id}
 
     def _template_code_exists(self, code):
-        model = self.session.env['product.product']
+        model = self.env['product.product']
         combination_binder = self.binder_for('prestashop.product.combination')
         template_ids = model.search([
             ('default_code', '=', code),
@@ -216,7 +214,7 @@ class ProductCombinationMapper(Component):
         check_ean = self.env['barcode.nomenclature'].check_ean
         if barcode in ['', '0']:
             backend_adapter = self.component(
-                usage='prestashop.adapter',
+                usage='backend.adapter',
                 model_name='prestashop.product.template'
             )
             template = backend_adapter.read(record['id_product'])
@@ -227,7 +225,7 @@ class ProductCombinationMapper(Component):
 
     def _get_tax_ids(self, record):
         product_tmpl_adapter = self.component(
-            usage='prestashop.adapter', model_name='prestashop.product.template')
+            usage='backend.adapter', model_name='prestashop.product.template')
         tax_group = product_tmpl_adapter.read(record['id_product'])
         tax_group = self.binder_for('prestashop.account.tax.group').to_internal(
             tax_group['id_tax_rules_group'], unwrap=True)

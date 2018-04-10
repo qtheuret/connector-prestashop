@@ -78,7 +78,7 @@ class TemplateMapper(Component):
         tags = associations.get('tags', {}).get(
             self.backend_record.get_version_ps_key('tag'), [])
         tag_adapter = self.component(
-            usage='prestashop.adapter', model_name='_prestashop_product_tag'
+            usage='backend.adapter', model_name='_prestashop_product_tag'
         )
         if not isinstance(tags, list):
             tags = [tags]
@@ -124,7 +124,7 @@ class TemplateMapper(Component):
             return {'odoo_id': product.id}
 
     def _template_code_exists(self, code):
-        model = self.session.env['product.template']
+        model = self.env['product.template']
         template_ids = model.search([
             ('default_code', '=', code),
             ('company_id', '=', self.backend_record.company_id.id),
@@ -260,23 +260,23 @@ class TemplateMapper(Component):
         if record['type']['value'] and record['type']['value'] == 'virtual':
             return {"type": 'service'}
         return {"type": 'product'}
-
-    @mapping
-    def extras_features(self, record):
-        mapper = self.component(usage='feature.product.import.mapper')
-        return mapper.map_record(record).values(**self.options)
-
-    @mapping
-    def extras_manufacturer(self, record):
-        mapper = self.component(usage='manufacturer.product.import.mapper')
-        return mapper.map_record(record).values(**self.options)
+#TODO FIXME
+#    @mapping
+#    def extras_features(self, record):
+#        mapper = self.component(usage='feature.product.import.mapper')
+#        return mapper.map_record(record).values(**self.options)
+#
+#    @mapping
+#    def extras_manufacturer(self, record):
+#        mapper = self.component(usage='manufacturer.product.import.mapper')
+#        return mapper.map_record(record).values(**self.options)
 
 
 class FeaturesProductImportMapper(Component):
     # To extend in connector_prestashop_feature module. In this way we
     # dependencies on other modules like product_custom_info
-    _name = 'prestashop.product.template.mapper'
-    _inherit = 'prestashop.import.mapper'
+    _name = 'prestashop.feature.product.template.mapper'
+    _inherit = 'prestashop.product.template.mapper'
     _apply_on = 'prestashop.product.template'
     _usage = 'feature.product.import.mapper'
 
@@ -285,23 +285,11 @@ class FeaturesProductImportMapper(Component):
         return {}
 
 
-class ManufacturerProductDependency(Component):
-    # To extend in connector_prestashop_feature module. In this way we
-    # dependencies on other modules like product_manufacturer
-    _name = 'prestashop.product.template.manufacturer.importer'
-    _inherit = 'prestashop.importer'
-    _apply_on = 'prestashop.product.template'
-    _usage = 'manufacturer.product.importer'
-
-    def import_manufacturer(self, manufacturer_id):
-        return
-
-
 class ManufacturerProductImportMapper(Component):
     # To extend in connector_prestashop_manufacturer module. In this way we
     # dependencies on other modules like product_manufacturer
-    _name = 'prestashop.product.template.mapper'
-    _inherit = 'prestashop.import.mapper'
+    _name = 'prestashop.manufacturer.product.template.mapper'
+    _inherit = 'prestashop.product.template.mapper'
     _apply_on = 'prestashop.product.template'
     _usage = 'manufacturer.product.import.mapper'
 
@@ -553,8 +541,7 @@ class ProductTemplateImporter(Component):
                 delayable.import_product_image(
                     self.backend_record,
                     prestashop_record['id'],
-                    image['id'],
-                    **kwargs)
+                    image['id'])
 
     def import_supplierinfo(self, binding):
         ps_id = self._get_prestashop_data()['id']
@@ -562,10 +549,8 @@ class ProductTemplateImporter(Component):
             'filter[id_product]': ps_id,
             'filter[id_product_attribute]': 0
         }
-        import_batch(
-            self.session,
-            'prestashop.product.supplierinfo',
-            self.backend_record.id,
+        self.env['prestashop.product.supplierinfo'].with_delay().import_batch(
+            self.backend_record,
             filters=filters
         )
         ps_product_template = binding
@@ -614,6 +599,18 @@ class ProductTemplateImporter(Component):
         for category in categories:
             self._import_dependency(category['id'],
                                     'prestashop.product.category')
+
+
+class ManufacturerProductDependency(Component):
+    # To extend in connector_prestashop_feature module. In this way we
+    # dependencies on other modules like product_manufacturer
+    _name = 'prestashop.product.template.manufacturer.importer'
+    _inherit = 'prestashop.product.template.importer'
+    _apply_on = 'prestashop.product.template'
+    _usage = 'manufacturer.product.importer'
+
+    def import_manufacturer(self, manufacturer_id):
+        return
 
 
 class ProductTemplateBatchImporter(Component):
