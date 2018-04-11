@@ -156,8 +156,8 @@ class PrestashopProductTemplate(models.Model):
     @job(default_channel='root.prestashop')
     def import_inventory(sel, backend):
         with backend.work_on('_import_stock_available') as work:
-            importer = work.component(usage='record.importer')
-            return importer.set_variant_images()
+            importer = work.component(usage='batch.importer')
+            return importer.run()
 
 
 class TemplateAdapter(Component):

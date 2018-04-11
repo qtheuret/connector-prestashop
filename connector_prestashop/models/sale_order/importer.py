@@ -370,7 +370,7 @@ class SaleOrderImporter(Component):
 
 class SaleOrderBatchImporter(Component):
     _name = 'prestashop.sale.order.batch.importer'
-    _inherit = 'prestashop.direct.batch.importer'
+    _inherit = 'prestashop.delayed.batch.importer'
     _apply_on = 'prestashop.sale.order'
 
 
@@ -479,7 +479,7 @@ class SaleOrderLineDiscountMapper(Component):
     def product_id(self, record):
         if self.backend_record.discount_product_id:
             return {'product_id': self.backend_record.discount_product_id.id}
-        product_discount = self.session.env.ref(
+        product_discount = self.env.ref(
             'connector_ecommerce.product_product_discount')
         return {'product_id': product_discount.id}
 

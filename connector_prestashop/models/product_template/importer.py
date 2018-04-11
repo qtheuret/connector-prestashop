@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
-from odoo import _, models, fields
+from odoo import _, models, fields, api
 from odoo.addons.queue_job.job import job
 from odoo.addons.connector.components.mapper import (
     mapping,
@@ -302,6 +302,14 @@ class ImportInventory(models.TransientModel):
     # In actual connector version is mandatory use a model
     _name = '_import_stock_available'
 
+    @job(default_channel='root.prestashop')
+    @api.model
+    def import_record(self, backend, prestashop_id, record=None, **kwargs):
+        """ Import a record from PrestaShop """
+        with backend.work_on(self._name) as work:
+            importer = work.component(usage='record.importer')
+            return importer.run(prestashop_id, record=record, **kwargs)
+
 
 class ProductInventoryBatchImporter(Component):
     _name = 'prestashop._import_stock_available.batch.importer'
@@ -324,10 +332,8 @@ class ProductInventoryBatchImporter(Component):
     def _import_record(self, record_id, record=None, **kwargs):
         """ Delay the import of the records"""
         assert record
-        import_record.delay(
-            self.session,
-            '_import_stock_available',
-            self.backend_record.id,
+        self.env['_import_stock_available'].with_delay().import_record(
+            self.backend_record,
             record_id,
             record=record,
             **kwargs

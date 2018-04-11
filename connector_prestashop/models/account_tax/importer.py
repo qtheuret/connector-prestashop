@@ -2,10 +2,8 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
 from ...components.auto_matching_importer import AutoMatchingImporter
-from ...backend import prestashop
 
 
-@prestashop
 class AccountTaxImporter(AutoMatchingImporter):
     _name = 'prestashop.account.tax.importer'
     _apply_on = 'prestashop.account.tax'

@@ -114,7 +114,7 @@ class PrestashopImporter(AbstractComponent):
         return self.binder.to_internal(self.prestashop_id)
 
     def _context(self, **kwargs):
-        return dict(self.session.context, connector_no_export=True, **kwargs)
+        return dict(self._context, connector_no_export=True, **kwargs)
 
     def _create_context(self):
         return {'connector_no_export': True}
@@ -334,23 +334,6 @@ class BatchImporter(AbstractComponent):
     def _import_record(self, record):
         """ Import a record directly or delay the import of the record """
         raise NotImplementedError
-
-
-# TODO 2016-10-25: is this used at all somewhere???
-class AddCheckpoint(AbstractComponent):
-    """ Add a connector.checkpoint on the underlying model
-    (not the prestashop.* but the _inherits'ed model) """
-
-    _name = 'connector_prestashop_component'
-    _model_name = []
-
-    def run(self, binding_id):
-        record = self.model.browse(binding_id)
-        self.backend_record.add_checkpoint(
-            session=self.session,
-            model=record._model._name,
-            record_id=record.id,
-        )
 
 
 class DirectBatchImporter(AbstractComponent):

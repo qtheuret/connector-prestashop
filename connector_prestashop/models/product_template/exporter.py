@@ -6,10 +6,8 @@ from odoo.addons.queue_job.job import job
 from odoo.addons.connector.unit.synchronizer import Exporter
 
 from odoo.addons.component.core import Component
-from ...backend import prestashop
 
 
-# # @prestashop
 class ProductInventoryExporter(Exporter):
     _model_name = ['prestashop.product.template']
 

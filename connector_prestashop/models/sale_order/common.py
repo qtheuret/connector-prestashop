@@ -73,30 +73,6 @@ class PrestashopSaleOrder(models.Model):
             filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (since_date)}
         now_fmt = fields.Datetime.now()
         self.env['prestashop.sale.order'].with_delay(
-            priority=5, max_retries=0).import_batch(backend, filters=filters or '')
-        if since_date:
-            filters = {'date': '1', 'filter[date_add]': '>[%s]' % since_date}
-#        try:
-#            self.env['prestashop.mail.message'].import_batch(backend, filters)
-#        except Exception as error:
-#            msg = _(
-#                'Mail messages import failed with filters `%s`. '
-#                'Error: `%s`'
-#            ) % (str(filters), str(error))
-#            backend.add_checkpoint(
-#                message=msg
-#            )
-
-        backend.import_orders_since = now_fmt
-        return True
-
-    def import_orders_since(self, backend, since_date=None, **kwargs):
-        """ Prepare the import of orders modified on PrestaShop """
-        filters = None
-        if since_date:
-            filters = {'date': '1', 'filter[date_upd]': '>[%s]' % (since_date)}
-        now_fmt = fields.Datetime.now()
-        self.env['prestashop.sale.order'].with_delay(
             priority=5, max_retries=0).import_batch(backend, filters=filters)
         if since_date:
             filters = {'date': '1', 'filter[date_add]': '>[%s]' % since_date}
