@@ -204,8 +204,11 @@ class PrestashopBackend(models.Model):
         """
         self.ensure_one()
         record.ensure_one()
-        return checkpoint.add_checkpoint(self.env, record._name, record.id,
+        chk_point =  checkpoint.add_checkpoint(self.env, record._name, record.id,
                                          self._name, self.id)
+        if message:
+            chk_point.message_post(body=message)
+        return chk_point
 
     @api.multi
     def button_reset_to_draft(self):

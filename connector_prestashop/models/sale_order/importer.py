@@ -349,8 +349,7 @@ class SaleOrderImporter(Component):
             return
         msg = _('Product(s) used in the sales order could not be imported.')
         self.backend_record.add_checkpoint(
-            model='sale.order',
-            record_id=binding.odoo_id.id,
+            binding,
             message=msg,
         )
 
