@@ -5,6 +5,7 @@ import logging
 from openerp.addons.connector.queue.job import job
 from openerp.addons.connector.unit.mapper import (mapping,
                                                   ImportMapper,
+                                                  only_create
                                                   )
 from ...unit.importer import (
     DelayedBatchImporter,
@@ -27,9 +28,23 @@ class CarrierImportMapper(ImportMapper):
     direct = [
         ('name', 'name_ext'),
         ('name', 'name'),
-        ('id_reference', 'id_reference'),
+        
     ]
 
+
+    #TODO :
+    # id_reference à mapper en only_create
+    @only_create
+    @mapping
+    def openerp_id(self, record):
+        #Prevent The duplication of delivery method if id_reference is the same 
+        id_reference = record['id_reference']
+        delivery = self.env['prestashop.delivery.carrier'].search([('id_reference', '=', id_reference)])
+        if len(delivery) == 1 :
+                return {'openerp_id': delivery.openerp_id.id}
+        else:
+            return {'id_reference': id_reference}       
+    
     @mapping
     def active(self, record):
         return {'active_ext': record['active'] == '1'}
