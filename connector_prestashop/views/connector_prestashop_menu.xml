@@ -42,7 +42,7 @@
 
 
 	<record id="action_prestashop_products" model="ir.actions.act_window">
-		<field name="name">Odoo Products</field>
+		<field name="name">Prestashop Products</field>
 		<field name="res_model">prestashop.product.combination</field>
 		<field name="view_mode">tree,form</field>
 	</record>
@@ -52,15 +52,22 @@
 		<field name="view_mode">tree,form</field>
 	</record>
 
-
+	<record id="action_prestashop_res_langs" model="ir.actions.act_window">
+		<field name="name">Languages</field>
+		<field name="res_model">prestashop.res.lang</field>
+		<field name="view_mode">tree,form</field>
+	</record>
 
 	<!-- TODO: Implement security strategy groups="odoo_base.group_oc_manager" -->
 	<menuitem id="menu_prestashop_external_objects" name="External Objects"
-		parent="menu_prestashop_root" />
+		parent="menu_prestashop_root" 
+		sequence="100"/>
 
 	<!-- <menuitem id="menu_prestashop_external_uom" name="External UOM" parent="menu_prestashop_external_objects" 
 		action="action_prestashop_uom" /> -->
 
+	<menuitem id="menu_prestashop_external_languauges" name="External Languages"
+		parent="menu_prestashop_external_objects" action="action_prestashop_res_langs" />
 	<menuitem id="menu_prestashop_external_attribute" name="External Attributes"
 		parent="menu_prestashop_external_objects" action="action_prestashop_attributes" />
 	<menuitem id="menu_prestashop_external_values" name="External Attribute Values"
