@@ -8,7 +8,6 @@ from contextlib import contextmanager
 from odoo import models, fields, api, exceptions, _
 
 from ...components.importer import import_batch, import_record
-from ...components.auto_matching_importer import AutoMatchingImporter
 from ...components.backend_adapter import api_handle_errors
 from ...components.version_key import VersionKey
 from ...backend import prestashop
@@ -138,12 +137,71 @@ class PrestashopBackend(models.Model):
     verbose = fields.Boolean(help="Output requests details in the logs")
     debug = fields.Boolean(help="Activate PrestaShop's webservice debug mode")
 
+
+    matching_product_template = fields.Boolean(string="Match product template")
+    
+    matching_product_ch = fields.Selection([('reference','Reference'),('ean13','Barcode')],string="Matching Field for product")
+    
+    matching_customer = fields.Boolean(string="Matching Customer", 
+                    help="The selected fields will be matched to the ref field \
+                        of the partner. Please adapt your datas consequently.")
+    matching_customer_ch = fields.Many2one(comodel_name='prestashop.partner.field'
+                            , string="Matched field", help="Field that will be matched.")
+
+
+    quantity_field = fields.Selection(
+                            [('qty_available','Available Quantity'),
+                            ('virtual_available','Forecast quantity')],
+                            string='Field use for quantity update',
+                            required=True, 
+                            default='virtual_available'
+                        )
+
+    @api.onchange("matching_customer")
+    def change_matching_customer(self):
+        #Update the field list so that if you API change you could find the new fields to map
+        if self._origin.id:
+            self.fill_matched_fields(self._origin.id)
+        
+    
+    @api.multi
+    def fill_matched_fields(self, backend_id):
+        self.ensure_one()
+        
+        options={'limit': 1,'display': 'full'}
+             
+#         prestashop = PrestaShopLocation(
+#                         self.location.encode(),
+#                         self.webservice_key,
+#                     )
+#         
+#         client = PrestaShopWebServiceDict(
+#                     prestashop.api_url,
+#                     prestashop.webservice_key)
+# 
+#         customer = client.get('customers', options=options)
+#         tab=customer['customers']['customer'].keys()
+#         for key in tab:
+#             key_present = self.env['prestashop.partner.field'].search(
+#                     [('value', '=', key), ('backend_id', '=', backend_id)])
+# 
+#             if len(key_present) == 0 :
+#                 self.env['prestashop.partner.field'].create({
+#                     'name' : key,
+#                     'value' : key,
+#                     'backend_id': backend_id
+#                 })
+
+
     @api.model
     def _default_pricelist_id(self):
         return self.env['product.pricelist'].search([], limit=1)
 
     @api.multi
-    def add_checkpoint(self, record):
+    def add_checkpoint(self, record, message=''):
+        """
+        @param message: used with this https://github.com/OCA/connector/issues/37
+        """
         self.ensure_one()
         record.ensure_one()
         return checkpoint.add_checkpoint(self.env, record._name, record.id,
