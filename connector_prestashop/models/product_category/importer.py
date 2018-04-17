@@ -57,15 +57,25 @@ class ProductCategoryMapper(ImportMapper):
             return {'date_upd': datetime.datetime.now()}
         return {'date_upd': record['date_upd']}
     
-    
     @only_create
     @mapping
     def openerp_id(self, record):
-        """ Will bind the product attribute to an existing one with the same name """
+        """ Will bind the product category to an existing one with the same name """
+
+        
         if self.backend_record.matching_product_template:
+            categ_binder = self.binder_for(
+                        'prestashop.product.category')
+            categ_id  = product_binder.to_openerp(
+                        record['id'], unwrap=True)
             name = self.name(record)['name']
+            domain = [('name', '=', name)]
+            if categ_id:
+                #TODO : Prevent to consider the already bound ID in search on names
+                #Useful when multiple categories have the same name
+                domain.append(('id', '!=', categ_id.id))
             
-            attribute = self.env['product.category'].search([('name', '=', name)])
+            attribute = self.env['product.category'].search(domain)
             
             if len(attribute) == 1 :
                 return {'openerp_id': attribute.id}                    

@@ -40,8 +40,8 @@ class CarrierImportMapper(ImportMapper):
         #Prevent The duplication of delivery method if id_reference is the same 
         id_reference = record['id_reference']
         delivery = self.env['prestashop.delivery.carrier'].search([('id_reference', '=', id_reference)])
-        if len(delivery) == 1 :
-                return {'openerp_id': delivery.openerp_id.id}
+        if len(delivery) >= 1 :
+                return {'openerp_id': delivery[0].openerp_id.id}
         else:
             return {'id_reference': id_reference}       
     
