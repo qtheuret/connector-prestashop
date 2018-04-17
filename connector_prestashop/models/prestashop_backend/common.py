@@ -154,7 +154,6 @@ class PrestashopBackend(models.Model):
                         ('virtual_available','Forecast quantity'),
                         ('immediately_usable_qty', 'Available to promise'),
                         ('potential_qty', 'Potential')],
-                        string='Field use for quantity update',
                         help="""
                             Some of this options may need some additionnal
                             modules you'll have to install by yourself from
@@ -177,7 +176,7 @@ class PrestashopBackend(models.Model):
         self.ensure_one()
         
         options={'limit': 1,'display': 'full'}
-             
+        #TODO : Unse new adapter pattern to get a simple partner json
 #         prestashop = PrestaShopLocation(
 #                         self.location.encode(),
 #                         self.webservice_key,
