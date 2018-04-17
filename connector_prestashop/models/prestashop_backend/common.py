@@ -150,8 +150,16 @@ class PrestashopBackend(models.Model):
 
 
     quantity_field = fields.Selection(
-                            [('qty_available','Available Quantity'),
-                            ('virtual_available','Forecast quantity')],
+                        [('qty_available','Available Quantity'),
+                        ('virtual_available','Forecast quantity'),
+                        ('immediately_usable_qty', 'Available to promise'),
+                        ('potential_qty', 'Potential')],
+                        string='Field use for quantity update',
+                        help="""
+                            Some of this options may need some additionnal
+                            modules you'll have to install by yourself from
+                            https://github.com/OCA/stock-logistics-warehouse/tree/10.0
+                        """,
                             string='Field use for quantity update',
                             required=True, 
                             default='virtual_available'
