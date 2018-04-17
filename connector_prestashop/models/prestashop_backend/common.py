@@ -255,7 +255,7 @@ class PrestashopBackend(models.Model):
     def _check_connection(self):
         self.ensure_one()
         with self.work_on('prestashop.backend') as work:
-            component = work.component_by_name(name='prestashop.adapter')
+            component = work.component_by_name(name='prestashop.adapter.test')
             with api_handle_errors('Connection failed'):
                 component.head()
 
