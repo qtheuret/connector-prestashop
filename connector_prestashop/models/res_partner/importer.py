@@ -6,6 +6,8 @@ import re
 from odoo import fields, _
 from odoo.addons.queue_job.job import job
 
+
+from odoo.addons.connector.checkpoint import checkpoint
 from odoo.addons.component.core import Component
 from odoo.addons.connector.components.mapper import (
     mapping, external_to_m2o, only_create)
@@ -216,8 +218,7 @@ class AddressImporter(Component):
             else:
                 msg = _('Please, check the VAT number: %s') % vat_number
                 self.backend_record.add_checkpoint(
-                    model=binding.parent_id._name,
-                    record_id=binding.parent_id.id,
+                    binding.parent_id,
                     message=msg,
                 )
 

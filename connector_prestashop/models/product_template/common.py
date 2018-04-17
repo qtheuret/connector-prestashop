@@ -145,10 +145,10 @@ class PrestashopProductTemplate(models.Model):
         now_fmt = fields.Datetime.now()
 
         self.env['prestashop.product.category'].with_delay(
-            priority=10).import_batch(backend, filters=filters or '')
+            priority=10).import_batch(backend, filters=filters)
 
         self.env['prestashop.product.template'].with_delay(
-            priority=15).import_batch(backend, filters=filters or '')
+            priority=15).import_batch(backend, filters=filters)
 
         backend.import_products_since = now_fmt
         return True
