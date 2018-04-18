@@ -29,14 +29,20 @@ class CarrierImportMapper(Component):
 
     @only_create
     @mapping
-    def openerp_id(self, record):
+    def odoo_id(self, record):
         #Prevent The duplication of delivery method if id_reference is the same 
-        id_reference = record['id_reference']
+        id_reference = int(str(record['id_reference']))
         delivery = self.env['prestashop.delivery.carrier'].search([('id_reference', '=', id_reference)])
         if len(delivery) == 1 :
-                return {'odoo_id': delivery.odoo_id.id}
+            _logger.debug("")
+            return {'odoo_id': delivery.odoo_id.id}
         else:
-            return {'id_reference': id_reference}  
+            return {}  
+
+    @mapping
+    def id_reference(self, record):
+        id_reference = int(str(record['id_reference']))
+        return {'id_reference': id_reference}
 
     @mapping
     def active(self, record):
