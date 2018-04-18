@@ -34,7 +34,7 @@ class CarrierImportMapper(Component):
         id_reference = record['id_reference']
         delivery = self.env['prestashop.delivery.carrier'].search([('id_reference', '=', id_reference)])
         if len(delivery) == 1 :
-                return {'openerp_id': delivery.openerp_id.id}
+                return {'odoo_id': delivery.odoo_id.id}
         else:
             return {'id_reference': id_reference}  
 
