@@ -140,7 +140,9 @@ class PrestashopBackend(models.Model):
 
     matching_product_template = fields.Boolean(string="Match product template")
     
-    matching_product_ch = fields.Selection([('reference','Reference'),('ean13','Barcode')],string="Matching Field for product")
+    matching_product_ch = fields.Selection([('reference','Reference'),
+                                            ('barcode','Barcode')],
+                                            string="Matching Field for product")
     
     matching_customer = fields.Boolean(string="Matching Customer", 
                     help="The selected fields will be matched to the ref field \
