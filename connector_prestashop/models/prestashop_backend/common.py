@@ -302,7 +302,18 @@ class PrestashopBackend(models.Model):
                 'order_histories': 'order_histories?sendemail=1'
             },
             # singular names as < 1.6.0.9
-            '1.6.0.11': {},
+            '1.6.0.11': {
+                'product_option_value': 'product_option_values',
+                'order_slip_detail': 'order_slip_details',
+                'group': 'groups',
+                'combination': 'combination',
+                'order_row': 'order_rows',
+                'tax': 'taxes',
+                'image': 'image',
+                'combination': 'combinations',
+                'order_histories': 'order_histories?sendemail=1'},
+            
+            
         }
         if self.version == '1.6.0.9':
             key = keys_conversion[self.version][key]

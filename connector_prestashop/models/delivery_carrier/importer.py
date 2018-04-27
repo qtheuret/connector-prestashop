@@ -28,9 +28,12 @@ class CarrierImportMapper(ImportMapper):
     direct = [
         ('name', 'name_ext'),
         ('name', 'name'),
-        
     ]
 
+    @mapping
+    def id_reference(self, record):
+        id_reference = int(str(record['id_reference']))
+        return {'id_reference': id_reference}
 
     #TODO :
     # id_reference à mapper en only_create
@@ -39,11 +42,20 @@ class CarrierImportMapper(ImportMapper):
     def openerp_id(self, record):
         #Prevent The duplication of delivery method if id_reference is the same 
         id_reference = record['id_reference']
-        delivery = self.env['prestashop.delivery.carrier'].search([('id_reference', '=', id_reference)])
-        if len(delivery) >= 1 :
-                return {'openerp_id': delivery[0].openerp_id.id}
+        id_reference = int(str(record['id_reference']))
+        ps_delivery = self.env['prestashop.delivery.carrier'].search([
+            ('id_reference', '=', id_reference),
+            ('backend_id', '=', self.backend_record.id)])
+        _logger.debug("Found delivery %s for reference %s" % (ps_delivery, id_reference))
+        if len(ps_delivery) == 1 :
+            #Temporary defensive mode so that only a single delivery method still available
+            delivery = ps_delivery.openerp_id
+            ps_delivery.unlink()
+            return {'openerp_id': delivery.id}
         else:
-            return {'id_reference': id_reference}       
+            return {}  
+    
+    
     
     @mapping
     def active(self, record):
