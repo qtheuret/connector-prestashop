@@ -416,6 +416,6 @@ class ProductCombinationOptionValueMapper(Component):
 
 
 class ProductProductBatchImporter(Component):
-    _name = 'prestashop.product.product.batch.importer'
+    _name = 'prestashop.product.combination.batch.importer'
     _inherit = 'prestashop.delayed.batch.importer'
-    _apply_on = 'prestashop.product.product'
+    _apply_on = 'prestashop.product.combination'

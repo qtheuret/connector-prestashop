@@ -161,9 +161,8 @@ class PrestashopBackend(models.Model):
                             modules you'll have to install by yourself from
                             https://github.com/OCA/stock-logistics-warehouse/tree/10.0
                         """,
-                            string='Field use for quantity update',
-                            required=True, 
-                            default='virtual_available'
+                        required=True,
+                        default='virtual_available'
                         )
 
     @api.onchange("matching_customer")
@@ -171,19 +170,19 @@ class PrestashopBackend(models.Model):
         #Update the field list so that if you API change you could find the new fields to map
         if self._origin.id:
             self.fill_matched_fields(self._origin.id)
-        
-    
+
+
     @api.multi
     def fill_matched_fields(self, backend_id):
         self.ensure_one()
-        
+
         options={'limit': 1,'display': 'full'}
         #TODO : Unse new adapter pattern to get a simple partner json
 #         prestashop = PrestaShopLocation(
 #                         self.location.encode(),
 #                         self.webservice_key,
 #                     )
-#         
+#
 #         client = PrestaShopWebServiceDict(
 #                     prestashop.api_url,
 #                     prestashop.webservice_key)
@@ -297,7 +296,7 @@ class PrestashopBackend(models.Model):
         for backend_record in self:
             backend_record.env['prestashop.product.template']\
                 .with_delay().export_product_quantities(backend=backend_record)
-            backend_record.env['prestashop.product.product']\
+            backend_record.env['prestashop.product.combination']\
                 .with_delay().export_product_quantities(backend=backend_record)
         return True
 

@@ -335,32 +335,3 @@ class TranslationPrestashopExporter(AbstractComponent):
             self._mapper = self.connector_env.get_connector_unit(
                 TranslationPrestashopExportMapper)
         return self._mapper
-
-
-def related_action_record(session, job):
-    binding_model = job.args[0]
-    binding_id = job.args[1]
-    record = session.env[binding_model].browse(binding_id)
-    odoo_name = record.odoo_id._name
-
-    action = {
-        'name': _(odoo_name),
-        'type': 'ir.actions.act_window',
-        'res_model': odoo_name,
-        'view_type': 'form',
-        'view_mode': 'form',
-        'res_id': record.odoo_id.id,
-    }
-    return action
-
-
-@job(default_channel='root.prestashop')
-@related_action(action=related_action_record)
-def export_record(session, model_name, binding_id, fields=None, **kwargs):
-    """ Export a record on PrestaShop """
-    # TODO: FIX PRESTASHOP do not support partial edit
-    fields = None
-    record = session.env[model_name].browse(binding_id)
-    env = record.backend_id.get_environment(model_name, session=session)
-    exporter = env.get_connector_unit(PrestashopExporter)
-    return exporter.run(binding_id, fields=fields, **kwargs)

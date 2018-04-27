@@ -8,7 +8,7 @@ from odoo.addons import decimal_precision as dp
 
 from odoo.addons.queue_job.job import job
 from odoo.addons.component.core import Component
-from exporter import ProductInventoryExporter
+from odoo.addons.component_event import skip_if
 
 import logging
 
@@ -154,10 +154,25 @@ class PrestashopProductTemplate(models.Model):
         return True
 
     @job(default_channel='root.prestashop')
-    def import_inventory(sel, backend):
+    def import_inventory(self, backend):
         with backend.work_on('_import_stock_available') as work:
             importer = work.component(usage='batch.importer')
             return importer.run()
+
+
+    @job(default_channel='root.prestashop')
+    def export_inventory(self, fields=None):
+        """ Export the inventory configuration and quantity of a product. """
+        backend = self.backend_id
+        with backend.work_on('prestashop.product.template') as work:
+            exporter = work.component(usage='inventory.exporter')
+            return exporter.run(self, fields)
+
+
+    @job(default_channel='root.prestashop')
+    def export_product_quantities(self, backend=None):
+        self.search([('backend_id', '=', backend.id)]
+            ).recompute_prestashop_qty()
 
 
 class TemplateAdapter(Component):
@@ -229,3 +244,23 @@ class PrestashopProductTags(Component):
         if isinstance(tags, dict):
             return [tags]
         return tags
+
+
+class PrestashopProductQuantityListener(Component):
+    _name = 'prestashop.binding.product.listener'
+    _inherit = 'base.connector.listener'
+    _apply_on = ['prestashop.product.combination', 'prestashop.product.template']
+
+    # fields which should not trigger an export of the products
+    # but an export of their inventory
+    INVENTORY_FIELDS = ('quantity', 'out_of_stock')
+
+    @skip_if(lambda self, record, **kwargs: self.no_connector_export(record))
+    def on_record_write(self, record, fields=None):
+        inventory_fields = list(
+            set(fields).intersection(self.INVENTORY_FIELDS)
+        )
+        if inventory_fields:
+            record.with_delay(priority=20).export_inventory(
+                fields=inventory_fields
+            )

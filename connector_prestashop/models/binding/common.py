@@ -37,7 +37,6 @@ class PrestashopBinding(models.AbstractModel):
                 'The job will be retried later.' %
                 (backend.name,))
 
-        
     @job(default_channel='root.prestashop')
     @api.model
     def import_record(self, backend, prestashop_id, force=False):

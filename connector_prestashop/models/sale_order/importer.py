@@ -2,14 +2,12 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
 from odoo import _, fields
-from odoo.addons.queue_job.job import job
 from odoo.addons.component.core import Component
 from odoo.addons.connector.components.mapper import mapping
 from odoo.addons.queue_job.exception import FailedJobError, NothingToDoJob
 from odoo.addons.connector_ecommerce.components.sale_order_onchange import (
     SaleOrderOnChange,
 )
-from ...components.importer import import_batch
 from ...components.exception import OrderImportRuleRetry
 
 from datetime import datetime, timedelta

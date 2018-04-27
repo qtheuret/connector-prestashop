@@ -190,18 +190,18 @@ class PrestashopProductCombination(models.Model):
         return self.qty_available
 
     @job(default_channel='root.prestashop')
-    def export_inventory(self, backend, fields=None, **kwargs):
+    def export_inventory(self, fields=None):
         """ Export the inventory configuration and quantity of a product. """
-        env = backend.get_environment(self._name)
-        inventory_exporter = env.get_connector_unit(
-            CombinationInventoryExporter)
-        return inventory_exporter.run(self.id, fields, **kwargs)
+        backend = self.backend_id
+        with backend.work_on('prestashop.product.combination') as work:
+            exporter = work.component(usage='inventory.exporter')
+            return exporter.run(self, fields)
 
     @api.model
     @job(default_channel='root.prestashop')
     def export_product_quantities(self, backend):
         self.search([
-            ('backend_id', 'in', backend.ids),
+            ('backend_id', '=', backend.id),
         ]).recompute_prestashop_qty()
 
     @job(default_channel='root.prestashop')
