@@ -62,21 +62,26 @@ class ProductCategoryMapper(ImportMapper):
     def openerp_id(self, record):
         """ Will bind the product category to an existing one with the same name """
 
-        
         if self.backend_record.matching_product_template:
             categ_binder = self.binder_for(
                         'prestashop.product.category')
             categ_id  = product_binder.to_openerp(
                         record['id'], unwrap=True)
+            
+            if categ_id:
+                #If already bound with this id, force the binding
+                return {'openerp_id': categ_id.id}
+            
+            #If not, implement a way to map on categ name.
             name = self.name(record)['name']
             domain = [('name', '=', name)]
-            if categ_id:
-                #TODO : Prevent to consider the already bound ID in search on names
-                #Useful when multiple categories have the same name
-                domain.append(('id', '!=', categ_id.id))
             
+            categ_bound = self.env['prestashop.product.category'].search(
+                [('backend_id', '!=', self.backend_record.id)]
+                )
+            
+            domain.append(('id', 'not in', [c.id for c in categ_bound ]))
             attribute = self.env['product.category'].search(domain)
-            
             if len(attribute) == 1 :
                 return {'openerp_id': attribute.id}                    
         else:
