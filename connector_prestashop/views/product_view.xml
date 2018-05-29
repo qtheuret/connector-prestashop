@@ -94,9 +94,9 @@
        <field name="arch" type="xml">
             <form string="prestashop fields">
                 <group col="1">
-                    <field name="odoo_id" invisible="1"/>
                     <field name="backend_id"/>
                     <field name="default_shop_id"/>
+                    <field name="no_export"/>
                     <field name="link_rewrite"/>
                     <field name="description_short_html"/>
                     <field name="description_html"/>
@@ -125,6 +125,7 @@
                 <field name="quantity"/>
                 <field name="prestashop_id"/>
                 <field name="reference"/>
+                <field name="no_export"/>
                 <button name="recompute_prestashop_qty"
                     class="oe_highlight"
                     type="object"
@@ -142,6 +143,7 @@
             <form string="prestashop fields">
                 <group col="2">
                     <field name="backend_id"/>
+                    <field name="no_export"/>
                     <field name="quantity"/>
                 </group>
             </form>
@@ -156,6 +158,7 @@
                 <field name="quantity"/>
                 <field name="prestashop_id"/>
                 <field name="reference"/>
+                <field name="no_export"/>
                 <button name="recompute_prestashop_qty"
                     class="oe_highlight"
                     type="object"

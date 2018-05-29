@@ -247,18 +247,20 @@ class PrestashopProductTags(Component):
 
 
 class PrestashopProductQuantityListener(Component):
-    _name = 'prestashop.binding.product.listener'
+    _name = 'prestashop.product.quantity.listener'
     _inherit = 'base.connector.listener'
     _apply_on = ['prestashop.product.combination', 'prestashop.product.template']
+    _usage = 'product.inventory.listener'
 
-    # fields which should not trigger an export of the products
-    # but an export of their inventory
-    INVENTORY_FIELDS = ('quantity', 'out_of_stock')
+    def _get_inventory_fields(self):
+        # fields which should not trigger an export of the products
+        # but an export of their inventory
+        return ('quantity', 'out_of_stock')
 
     @skip_if(lambda self, record, **kwargs: self.no_connector_export(record))
     def on_record_write(self, record, fields=None):
         inventory_fields = list(
-            set(fields).intersection(self.INVENTORY_FIELDS)
+            set(fields).intersection(self._get_inventory_fields())
         )
         if inventory_fields:
             record.with_delay(priority=20).export_inventory(

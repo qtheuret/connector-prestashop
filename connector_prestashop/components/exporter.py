@@ -46,20 +46,20 @@ class PrestashopBaseExporter(AbstractComponent):
         """ Return the raw Odoo data for ``self.binding_id`` """
         return self.model.browse(self.binding_id)
 
-    def run(self, binding_id, *args, **kwargs):
+    def run(self, binding, *args, **kwargs):
         """ Run the synchronization
 
         :param binding_id: identifier of the binding record to export
         """
-        self.binding_id = binding_id
-        self.binding = self._get_binding()
+        self.binding_id = binding.id
+        self.binding = binding
         self.prestashop_id = self.binder.to_external(self.binding)
         result = self._run(*args, **kwargs)
 
         self.binder.bind(self.prestashop_id, self.binding)
         # commit so we keep the external ID if several cascading exports
         # are called and one of them fails
-        self._cr.commit()
+        self.env.cr.commit()
         self._after_export()
         return result
 
@@ -325,13 +325,11 @@ class PrestashopExporter(AbstractComponent):
 
 
 class TranslationPrestashopExporter(AbstractComponent):
-
     _name = 'translation.prestashop.exporter'
     _inherit = 'prestashop.exporter'
 
-    @property
-    def mapper(self):
-        if self._mapper is None:
-            self._mapper = self.connector_env.get_connector_unit(
-                TranslationPrestashopExportMapper)
-        return self._mapper
+#    @property
+#    def mapper(self):
+#        if self._mapper is None:
+#            self._mapper = self.component(usage='translation.export.mapper')
+#        return self._mapper
