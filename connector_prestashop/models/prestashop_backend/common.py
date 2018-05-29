@@ -147,8 +147,8 @@ class PrestashopBackend(models.Model):
     matching_customer = fields.Boolean(string="Matching Customer", 
                     help="The selected fields will be matched to the ref field \
                         of the partner. Please adapt your datas consequently.")
-    matching_customer_ch = fields.Many2one(comodel_name='prestashop.partner.field'
-                            , string="Matched field", help="Field that will be matched.")
+#    matching_customer_ch = fields.Many2one(comodel_name='prestashop.partner.field'
+#                            , string="Matched field", help="Field that will be matched.")
 
 
     quantity_field = fields.Selection(
