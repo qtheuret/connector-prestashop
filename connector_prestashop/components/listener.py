@@ -35,6 +35,8 @@ class PrestashopListener(AbstractComponent):
                     record.with_delay().export_record()
 
         """
+        if not record or not record.backend_id:
+            return True
         with record.backend_id.work_on(record._name) as work:
             mapper = work.component(usage='export.mapper')
             exported_fields = mapper.changed_by_fields()
