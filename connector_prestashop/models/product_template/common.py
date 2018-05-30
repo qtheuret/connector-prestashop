@@ -111,6 +111,12 @@ class PrestashopProductTemplate(models.Model):
         string='Cost Price',
         digits=dp.get_precision('Product Price'),
     )
+    out_of_stock = fields.Selection(
+            [('0', 'Refuse order'),
+             ('1', 'Accept order'),
+             ('2', 'Default prestashop')],
+            string='If stock shortage'
+        )
 
     @api.multi
     def recompute_prestashop_qty(self):
@@ -130,9 +136,10 @@ class PrestashopProductTemplate(models.Model):
         self_loc = self.with_context(location=locations.ids,
                                      compute_child=False)
         for product in self_loc:
-            new_qty = product._prestashop_qty()
-            if product.quantity != new_qty:
-                product.quantity = new_qty
+            if product.type == 'product':
+                new_qty = product._prestashop_qty()
+                if product.quantity != new_qty:
+                    product.quantity = new_qty
         return True
 
     def _prestashop_qty(self):
@@ -217,7 +224,8 @@ class ProductInventoryAdapter(Component):
             res = client.get(self._prestashop_model, stock_id)
             first_key = res.keys()[0]
             stock = res[first_key]
-            stock['quantity'] = int(quantity)
+            stock['quantity'] = int(quantity['quantity'])
+            stock['out_of_stock'] = int(quantity['out_of_stock'])
             client.edit(self._prestashop_model, {
                 self._export_node_name: stock
             })
@@ -250,7 +258,6 @@ class PrestashopProductQuantityListener(Component):
     _name = 'prestashop.product.quantity.listener'
     _inherit = 'base.connector.listener'
     _apply_on = ['prestashop.product.combination', 'prestashop.product.template']
-    _usage = 'product.inventory.listener'
 
     def _get_inventory_fields(self):
         # fields which should not trigger an export of the products

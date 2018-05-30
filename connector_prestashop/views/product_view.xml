@@ -106,6 +106,7 @@
                     <field name="date_upd"/>
                     <field name="sale_ok"/>
                     <field name="quantity" string="qty"/>
+                    <field name="out_of_stock"/>
                     <field name="always_available"/>
                     <field name="available_for_order"/>
                     <field name="show_price"/>

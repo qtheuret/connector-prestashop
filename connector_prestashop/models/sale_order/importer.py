@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
-
+import pytz
 from odoo import _, fields
 from odoo.addons.component.core import Component
 from odoo.addons.connector.components.mapper import mapping
@@ -143,7 +143,6 @@ class SaleOrderImportMapper(Component):
     _apply_on = 'prestashop.sale.order'
 
     direct = [
-        ('date_add', 'date_order'),
         ('invoice_number', 'prestashop_invoice_number'),
         ('delivery_number', 'prestashop_delivery_number'),
         ('total_paid', 'total_amount'),
@@ -272,6 +271,14 @@ class SaleOrderImportMapper(Component):
         tax = (float(record['total_paid_tax_incl']) -
                float(record['total_paid_tax_excl']))
         return {'total_amount_tax': tax}
+
+    @mapping
+    def date_order(self, record):
+        local = pytz.timezone(self.backend_record.tz)
+        naive = fields.Datetime.from_string(record['date_add'])
+        local_dt = local.localize(naive, is_dst=None)
+        date_order = fields.Datetime.to_string(local_dt.astimezone(pytz.utc))
+        return {'date_order': date_order}
 
     def finalize(self, map_record, values):
         onchange = self.component('ecommerce.onchange.manager.sale.order')

@@ -12,6 +12,7 @@ from ...components.backend_adapter import api_handle_errors
 from ...components.version_key import VersionKey
 from ...backend import prestashop
 from odoo.addons.connector.checkpoint import checkpoint
+from odoo.addons.base.res.res_partner import _tz_get
 
 _logger = logging.getLogger(__name__)
 
@@ -164,6 +165,8 @@ class PrestashopBackend(models.Model):
                         required=True,
                         default='virtual_available'
                         )
+    tz = fields.Selection(_tz_get,  'Timezone', size=64,
+            help="The timezone of the backend. Used to synchronize the sale order date.")
 
     @api.onchange("matching_customer")
     def change_matching_customer(self):

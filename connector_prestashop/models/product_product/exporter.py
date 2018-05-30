@@ -9,8 +9,14 @@ class CombinationInventoryExporter(Component):
     _inherit = 'prestashop.product.template.inventory.exporter'
     _apply_on = 'prestashop.product.combination'
 
-    def get_filter(self, template):
+    def get_filter(self, product):
         return {
-            'filter[id_product]': template.main_template_id.prestashop_id,
-            'filter[id_product_attribute]': template.prestashop_id,
+            'filter[id_template]': product.main_template_id.prestashop_id,
+            'filter[id_product_attribute]': product.prestashop_id,
+        }
+
+    def get_quantity_vals(self, product):
+        return {
+            'quantity': int(product.quantity),
+            'out_of_stock': int(product.main_template_id.out_of_stock),
         }

@@ -18,10 +18,17 @@ class ProductInventoryExporter(Component):
             'filter[id_product_attribute]': 0
         }
 
+    def get_quantity_vals(self, template):
+        return {
+            'quantity': int(template.quantity),
+            'out_of_stock': int(template.out_of_stock),
+        }
+
     def run(self, template, fields):
         """ Export the product inventory to PrestaShop """
         adapter = self.component(
             usage='backend.adapter', model_name='_import_stock_available'
         )
         filter = self.get_filter(template)
-        adapter.export_quantity(filter, int(template.quantity))
+        quantity_vals = self.get_quantity_vals(template)
+        adapter.export_quantity(filter, quantity_vals)
