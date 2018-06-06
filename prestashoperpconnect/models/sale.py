@@ -37,6 +37,7 @@ from ..connector import get_environment
 from ..unit.backend_adapter import GenericAdapter
 from ..unit.import_synchronizer import SaleImportRule
 from ..unit.backend_adapter import GenericAdapter
+from openerp.addons.connector.unit.mapper import mapping
 
 #from openerp.osv import fields, orm
 from openerp import models, fields, api, _
@@ -133,9 +134,8 @@ class sale_order(models.Model):
 #            comodel_name="stock.picking", 
             string='Main picking',            
             readonly=True,
-#             store=True
+            store=True
         )
-    code_shipping_point = fields.Char('Code Shipping Point')
     
     @api.multi
     def action_invoice_create(self, grouped=False, states=['confirmed', 'done', 'exception'], date_invoice = False, context=None):
@@ -235,6 +235,13 @@ class prestashop_sale_order(models.Model):
             digits_compute=dp.get_precision('Account'),
             readonly=True
         )
+    
+    code_relay_point=fields.Char(string="Code relay point")
+    
+    @mapping
+    def get_code_relay_point(self, record):
+        code = record['code_relay_point']
+        return {"code_relay_point": code}
     
     @api.model
     def create_payments(self, ps_orders):
