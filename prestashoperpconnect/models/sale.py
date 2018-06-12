@@ -241,10 +241,6 @@ class prestashop_sale_order(models.Model):
     
     code_relay_point=fields.Char(string="Code relay point")
     
-    @mapping
-    def get_code_relay_point(self, record):
-        code = record['code_relay_point']
-        return {"code_relay_point": code}
     
     @api.model
     def create_payments(self, ps_orders):
