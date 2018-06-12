@@ -37,7 +37,7 @@ from ..connector import get_environment
 from ..unit.backend_adapter import GenericAdapter
 from ..unit.import_synchronizer import SaleImportRule
 from ..unit.backend_adapter import GenericAdapter
-from openerp.addons.connector.unit.mapper import mapping
+
 
 #from openerp.osv import fields, orm
 from openerp import models, fields, api, _
