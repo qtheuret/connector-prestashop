@@ -572,8 +572,10 @@ class SaleOrderMapper(PrestashopImportMapper):
     
     @mapping
     def get_code_relay_point(self, record):
-        code = record['code_relay_point']
-        return {"code_relay_point": code}
+        if 'code_relay_point' in record:
+            code = record['code_relay_point']
+            return {"code_relay_point": code}
+        return {}
         
     @mapping
     def name(self, record):
