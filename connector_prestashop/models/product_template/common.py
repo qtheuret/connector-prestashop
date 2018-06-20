@@ -142,6 +142,7 @@ class PrestashopProductTemplate(models.Model):
                     product.quantity = new_qty
         return True
 
+    @api.multi
     def _prestashop_qty(self):
         return self.qty_available
 

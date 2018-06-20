@@ -344,6 +344,12 @@ class SaleOrderImporter(Component):
             )
         binding.odoo_id.recompute()
 
+    def _create(self, data):
+        binding = super(SaleOrderImporter, self)._create(data)
+        if binding.fiscal_position_id:
+            binding.odoo_id._compute_tax_id()
+        return binding
+
     def _after_import(self, binding):
         super(SaleOrderImporter, self)._after_import(binding)
         self._add_shipping_line(binding)
@@ -423,7 +429,8 @@ class SaleOrderLineMapper(Component):
             template = binder.to_internal(record['product_id'], unwrap=True)
             product = self.env['product.product'].search([
                 ('product_tmpl_id', '=', template.id),
-                ('company_id', '=', self.backend_record.company_id.id)],
+                '|', ('company_id', '=', self.backend_record.company_id.id),
+                ('company_id', '=', False)],
                 limit=1,
             )
         if not product:

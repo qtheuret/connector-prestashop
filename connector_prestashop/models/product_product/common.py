@@ -14,12 +14,6 @@ from odoo.addons.component.core import Component
 class ProductProduct(models.Model):
     _inherit = 'product.product'
 
-    prestashop_bind_ids = fields.One2many(
-        comodel_name='prestashop.product.combination',
-        inverse_name='odoo_id',
-        copy=False,
-        string='PrestaShop Bindings',
-    )
     prestashop_combinations_bind_ids = fields.One2many(
         comodel_name='prestashop.product.combination',
         inverse_name='odoo_id',
@@ -71,8 +65,7 @@ class ProductProduct(models.Model):
                 # which could be not installed
                 uom = hasattr(product, 'uos_id') \
                     and product.uos_id or product.uom_id
-                price = uom._compute_price(
-                    product.uom_id.id, price, self.env.context['uom'])
+                price = uom._compute_price(price, product.uom_id)
             product.lst_price = price
 
     lst_price = fields.Float(
