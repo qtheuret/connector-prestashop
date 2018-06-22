@@ -200,14 +200,11 @@ class AddressImportMapper(ImportMapper):
 
     @mapping
     def name(self, record):
-        parts = []
-        if 'company' in record:
-            parts.append('%s - ' % record['company'])
-                
+        _logger.debug('RECorD FOR NAME and company %s' % record)
         parts = [record['firstname'], record['lastname']]
         
-        if record['alias']:
-            parts.append('(%s)' % record['alias'])
+        if record['company']:
+            parts.append('(%s)' % record['company'])
         name = ' '.join(p.strip() for p in parts if p.strip())
         return {'name': name}
 
