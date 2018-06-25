@@ -201,7 +201,7 @@ class AddressImportMapper(ImportMapper):
     @mapping
     def name(self, record):
         _logger.debug('RECorD FOR NAME and company %s' % record)
-        parts = [record['firstname'], record['lastname']]
+        parts = [record['lastname'], record['firstname']]
         
         if record['company']:
             parts.append('(%s)' % record['company'])
