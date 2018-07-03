@@ -83,7 +83,11 @@ class product_product(orm.Model):
             'id',
             type='integer',            
             string='PrestaShop Combination ID', store = True),
+        'export_stock_ps': fields.boolean('Export Stock Inventory (PS)')
             
+    }
+    _defaults = {
+        'export_stock_ps': True,
     }
     
     def _check_default_on(self, cr, uid, ids, context=None):
