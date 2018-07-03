@@ -146,7 +146,7 @@ class PrestashopAddress(models.Model):
         store=True,
     )
     vat_number = fields.Char('PrestaShop VAT')
-
+    company = fields.Char(string='Company')
     _sql_constraints = [
         ('prestashop_erp_uniq', 'unique(backend_id, openerp_id)',
          'A erp record with same ID on PrestaShop already exists.'),

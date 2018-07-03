@@ -159,6 +159,7 @@ class AddressImportMapper(ImportMapper):
         ('other', 'comment'),
         ('phone', 'phone'),
         ('phone_mobile', 'mobile'),
+        ('company', 'company'),
         ('postcode', 'zip'),
         ('date_add', 'date_add'),
         ('date_upd', 'date_upd'),
@@ -203,8 +204,8 @@ class AddressImportMapper(ImportMapper):
         _logger.debug('RECorD FOR NAME and company %s' % record)
         parts = [record['lastname'], record['firstname']]
         
-        if record['company']:
-            parts.append('(%s)' % record['company'])
+#         if record['company']:
+#             parts.append('(%s)' % record['company'])
         name = ' '.join(p.strip() for p in parts if p.strip())
         return {'name': name}
 
