@@ -36,5 +36,6 @@ from . import account
 from . import models
 from . import stock_tracking
 from . import related_action
+from openerp.addons.connector.unit.mapper import mapping
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

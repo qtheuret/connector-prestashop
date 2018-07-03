@@ -38,6 +38,7 @@ from ..unit.backend_adapter import GenericAdapter
 from ..unit.import_synchronizer import SaleImportRule
 from ..unit.backend_adapter import GenericAdapter
 
+
 #from openerp.osv import fields, orm
 from openerp import models, fields, api, _
 
@@ -135,7 +136,9 @@ class sale_order(models.Model):
             readonly=True,
 #             store=True
         )
+    
     code_shipping_point = fields.Char('Code Shipping Point')
+
     
     @api.multi
     def action_invoice_create(self, grouped=False, states=['confirmed', 'done', 'exception'], date_invoice = False, context=None):
@@ -235,6 +238,9 @@ class prestashop_sale_order(models.Model):
             digits_compute=dp.get_precision('Account'),
             readonly=True
         )
+    
+    code_relay_point=fields.Char(string="Code relay point")
+    
     
     @api.model
     def create_payments(self, ps_orders):
