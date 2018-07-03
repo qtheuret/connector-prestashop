@@ -653,9 +653,12 @@ def prestashop_product_stock_updated(session, model_name, record_id,
     inventory_fields = list(set(fields).intersection(INVENTORY_FIELDS))
     if inventory_fields:
         combination = session.browse(model_name, record_id)
+        if not combination.export_stock_ps:
+            return
         backend_id = combination.backend_id
         _logger.debug("Run the import orders context %s" % combination)
         ##T000708 backend_id.import_sale_orders()
+        
         export_inventory.delay(session, model_name,
                                record_id, fields=inventory_fields,
                                priority=20)
