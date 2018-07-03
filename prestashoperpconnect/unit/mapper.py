@@ -574,9 +574,10 @@ class SaleOrderMapper(PrestashopImportMapper):
     def get_code_relay_point(self, record):
         _logger.debug("relay point mapping %s" % record)
         if 'code_relay_point' in record:
-            _logger.debug("relay point true %s" % record['code_relay_point']['value'])
-            code = record['code_relay_point']['value']
-            return {'code_relay_point': code}
+            code = record['code_relay_point']
+            _logger.debug("relay point true %s" % code['value'])
+            return {'code_relay_point': code['value']}
+        _logger.debug("no relay point")
         return {}
         
     @mapping

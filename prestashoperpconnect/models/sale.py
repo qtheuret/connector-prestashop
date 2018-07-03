@@ -239,7 +239,7 @@ class prestashop_sale_order(models.Model):
             readonly=True
         )
     
-    code_relay_point=fields.Char(string="Code relay point")
+#     code_relay_point=fields.Char(string="Code relay point")
     
     
     @api.model
