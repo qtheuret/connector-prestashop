@@ -71,6 +71,7 @@
                     <field name="backend_id"/>
                     <field name="prestashop_partner_id"/>
                     <field name="prestashop_id"/>
+                    <field name="company" />
                     <field name="date_add"/>
                     <field name="date_upd"/>
                     <field name="vat_number"/>
