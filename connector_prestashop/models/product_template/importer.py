@@ -383,6 +383,15 @@ class ProductInventoryBatchImporter(Component):
     def _run_page(self, filters, **kwargs):
         records = self.backend_adapter.get(filters)
         for record in records['stock_availables']['stock_available']:
+            # if product has combinations then do not import product stock
+            # since combination stocks will be imported
+            if record['id_product_attribute'] == '0':
+                combination_stock_ids = self.backend_adapter.search({
+                    'filter[id_product]': record['id_product'],
+                    'filter[id_product_attribute]': '>[0]',
+                })
+                if combination_stock_ids:
+                    continue
             self._import_record(record['id'], record=record, **kwargs)
         return records['stock_availables']['stock_available']
 
