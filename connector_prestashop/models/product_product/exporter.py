@@ -11,7 +11,7 @@ class CombinationInventoryExporter(Component):
 
     def get_filter(self, product):
         return {
-            'filter[id_template]': product.main_template_id.prestashop_id,
+            'filter[id_product]': product.main_template_id.prestashop_id,
             'filter[id_product_attribute]': product.prestashop_id,
         }
 
