@@ -597,7 +597,7 @@ class ProductTemplateImporter(Component):
                 self._import_combination(combination)
 
             if combinations and associations['images'].get('image'):
-                self._delay_product_image_variant(combinations)
+                self._delay_product_image_variant([first_exec] + combinations)
 
     def import_images(self, binding):
         prestashop_record = self._get_prestashop_data()
