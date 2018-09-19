@@ -16,7 +16,9 @@ class VersionKey(Component):
     _apply_on = '_prestashop.version.key'
     _usage = 'prestashop.version.key'
 
-    keys = {}
+    keys = {
+        'messages': 'customer_messages',
+    }
 
     def get_key(self, key):
         return self.keys.get(key) or key
