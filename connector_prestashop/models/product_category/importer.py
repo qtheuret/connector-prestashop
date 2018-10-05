@@ -65,7 +65,7 @@ class ProductCategoryMapper(ImportMapper):
         if self.backend_record.matching_product_template:
             categ_binder = self.binder_for(
                         'prestashop.product.category')
-            categ_id  = product_binder.to_openerp(
+            categ_id  = categ_binder.to_openerp(
                         record['id'], unwrap=True)
             
             if categ_id:
