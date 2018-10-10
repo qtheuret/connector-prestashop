@@ -29,3 +29,5 @@ prestashop1500 = backend.Backend(parent=prestashop, version='1.5')
 prestashop1609 = backend.Backend(parent=prestashop, version='1.6.0.9')
 # version >= 1.6.0.11
 prestashop16011 = backend.Backend(parent=prestashop, version='1.6.0.11')
+
+prestashop16119 = backend.Backend(parent=prestashop, version='1.6.1.19')
