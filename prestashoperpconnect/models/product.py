@@ -235,11 +235,11 @@ class TemplateRecordImport(TranslatableRecordImport):
                     self.session.write('product.product', [product.id],
                                        {'active': False})
 
-    def attribute_line(self, erp_id):
-        _logger.debug("GET ATTRIBUTES LINE")
+    def attribute_line(self, erp_id):        
         template = self.session.browse(
             'prestashop.product.template', erp_id)
         attr_line_value_ids = []
+        _logger.debug("Manage template %s Attribute Lines %s" % (template, template.attribute_line_ids))
         for attr_line in template.attribute_line_ids:
             attr_line_value_ids.extend(attr_line.value_ids.ids)
         template_id = template.openerp_id.id
@@ -281,7 +281,7 @@ class TemplateRecordImport(TranslatableRecordImport):
         if not isinstance(option_values, list):
             option_values = [option_values]
         
-#        _logger.debug("OPTIONS in TEMPLATE")
+        _logger.debug("OPTIONS in TEMPLATE %s" % option_values)
 #        _logger.debug(prestashop_record)
 #        _logger.debug(associations)
 #        _logger.debug(option_values)
@@ -290,8 +290,9 @@ class TemplateRecordImport(TranslatableRecordImport):
             'prestashop.product.combination.option.value'
         )
         for option_value in option_values:
-            option = backend_adapter.read(option_value['id'])
             
+            option = backend_adapter.read(option_value['id'])
+            _logger.debug("import option value %s for optoin %s" % (option_value, option))
             #TODO: S'assurer qu'on n'importe pas inutilement
             import_record(
                 self.session,
@@ -306,7 +307,8 @@ class TemplateRecordImport(TranslatableRecordImport):
         associations = prestashop_record.get('associations', {})
 
         combinations = associations.get('combinations', {}).get(
-                                'combinations', [])
+            self.backend_record.get_version_ps_key('combination'), [])
+        
         if not isinstance(combinations, list):
             combinations = [combinations]
         

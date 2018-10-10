@@ -376,7 +376,8 @@ class PrestashopNewAPIBackend(models.Model):
         return [
             ('1.5', '< 1.6.0.9'),
             ('1.6.0.9', '1.6.0.9 - 1.6.0.10'),
-            ('1.6.0.11', '>= 1.6.0.11'),
+            ('1.6.0.11', '= 1.6.0.11'),
+            ('1.6.1.19', '= 1.6.1.19'),
         ]
 
     version = new_fields.Selection(
@@ -423,7 +424,6 @@ class PrestashopNewAPIBackend(models.Model):
         
         options={'limit': 1,'display': 'full'}
              
-             
         client = PrestaShopWebServiceDict(self.location,
                                         self.webservice_key,
                                         self.api_debug, 
@@ -432,7 +432,6 @@ class PrestashopNewAPIBackend(models.Model):
                                         client_args={'disable_ssl_certificate_validation': self.trust_certificate}
                                         )
                                         
-
         customer = client.get('customers', options=options)
         tab=customer['customers']['customer'].keys()
         for key in tab:
@@ -464,16 +463,27 @@ class PrestashopNewAPIBackend(models.Model):
                 'order_slip_detail': 'order_slip_details',
                 'group': 'groups',
                 'category': 'categories',
-                'combination': 'combination',
+                'combinations': 'combination',
                 'order_row': 'order_rows',
                 'tax': 'taxes',
                 'image': 'image',
-                'combination': 'combinations',
                 'order_histories': 'order_histories?sendemail=1'
             },
+            '1.6.1.19': {
+                'product_option_value': 'product_option_values',
+                'order_slip_detail': 'order_slip_details',
+                'group': 'groups',
+                'category': 'categories',
+                'combinations': 'combination',
+                'order_row': 'order_rows',
+                'tax': 'taxes',
+                'image': 'image',
+                'order_histories': 'order_histories?sendemail=1'
+            },
+            
         }
         _logger.debug("Key conversion input %s for version %s : %s" , (key, self.version, keys_conversion[self.version][key]))
-        if self.version in [ '1.6.0.9', '1.6.0.11']:
+        if self.version in [ '1.6.0.9', '1.6.0.11', '1.6.1.19']:
             key = keys_conversion[self.version][key]
         return key
 
