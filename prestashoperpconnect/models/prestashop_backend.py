@@ -238,7 +238,7 @@ class prestashop_backend(orm.Model):
 #            since_date = self._date_as_user_tz(
 #                cr, uid, backend_record.import_orders_since
 #            )
-            since_date = backend_record.import_partners_since
+            since_date = backend_record.import_orders_since
             
             jobs = queue_model.search(
                 session.cr, session.uid,
