@@ -41,7 +41,7 @@ class AutoMatchingImporter(Component):
         if not ps_ids:
             raise exceptions.Warning(
                 _('Failed to query %s via PS webservice')
-                % adapter.prestashop_model
+                % adapter._prestashop_model
             )
 
         binder = self.binder_for()
