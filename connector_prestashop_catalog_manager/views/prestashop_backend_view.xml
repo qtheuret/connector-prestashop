@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="view_prestashop_backend_catalog_form" model="ir.ui.view">
+        <field name="name">prestashop.backend.catalog.form</field>
+        <field name="model">prestashop.backend</field>
+        <field name="inherit_id" ref="connector_prestashop.view_prestashop_backend_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='import']/group[-1]" position="after">
+                <group>
+                    <div>
+                        <label string="Export product categories and products"
+                            class="oe_inline" />
+                        <field name="export_products_since" class="oe_inline"
+                            nolabel="1" />
+                    </div>
+                    <button name="export_products" type="object" class="oe_highlight"
+                        string="Export in background" />
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

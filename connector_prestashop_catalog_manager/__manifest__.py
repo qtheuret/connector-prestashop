@@ -7,7 +7,7 @@
 
 {
     "name": "Prestashop-Odoo Catalog Manager",
-    "version": "9.0.1.0.2",
+    "version": "10.0.1.0.1",
     "license": "AGPL-3",
     "depends": [
         "connector_prestashop"
@@ -16,17 +16,18 @@
               "AvanzOSC,"
               "Tecnativa,"
               'Camptocamp SA,'
-              "Odoo Community Association (OCA)",
+              "Odoo Community Association (OCA),"
+              "Kerpeo",
     "website": "https://github.com/OCA/connector-prestashop",
     "category": "Connector",
     "data": [
-        'views/product_attribute_view.xml',
-        'views/product_view.xml',
-        'wizards/export_category_view.xml',
-        'wizards/export_multiple_products_view.xml',
-        'wizards/sync_products_view.xml',
-        'wizards/active_deactive_products_view.xml',
-        'views/product_image_view.xml',
+        # 'views/product_attribute_view.xml',
+        # 'views/product_view.xml',
+        # 'wizards/export_category_view.xml',
+        # 'wizards/export_multiple_products_view.xml',
+        # 'wizards/sync_products_view.xml',
+        # 'wizards/active_deactive_products_view.xml',
+        # 'views/product_image_view.xml',
     ],
-    'installable': False,
+    'installable': True,
 }
