@@ -268,6 +268,7 @@ class ProductCombinationAdapter(Component):
     _apply_on = 'prestashop.product.combination'
     _prestashop_model = 'combinations'
     _export_node_name = 'combination'
+    _export_node_name_res = 'combination'
 
 
 class ProductCombinationOptionAdapter(Component):

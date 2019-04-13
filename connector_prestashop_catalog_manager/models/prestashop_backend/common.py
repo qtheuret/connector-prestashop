@@ -2,13 +2,9 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 import logging
-from odoo.addons.component.core import Component
+import datetime
 
-from odoo import models, fields, api, exceptions, _
-
-from ...components.backend_adapter import api_handle_errors
-from odoo.addons.connector.checkpoint import checkpoint
-from odoo.addons.base.res.res_partner import _tz_get
+from odoo import models, fields, api, _
 
 _logger = logging.getLogger(__name__)
 
@@ -22,8 +18,23 @@ class PrestashopBackend(models.Model):
     def export_products(self):
         for backend_record in self:
             since_date = backend_record.export_products_since
-            self.env['prestashop.product.template'].with_delay(
-            ).export_products(backend_record, since_date)
+            new_product_sync_date = datetime.datetime.now()
+
+            filters = [
+                ('no_export', '=', False),
+                ('write_date', '<=', fields.Datetime.to_string(new_product_sync_date))
+            ]
+            if since_date:
+                filters.append(('write_date', '>=', fields.Datetime.to_string(since_date)))
+
+            # Products
+            products = self.env['product.product'].search(filters)
+            for prd in products:
+                # Create bindings if not exists
+                prd.create_prestashop_bindings(backend_record.id)
+                for bind in prd.prestashop_bind_ids.filtered(lambda s: s.backend_id.id == backend_record.id):
+                    bind.with_delay().export_record()
+
         return True
 
     @api.model

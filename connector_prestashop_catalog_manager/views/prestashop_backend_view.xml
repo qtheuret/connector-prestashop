@@ -6,7 +6,7 @@
         <field name="model">prestashop.backend</field>
         <field name="inherit_id" ref="connector_prestashop.view_prestashop_backend_form" />
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='import']/group[-1]" position="after">
+            <xpath expr="//page[@name='import']" position="inside">
                 <group>
                     <div>
                         <label string="Export product categories and products"
