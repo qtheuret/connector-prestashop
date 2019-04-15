@@ -28,6 +28,7 @@ class ProductProductExportMapper(Component):
 
     direct = [
         ('price', 'list_price'),
+        ('weight', 'weight'),
     ]
 
     @mapping
@@ -50,21 +51,10 @@ class ProductProductExportMapper(Component):
             })
         return {'name': value}
 
-    def get_main_template_id(self, record):
-        for binding in record.product_tmpl_id.prestashop_bind_ids.filtered(
-                lambda a: a.backend_id.id == self.backend_record.id):
-            return binding.id
-
-        return False
-
-    @mapping
-    def main_template_id(self, record):
-        return {'main_template_id': self.get_main_template_id(record)}
-
     @mapping
     def id_product(self, record):
         if not record.product_tmpl_id:
-            return {'id_product': 2}
+            return
         product_binder = self.binder_for('prestashop.product.template')
         ext_product_id = product_binder.to_external(
             record.product_tmpl_id.id, wrap=True

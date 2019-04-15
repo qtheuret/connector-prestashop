@@ -30,10 +30,16 @@ class PrestashopBackend(models.Model):
             # Products
             products = self.env['product.product'].search(filters)
             for prd in products:
-                # Create bindings if not exists
-                prd.create_prestashop_bindings(backend_record.id)
-                for bind in prd.prestashop_bind_ids.filtered(lambda s: s.backend_id.id == backend_record.id):
-                    bind.with_delay().export_record()
+                if not prd.attribute_value_ids:
+                    # Do not sync product.product for no variant product, only sync. product.template
+                    prd.product_tmpl_id.create_prestashop_bindings(backend_record.id)
+                    for bind in prd.product_tmpl_id.prestashop_bind_ids.filtered(lambda s: s.backend_id.id == backend_record.id):
+                        bind.with_delay().export_record()
+                else:
+                    # Create bindings if not exists
+                    prd.create_prestashop_bindings(backend_record.id)
+                    for bind in prd.prestashop_bind_ids.filtered(lambda s: s.backend_id.id == backend_record.id):
+                        bind.with_delay().export_record()
 
         return True
 
