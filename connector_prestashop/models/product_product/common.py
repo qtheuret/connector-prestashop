@@ -278,6 +278,7 @@ class ProductCombinationOptionAdapter(Component):
 
     _prestashop_model = 'product_options'
     _export_node_name = 'product_options'
+    _export_node_name_res = 'product_option'
 
 
 class ProductCombinationOptionValueAdapter(Component):
@@ -287,3 +288,4 @@ class ProductCombinationOptionValueAdapter(Component):
 
     _prestashop_model = 'product_option_values'
     _export_node_name = 'product_option_value'
+    _export_node_name_res = 'product_option_value'

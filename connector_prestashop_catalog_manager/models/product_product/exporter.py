@@ -107,13 +107,11 @@ class ProductProductExporter(Component):
         """ Export the simple delivery before export lines """
         record = self.binding and self.binding.odoo_id
         if record and record.product_tmpl_id:
-            self._export_dependency(record.product_tmpl_id, 'prestashop.product.template',
-                                    component_usage='prestashop.product.template.exporter')
+            self._export_dependency(record.product_tmpl_id, 'prestashop.product.template')
 
         if record and record.attribute_value_ids:
             for attr in record.attribute_value_ids:
-                self._export_dependency(attr, 'prestashop.product.combination.option.value',
-                                        component_usage='prestashop.product.combination.option.value.exporter')
+                self._export_dependency(attr, 'prestashop.product.combination.option.value')
 
 
 class ProductAttributeMapper(Component):
@@ -229,5 +227,4 @@ class ProductAttributeValueExporter(Component):
         """ Export the simple delivery before export lines """
         record = self.binding and self.binding.odoo_id
         if record and record.attribute_id:
-            self._export_dependency(record.attribute_id, 'prestashop.product.combination.option',
-                                    component_usage='prestashop.product.combination.option.exporter')
+            self._export_dependency(record.attribute_id, 'prestashop.product.combination.option')

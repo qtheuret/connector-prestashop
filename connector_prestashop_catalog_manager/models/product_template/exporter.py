@@ -5,6 +5,8 @@ import datetime
 import logging
 import json
 
+from HTMLParser import HTMLParser
+
 from slugify import slugify
 
 from odoo import models, fields, api, _
@@ -96,9 +98,10 @@ class ProductTemplateMapper(Component):
         records_by_lang = self._get_record_by_lang(record)
         for language_id, trans_record in records_by_lang.items():
             _logger.debug(record.description_sale)
+            h = HTMLParser()
             value['language'].append({
                 'attrs': {'id': str(language_id)},
-                'value': (record.description_sale and html.unescape(record.description_sale) or ''),
+                'value': (record.description_sale and h.unescape(record.description_sale) or ''),
             })
         return {'description': value}
 
@@ -180,5 +183,4 @@ class ProductTemplateExporter(Component):
         """ Export the simple delivery before export lines """
         record = self.binding and self.binding.odoo_id
         if record and record.categ_id:
-            self._export_dependency(record.categ_id, 'prestashop.product.category',
-                                    component_usage='prestashop.product.category.exporter')
+            self._export_dependency(record.categ_id, 'prestashop.product.category')
