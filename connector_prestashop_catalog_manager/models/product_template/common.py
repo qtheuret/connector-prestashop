@@ -10,15 +10,6 @@ from odoo.addons.component.core import Component
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
-    prestashop_delivery_in_stock = fields.Char(
-        string='Delivery time of in-stock products',
-        size=255,
-    )
-    prestashop_delivery_out_stock = fields.Char(
-        string='Delivery time of out-of-stock products with allowed orders',
-        size=255
-    )
-
     def create_prestashop_bindings(self, backend_id):
         shop_id = False
         for record in self:
@@ -80,4 +71,12 @@ class PrestashopProductTemplate(models.Model):
         string='Minimal Quantity',
         help='Minimal Sale quantity',
         default=1,
+    )
+    delivery_in_stock = fields.Char(
+        string='Delivery time of in-stock products',
+        size=255,
+    )
+    delivery_out_stock = fields.Char(
+        string='Delivery time of out-of-stock products with allowed orders',
+        size=255
     )
