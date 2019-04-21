@@ -75,8 +75,10 @@ class PrestashopProductTemplate(models.Model):
     delivery_in_stock = fields.Char(
         string='Delivery time of in-stock products',
         size=255,
+        translate=True,
     )
     delivery_out_stock = fields.Char(
         string='Delivery time of out-of-stock products with allowed orders',
-        size=255
+        size=255,
+        translate=True,
     )

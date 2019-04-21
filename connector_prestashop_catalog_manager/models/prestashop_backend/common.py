@@ -25,7 +25,7 @@ class PrestashopBackend(models.Model):
                 ('write_date', '<=', fields.Datetime.to_string(new_product_sync_date))
             ]
             if since_date:
-                filters.append(('write_date', '>=', fields.Datetime.to_string(since_date)))
+                filters.append(('write_date', '>=', since_date))
 
             # Products
             products = self.env['product.product'].search(filters)
@@ -40,6 +40,8 @@ class PrestashopBackend(models.Model):
                     prd.create_prestashop_bindings(backend_record.id)
                     for bind in prd.prestashop_bind_ids.filtered(lambda s: s.backend_id.id == backend_record.id):
                         bind.with_delay().export_record()
+
+            backend_record.export_products_since = fields.Datetime.to_string(new_product_sync_date)
 
         return True
 

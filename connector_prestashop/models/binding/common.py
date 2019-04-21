@@ -4,6 +4,7 @@
 from odoo import models, fields, api
 from odoo.addons.queue_job.job import job, related_action
 from ...components.importer import import_record
+from ...components.exporter import export_record
 from odoo.addons.connector.exception import RetryableJobError
 
 
@@ -86,6 +87,16 @@ class PrestashopBinding(models.AbstractModel):
         for record in self:
             func(self.env, self._name, record.backend_id.id,
                  record.prestashop_id)
+        return True
+
+    @api.multi
+    def resync_export(self):
+        for record in self:
+            if self.env.context.get('connector_delay'):
+                record.with_delay().export_record()
+            for record in self:
+                record.export_record()
+
         return True
 
 

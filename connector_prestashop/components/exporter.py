@@ -22,6 +22,9 @@ _logger = logging.getLogger(__name__)
 #  last sync date and if yes, delay an import
 # * call the ``bind`` method of the binder to update the last sync date
 
+def export_record(obj, fields=None):
+    pass
+
 
 class PrestashopBaseExporter(AbstractComponent):
     """ Base exporter for PrestaShop """

@@ -32,6 +32,8 @@ class ProductTemplateMapper(Component):
 
     _translatable_fields = [
         ('name', 'name'),
+        ('delivery_in_stock', 'delivery_in_stock'),
+        ('delivery_out_stock', 'delivery_out_stock'),
     ]
 
     direct = [
@@ -40,6 +42,16 @@ class ProductTemplateMapper(Component):
         ('barcode', 'ean13'),
 #        ('immediately_usable_qty', 'quantity'),
     ]
+
+    @mapping
+    def additional_delivery_times(self, record):
+        if record.delivery_in_stock or record.delivery_out_stock:
+            return {
+                'additional_delivery_times': 2,
+            }
+        else:
+            return {'additional_delivery_times': 0}
+
 
     @mapping
     def on_sale(self, record):
