@@ -82,8 +82,3 @@ class PrestashopProductTemplate(models.Model):
         size=255,
         translate=True,
     )
-    delivery_no_stock = fields.Char(
-        string='Delivery time of no-stock products with allowed orders',
-        size=255,
-        translate=True,
-    )

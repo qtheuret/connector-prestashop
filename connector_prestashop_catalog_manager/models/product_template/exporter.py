@@ -33,6 +33,7 @@ class ProductTemplateMapper(Component):
     _translatable_fields = [
         ('name', 'name'),
         ('delivery_in_stock', 'delivery_in_stock'),
+        ('delivery_out_stock', 'delivery_out_stock'),
     ]
 
     direct = [

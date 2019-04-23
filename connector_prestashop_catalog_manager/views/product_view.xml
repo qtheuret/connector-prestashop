@@ -18,7 +18,6 @@
                         <field name="online_only"/>
                         <field name="delivery_in_stock" />
                         <field name="delivery_out_stock" />
-                        <field name="delivery_no_stock" />
                         <field name="additional_shipping_cost"/>
                         <field name="available_now"/>
                         <field name="available_later"/>

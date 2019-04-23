@@ -18,15 +18,7 @@ class CombinationInventoryExporter(Component):
         }
 
     def get_quantity_vals(self, product):
-        res = {
+        return {
             'quantity': int(product.quantity),
             'out_of_stock': int(product.main_template_id.out_of_stock),
         }
-
-        if not int(product.quantity):
-            if int(product.potential_qty):
-                res['delivery_out_stock'] = product.main_template_id.delivery_out_stock or ''
-            elif not int(product.potential_qty):
-                res['delivery_out_stock'] = product.main_template_id.delivery_no_stock or ''
-
-        return res
