@@ -47,7 +47,7 @@ class ProductProductExportMapper(Component):
         for language_id, trans_record in records_by_lang.items():
             value['language'].append({
                 'attrs': {'id': str(language_id)},
-                'value': record.name,
+                'value': record.description_sale,
             })
         return {'name': value}
 
