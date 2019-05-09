@@ -32,8 +32,32 @@ class ProductProductExportMapper(Component):
     ]
 
     @mapping
+    def ean13(self, record):
+        if record.barcode:
+            return {'ean13': record.barcode}
+
+    @mapping
     def wholesale_price(self, record):
         return {'wholesale_price': record.standard_price or 0.00}
+
+    @mapping
+    def attribute_price(self, record):
+        tax = record.taxes_id
+        if tax.price_include and tax.amount_type == 'percent':
+            # 6 is the rounding precision used by PrestaShop for the
+            # tax excluded price.  we can get back a 2 digits tax included
+            # price from the 6 digits rounded value
+            return {
+                'attribute_price': str(
+                    round(record.list_price / self._get_factor_tax(tax), 6)),
+                'price': str(
+                    round(record.list_price / self._get_factor_tax(tax), 6))
+            }
+        else:
+            return {
+                'attribute_price': str(record.list_price),
+                'price': str(record.list_price)
+            }
 
     @mapping
     def reference(self, record):
@@ -47,7 +71,7 @@ class ProductProductExportMapper(Component):
         for language_id, trans_record in records_by_lang.items():
             value['language'].append({
                 'attrs': {'id': str(language_id)},
-                'value': record.description_sale,
+                'value': record.name,
             })
         return {'name': value}
 

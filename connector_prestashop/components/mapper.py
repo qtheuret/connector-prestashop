@@ -78,10 +78,12 @@ class TranslationPrestashopExportMapper(AbstractComponent):
         for from_attr, to_attr in translatable_fields:
             value = {'language': []}
             for language_id, record in records_by_language.iteritems():
-                value['language'].append({
-                    'attrs': {'id': str(language_id)},
-                    'value': record[from_attr] or ''
-                })
-            res[to_attr] = value
+                if record[from_attr]:
+                    value['language'].append({
+                        'attrs': {'id': str(language_id)},
+                        'value': record[from_attr] or ''
+                    })
+            if value['language']:
+                res[to_attr] = value
 
         return res

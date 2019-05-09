@@ -104,18 +104,18 @@ class ProductTemplateMapper(Component):
             })
         return {'name': value}
 
-    @mapping
-    def description(self, record):
-        value = {'language': []}
-        records_by_lang = self._get_record_by_lang(record)
-        for language_id, trans_record in records_by_lang.items():
-            _logger.debug(record.description_sale)
-            h = HTMLParser()
-            value['language'].append({
-                'attrs': {'id': str(language_id)},
-                'value': (record.description_sale and h.unescape(record.description_sale) or ''),
-            })
-        return {'description': value}
+    # @mapping
+    # def description(self, record):
+    #     value = {'language': []}
+    #     records_by_lang = self._get_record_by_lang(record)
+    #     for language_id, trans_record in records_by_lang.items():
+    #         _logger.debug(record.description_sale)
+    #         h = HTMLParser()
+    #         value['language'].append({
+    #             'attrs': {'id': str(language_id)},
+    #             'value': (record.description_sale and h.unescape(record.description_sale) or ''),
+    #         })
+    #     return {'description': value}
 
     @mapping
     def low_stock_alert(self, record):
@@ -125,36 +125,36 @@ class ProductTemplateMapper(Component):
     def wholesale_price(self, record):
         return {'wholesale_price': record.standard_price or 0.00}
 
-    @mapping
-    def id_category_default(self, record):
-        if not record.categ_id:
-            return {'id_category_default': 2}
-        category_binder = self.binder_for('prestashop.product.category')
-        ext_categ_id = category_binder.to_external(
-            record.categ_id.id, wrap=True
-        )
-        return {
-            'id_category_default': ext_categ_id,
-        }
+    # @mapping
+    # def id_category_default(self, record):
+    #     if not record.categ_id:
+    #         return {'id_category_default': 2}
+    #     category_binder = self.binder_for('prestashop.product.category')
+    #     ext_categ_id = category_binder.to_external(
+    #         record.categ_id.id, wrap=True
+    #     )
+    #     return {
+    #         'id_category_default': ext_categ_id,
+    #     }
 
-    @mapping
-    def associations(self, record):
-        categ_ids = []
-        categ_binder = self.binder_for('prestashop.product.category')
-        for categ in record.categ_ids:
-            categ_id = categ_binder.to_external(
-                categ.id, wrap=True
-            )
-            if categ_id:
-                categ_ids.append({'id': categ_id})
-
-        return {
-            'associations': {
-                'categories': {
-                    'category': categ_ids,
-                }
-            },
-        }
+    # @mapping
+    # def associations(self, record):
+    #     categ_ids = []
+    #     categ_binder = self.binder_for('prestashop.product.category')
+    #     for categ in record.categ_ids:
+    #         categ_id = categ_binder.to_external(
+    #             categ.id, wrap=True
+    #         )
+    #         if categ_id:
+    #             categ_ids.append({'id': categ_id})
+    #
+    #     return {
+    #         'associations': {
+    #             'categories': {
+    #                 'category': categ_ids,
+    #             }
+    #         },
+    #     }
 
     @mapping
     def tax_ids(self, record):
@@ -191,8 +191,8 @@ class ProductTemplateExporter(Component):
     _apply_on = 'prestashop.product.template'
     _model_name = 'prestashop.product.template'
 
-    def _export_dependencies(self):
-        """ Export the simple delivery before export lines """
-        record = self.binding and self.binding.odoo_id
-        if record and record.categ_id:
-            self._export_dependency(record.categ_id, 'prestashop.product.category')
+    # def _export_dependencies(self):
+    #     """ Export the simple delivery before export lines """
+    #     record = self.binding and self.binding.odoo_id
+    #     if record and record.categ_id:
+    #         self._export_dependency(record.categ_id, 'prestashop.product.category')
