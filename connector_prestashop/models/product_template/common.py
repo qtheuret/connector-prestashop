@@ -117,6 +117,7 @@ class PrestashopProductTemplate(models.Model):
         ('2', 'Default prestashop')],
         string='If stock shortage'
     )
+    no_export = fields.Boolean('No export to PrestaShop', default=True)
 
     @api.multi
     def recompute_prestashop_qty(self):

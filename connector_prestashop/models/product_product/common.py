@@ -148,6 +148,7 @@ class PrestashopProductCombination(models.Model):
         help='Last computed quantity to send on PrestaShop.'
     )
     reference = fields.Char(string='Original reference')
+    no_export = fields.Boolean('No export to PrestaShop', default=True)
 
     @api.multi
     def recompute_prestashop_qty(self):
