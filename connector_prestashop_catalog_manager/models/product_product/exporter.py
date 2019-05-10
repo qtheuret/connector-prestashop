@@ -51,10 +51,10 @@ class ProductProductExportMapper(Component):
             # price from the 6 digits rounded value
             return {
                 'price': str(
-                    round(record.list_price / self._get_factor_tax(tax), 6))
+                    round(record.lst_price / self._get_factor_tax(tax), 6))
             }
         else:
-            return {'price': str(record.list_price)}
+            return {'price': str(record.lst_price)}
 
     @mapping
     def attribute_price(self, record):
@@ -65,14 +65,14 @@ class ProductProductExportMapper(Component):
             # price from the 6 digits rounded value
             return {
                 'attribute_price': str(
-                    round(record.list_price / self._get_factor_tax(tax), 6)),
+                    round(record.lst_price / self._get_factor_tax(tax), 6)),
                 'price': str(
-                    round(record.list_price / self._get_factor_tax(tax), 6))
+                    round(record.lst_price / self._get_factor_tax(tax), 6))
             }
         else:
             return {
-                'attribute_price': str(record.list_price),
-                'price': str(record.list_price)
+                'attribute_price': str(record.lst_price),
+                'price': str(record.lst_price)
             }
 
     @mapping
