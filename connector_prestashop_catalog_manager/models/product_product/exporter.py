@@ -27,7 +27,6 @@ class ProductProductExportMapper(Component):
     ]
 
     direct = [
-        ('price', 'list_price'),
         ('weight', 'weight'),
     ]
 
@@ -39,6 +38,23 @@ class ProductProductExportMapper(Component):
     @mapping
     def wholesale_price(self, record):
         return {'wholesale_price': record.standard_price or 0.00}
+
+    def _get_factor_tax(self, tax):
+        return (1 + tax.amount / 100) if tax.price_include else 1.0
+
+    @mapping
+    def list_price(self, record):
+        tax = record.taxes_id
+        if tax.price_include and tax.amount_type == 'percent':
+            # 6 is the rounding precision used by PrestaShop for the
+            # tax excluded price.  we can get back a 2 digits tax included
+            # price from the 6 digits rounded value
+            return {
+                'price': str(
+                    round(record.list_price / self._get_factor_tax(tax), 6))
+            }
+        else:
+            return {'price': str(record.list_price)}
 
     @mapping
     def attribute_price(self, record):
