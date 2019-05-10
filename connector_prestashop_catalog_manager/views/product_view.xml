@@ -44,5 +44,17 @@
             </field>
         </record>
 
+        <record id="prestashop_combination_connector_presta_tree_view" model="ir.ui.view">
+            <field name="model">prestashop.product.combination</field>
+            <field name="inherit_id" ref="connector_prestashop.combination_connector_presta_tree_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="/tree/button[@name='resync']" position="replace">
+                    <button name="resync_export"
+                            type="object"
+                            string="Resync" />
+                </xpath>
+            </field>
+        </record>
+
     </data>
 </openerp>
