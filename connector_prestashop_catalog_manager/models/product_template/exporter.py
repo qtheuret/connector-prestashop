@@ -131,12 +131,20 @@ class ProductTemplateMapper(Component):
         weight = 0
         if record.width:
             width = record.width
+        else:
+            width = max([x.width or 0.00 for x in record.product_variant_ids])
         if record.height:
             height = record.height
+        else:
+            height = max([x.height or 0.00 for x in record.product_variant_ids])
         if record.length:
             length = record.length
+        else:
+            length = max([x.length or 0.00 for x in record.product_variant_ids])
         if record.weight:
             weight = record.weight
+        else:
+            weight = max([x.weight or 0.00 for x in record.product_variant_ids])
 
         return {
             'width': width,
