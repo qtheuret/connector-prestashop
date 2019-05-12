@@ -34,6 +34,9 @@ class ProductTemplateMapper(Component):
         ('name', 'name'),
         ('delivery_in_stock', 'delivery_in_stock'),
         ('delivery_out_stock', 'delivery_out_stock'),
+        ('meta_title', 'meta_title'),
+        ('meta_description', 'meta_description'),
+        ('meta_keywords', 'meta_keywords'),
     ]
 
     direct = [
@@ -44,6 +47,10 @@ class ProductTemplateMapper(Component):
     ]
 
     @mapping
+    def always_available(self, record):
+        return {'active': record.available_for_order and '1' or '0'}
+
+    @mapping
     def additional_delivery_times(self, record):
         if record.delivery_in_stock or record.delivery_out_stock:
             return {
@@ -51,7 +58,6 @@ class ProductTemplateMapper(Component):
             }
         else:
             return {'additional_delivery_times': 0}
-
 
     @mapping
     def on_sale(self, record):
@@ -100,42 +106,64 @@ class ProductTemplateMapper(Component):
         for language_id, trans_record in records_by_lang.items():
             value['language'].append({
                 'attrs': {'id': str(language_id)},
-                'value': record.name,
+                'value': trans_record.name,
             })
         return {'name': value}
 
-    # @mapping
-    # def description(self, record):
-    #     value = {'language': []}
-    #     records_by_lang = self._get_record_by_lang(record)
-    #     for language_id, trans_record in records_by_lang.items():
-    #         _logger.debug(record.description_sale)
-    #         h = HTMLParser()
-    #         value['language'].append({
-    #             'attrs': {'id': str(language_id)},
-    #             'value': (record.description_sale and h.unescape(record.description_sale) or ''),
-    #         })
-    #     return {'description': value}
+    @mapping
+    def description(self, record):
+        value = {'language': []}
+        records_by_lang = self._get_record_by_lang(record)
+        for language_id, trans_record in records_by_lang.items():
+            _logger.debug(record.description_html)
+            h = HTMLParser()
+            value['language'].append({
+                'attrs': {'id': str(language_id)},
+                'value': (record.description_html and h.unescape(record.description_html) or ''),
+            })
+        return {'description': value}
 
     @mapping
-    def low_stock_alert(self, record):
-        return {'low_stock_alert': 1}
+    def dimensions(self, record):
+        width = 0
+        height = 0
+        length = 0
+        weight = 0
+        if record.width:
+            width = record.width
+        if record.height:
+            height = record.height
+        if record.length:
+            length = record.length
+        if record.weight:
+            weight = record.weight
+
+        return {
+            'width': width,
+            'height': height,
+            'depth': length,
+            'weight': weight,
+        }
+
+#    @mapping
+#    def low_stock_alert(self, record):
+#        return {'low_stock_alert': 1}
+
+#    @mapping
+#    def wholesale_price(self, record):
+#        return {'wholesale_price': record.standard_price or 0.00}
 
     @mapping
-    def wholesale_price(self, record):
-        return {'wholesale_price': record.standard_price or 0.00}
-
-    # @mapping
-    # def id_category_default(self, record):
-    #     if not record.categ_id:
-    #         return {'id_category_default': 2}
-    #     category_binder = self.binder_for('prestashop.product.category')
-    #     ext_categ_id = category_binder.to_external(
-    #         record.categ_id.id, wrap=True
-    #     )
-    #     return {
-    #         'id_category_default': ext_categ_id,
-    #     }
+    def id_category_default(self, record):
+        if not record.prestashop_default_category_id:
+            return {'id_category_default': 2}
+        category_binder = self.binder_for('prestashop.product.category')
+        ext_categ_id = category_binder.to_external(
+            record.prestashop_default_category_id.id, wrap=True
+        )
+        return {
+            'id_category_default': ext_categ_id,
+        }
 
     # @mapping
     # def associations(self, record):
@@ -167,6 +195,8 @@ class ProductTemplateMapper(Component):
 
     @mapping
     def reference(self, record):
+        if record.reference:
+            return {'reference': record.reference}
         if record.default_code:
             return {'reference': record.default_code[0:32]}
 
@@ -191,8 +221,12 @@ class ProductTemplateExporter(Component):
     _apply_on = 'prestashop.product.template'
     _model_name = 'prestashop.product.template'
 
-    # def _export_dependencies(self):
-    #     """ Export the simple delivery before export lines """
-    #     record = self.binding and self.binding.odoo_id
-    #     if record and record.categ_id:
-    #         self._export_dependency(record.categ_id, 'prestashop.product.category')
+    def _export_dependencies(self):
+        """ Export the simple delivery before export lines """
+        record = self.binding and self.binding.odoo_id
+        if record and record.prestashop_default_category_id:
+            self._export_dependency(record.prestashop_default_category_id, 'prestashop.product.category')
+
+    def _run(self, fields=None, **kwargs):
+        self.binding.import_record(self.binding.backend_id, self.binding.prestashop_id)
+        return super(ProductTemplateExporter, self)._run(fields=fields, **kwargs)
