@@ -129,10 +129,6 @@ class ProductTemplateMapper(Component):
 
     @mapping
     def dimensions(self, record):
-        width = 0
-        height = 0
-        length = 0
-        weight = 0
         if record.width:
             width = record.width
         else:
@@ -145,16 +141,11 @@ class ProductTemplateMapper(Component):
             length = record.length
         else:
             length = max([x.length or 0.00 for x in record.product_variant_ids])
-        if record.weight:
-            weight = record.weight
-        else:
-            weight = max([x.weight or 0.00 for x in record.product_variant_ids])
 
         return {
             'width': width,
             'height': height,
             'depth': length,
-            'weight': weight,
         }
 
     @mapping
