@@ -47,6 +47,10 @@ class ProductTemplateMapper(Component):
     ]
 
     @mapping
+    def show_price(self, record):
+        return {'show_price': record.show_price and '1' or '0'}
+
+    @mapping
     def always_available(self, record):
         return {'active': record.available_for_order and '1' or '0'}
 
