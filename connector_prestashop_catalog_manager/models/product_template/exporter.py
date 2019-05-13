@@ -153,6 +153,10 @@ class ProductTemplateMapper(Component):
             'weight': weight,
         }
 
+    @mapping
+    def minimal_quantity(self, record):
+        return {'minimal_quantity': 1}
+
 #    @mapping
 #    def low_stock_alert(self, record):
 #        return {'low_stock_alert': 1}
