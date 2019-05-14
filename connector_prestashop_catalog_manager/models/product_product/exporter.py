@@ -87,7 +87,7 @@ class ProductProductExportMapper(Component):
         for language_id, trans_record in records_by_lang.items():
             value['language'].append({
                 'attrs': {'id': str(language_id)},
-                'value': record.name,
+                'value': trans_record.name,
             })
         return {'name': value}
 
@@ -182,7 +182,7 @@ class ProductAttributeMapper(Component):
         for language_id, trans_record in records_by_lang.items():
             value['language'].append({
                 'attrs': {'id': str(language_id)},
-                'value': record.name,
+                'value': trans_record.name,
             })
         return {'name': value}
 
@@ -193,7 +193,7 @@ class ProductAttributeMapper(Component):
         for language_id, trans_record in records_by_lang.items():
             value['language'].append({
                 'attrs': {'id': str(language_id)},
-                'value': record.name,
+                'value': trans_record.name,
             })
         return {'public_name': value}
 
@@ -240,7 +240,7 @@ class ProductAttributeValueMapper(Component):
         for language_id, trans_record in records_by_lang.items():
             value['language'].append({
                 'attrs': {'id': str(language_id)},
-                'value': record.name,
+                'value': trans_record.name,
             })
         return {'name': value}
 

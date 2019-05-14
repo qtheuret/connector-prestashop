@@ -74,7 +74,7 @@ class ProductTemplateMapper(Component):
         for language_id, trans_record in records_by_lang.items():
             value['language'].append({
                 'attrs': {'id': str(language_id)},
-                'value': record.link_rewrite or slugify(record.name),
+                'value': trans_record.link_rewrite or slugify(trans_record.name),
             })
         return {'link_rewrite': value}
 
@@ -119,11 +119,11 @@ class ProductTemplateMapper(Component):
         value = {'language': []}
         records_by_lang = self._get_record_by_lang(record)
         for language_id, trans_record in records_by_lang.items():
-            _logger.debug(record.description_html)
+            _logger.debug(trans_record.description_html)
             h = HTMLParser()
             value['language'].append({
                 'attrs': {'id': str(language_id)},
-                'value': (record.description_html and h.unescape(record.description_html) or ''),
+                'value': (trans_record.description_html and h.unescape(trans_record.description_html) or ''),
             })
         return {'description': value}
 
