@@ -33,12 +33,12 @@ class PrestashopBackend(models.Model):
                 if not prd.attribute_value_ids:
                     # Do not sync product.product for no variant product, only sync. product.template
                     prd.product_tmpl_id.create_prestashop_bindings(backend_record.id)
-                    for bind in prd.product_tmpl_id.prestashop_bind_ids.filtered(lambda s: s.backend_id.id == backend_record.id):
+                    for bind in prd.product_tmpl_id.prestashop_bind_ids.filtered(lambda s: s.backend_id.id == backend_record.id and not s.no_export):
                         bind.with_delay().export_record()
                 else:
                     # Create bindings if not exists
                     prd.create_prestashop_bindings(backend_record.id)
-                    for bind in prd.prestashop_bind_ids.filtered(lambda s: s.backend_id.id == backend_record.id):
+                    for bind in prd.prestashop_bind_ids.filtered(lambda s: s.backend_id.id == backend_record.id and not s.no_export):
                         bind.with_delay().export_record()
 
             backend_record.export_products_since = fields.Datetime.to_string(new_product_sync_date)
