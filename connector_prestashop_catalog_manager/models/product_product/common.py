@@ -4,6 +4,7 @@
 
 from odoo import models, fields
 from odoo.addons.queue_job.job import job
+from odoo.addons.component.core import Component
 
 
 class ProductProduct(models.Model):
@@ -48,9 +49,29 @@ class ProductProduct(models.Model):
 class PrestashopProductCombination(models.Model):
     _inherit = 'prestashop.product.combination'
 
+    no_export = fields.Boolean('No export to PrestaShop', default=True)
+
     @job(default_channel='root.prestashop')
     def export_products(self, backend):
         """ Export products combination and products in Prestashop. """
         with backend.work_on('prestashop.product.combination') as work:
             exporter = work.component(usage='prestashop.product.combination.exporter')
             return exporter.run(self, fields)
+
+
+class ProductCombinationAdapter(Component):
+    _inherit = 'prestashop.product.combination.adapter'
+    _apply_on = 'prestashop.product.combination'
+    _export_node_name_res = 'combination'
+
+
+class ProductCombinationOptionAdapter(Component):
+    _inherit = 'prestashop.product.combination.option.adapter'
+    _apply_on = 'prestashop.product.combination.option'
+    _export_node_name_res = 'product_option'
+
+
+class ProductCombinationOptionValueAdapter(Component):
+    _inherit = 'prestashop.prdouct.combination.option.value.adapter'
+    _apply_on = 'prestashop.product.combination.option.value'
+    _export_node_name_res = 'product_option_value'

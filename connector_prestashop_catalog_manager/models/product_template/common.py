@@ -84,3 +84,4 @@ class PrestashopProductTemplate(models.Model):
         size=255,
         translate=True,
     )
+    no_export = fields.Boolean('No export to PrestaShop', default=True)
