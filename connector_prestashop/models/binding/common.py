@@ -88,6 +88,16 @@ class PrestashopBinding(models.AbstractModel):
                  record.prestashop_id)
         return True
 
+    @api.multi
+    def resync_export(self):
+        for record in self:
+            if self.env.context.get('connector_delay'):
+                record.with_delay().export_record()
+            for record in self:
+                record.export_record()
+
+        return True
+
 
 class PrestashopBindingOdoo(models.AbstractModel):
     _name = 'prestashop.binding.odoo'

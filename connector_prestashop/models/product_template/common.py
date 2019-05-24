@@ -69,12 +69,12 @@ class PrestashopProductTemplate(models.Model):
         string='Computed Quantity',
         help="Last computed quantity to send to PrestaShop."
     )
-    description_html = fields.Html(
+    description_html = fields.Text(
         string='Description',
         translate=True,
         help="HTML description from PrestaShop",
     )
-    description_short_html = fields.Html(
+    description_short_html = fields.Text(
         string='Short Description',
         translate=True,
     )

@@ -32,6 +32,14 @@ class PrestashopProductImage(models.Model):
         oldname='openerp_id',
     )
 
+    @job(default_channel='root.prestashop')
+    @api.multi
+    def import_product_image(self, backend, product_tmpl_id, image_id,
+                             **kwargs):
+        """Import a product image"""
+        with backend.work_on(self._name) as work:
+            importer = work.component(usage='record.importer')
+            return importer.run(product_tmpl_id, image_id)
 
     @job(default_channel='root.prestashop')
     @api.multi
@@ -50,6 +58,7 @@ class ProductImageAdapter(Component):
     _prestashop_model = '/images/products'
     _export_node_name = '/images/products'
     _export_node_name_res = 'image'
+    # pylint: disable=method-required-super
 
 
     def connect(self):

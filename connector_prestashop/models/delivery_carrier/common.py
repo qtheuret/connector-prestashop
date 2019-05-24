@@ -43,6 +43,12 @@ class PrestashopDeliveryCarrier(models.Model):
          'An ERP record with same ID already exists on PrestaShop with the same id_reference'),
     ]
 
+    _sql_constraints = [
+        ('prestashop_erp_uniq', 'unique(backend_id, odoo_id, id_reference)',
+         'An ERP record with same ID already exists on PrestaShop with the '
+         'same id_reference'),
+    ]
+
 
 class DeliveryCarrier(models.Model):
     _inherit = "delivery.carrier"

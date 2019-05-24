@@ -28,6 +28,7 @@ class PrestashopBackend(models.Model):
         '1.6.0.11': 'prestashop.version.key.1.6.0.9',
         '1.6.1.2': 'prestashop.version.key.1.6.1.2',
         '1.6.1.9': 'prestashop.version.key.1.6.1.9',
+        '1.7.5.0': 'prestashop.version.key.1.7.5.0'
     }
 
     @api.model
@@ -36,14 +37,13 @@ class PrestashopBackend(models.Model):
 
         Can be inherited to add custom versions.
         """
-        #TODO: Ease the mapping to the class, prevent the need to have this method and the above 
-        # _version dictionnary
         return [
             ('1.5', '< 1.6.0.9'),
             ('1.6.0.9', '1.6.0.9 - 1.6.0.10'),
             ('1.6.0.11', '>= 1.6.0.11 - <1.6.1.2'),
             ('1.6.1.2', '=1.6.1.2'),
             ('1.6.1.9', '=1.6.1.9'),
+            ('1.7.5.0', '=1.7.5.0'),
         ]
 
     @api.model
@@ -418,5 +418,4 @@ class NoModelAdapter(Component):
     _inherit = 'prestashop.adapter'
     _apply_on = 'prestashop.backend'
     _prestashop_model = ''
-
 

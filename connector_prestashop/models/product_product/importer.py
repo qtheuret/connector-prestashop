@@ -160,6 +160,7 @@ class ProductCombinationMapper(Component):
             assert option_value_binding, "must have a binding for the option"
             yield option_value_binding.odoo_id
 
+    @only_create
     @mapping
     def name(self, record):
         template = self.get_main_template_binding(record)
@@ -182,7 +183,8 @@ class ProductCombinationMapper(Component):
     @mapping
     def main_template_id(self, record):
         template_binding = self.get_main_template_binding(record)
-        return {'main_template_id': template_binding.id}
+        return {'main_template_id': template_binding.id,
+                'name_template': template_binding.name}
 
     def _template_code_exists(self, code):
         model = self.env['product.product']
@@ -363,6 +365,7 @@ class ProductCombinationOptionValueAdapter(Component):
 
     _prestashop_model = 'product_option_values'
     _export_node_name = 'product_option_value'
+    _export_node_name_res = 'product_option_value'
 
 
 class ProductCombinationOptionValueImporter(Component):

@@ -64,6 +64,9 @@ class CarrierImportMapper(Component):
     def company_id(self, record):
         return {'company_id': self.backend_record.company_id.id}
 
+    @mapping
+    def product_id(self, record):
+        return {'product_id': self.backend_record.shipping_product_id.id}
 
 class DeliveryCarrierBatchImporter(Component):
     """ Import the PrestaShop Carriers.

@@ -49,10 +49,10 @@ class TestImportPartner(PrestashopTransactionCase):
                             '.import_batch')
         with mock.patch(import_since_job) as import_mock:
             self.backend_record.import_customers_since()
-            import_mock.delay.assert_called_with(
-                mock.ANY, self.backend_record.id,
+            delay_record_instance = delay_record_mock.return_value
+            delay_record_instance.import_customers_since.assert_called_with(
+                backend_record=self.backend_record,
                 since_date='2016-09-01 00:00:00',
-                priority=10,
             )
 
     @freeze_time('2016-09-13 00:00:00')
@@ -65,7 +65,7 @@ class TestImportPartner(PrestashopTransactionCase):
         # execute the batch job directly and replace the record import
         # by a mock (individual import is tested elsewhere)
         with recorder.use_cassette('test_import_partner_batch') as cassette, \
-                mock.patch(record_job_path) as import_record_mock:
+                mock.patch(delay_record_path) as delay_record_mock:
 
             self.env['prestashop.res.partner'].import_customers_since(
                 self.backend_record,
@@ -88,7 +88,8 @@ class TestImportPartner(PrestashopTransactionCase):
             self.assertEqual('/api/customers', self.parse_path(request.uri))
             self.assertDictEqual(expected_query, self.parse_qs(request.uri))
 
-            self.assertEqual(5, import_record_mock.delay.call_count)
+            delay_record_instance = delay_record_mock.return_value
+            self.assertEqual(5, delay_record_instance.import_record.call_count)
 
     @assert_no_job_delayed
     def test_import_partner_category_record(self):
@@ -131,7 +132,6 @@ class TestImportPartner(PrestashopTransactionCase):
                 'prestashop.address',
                 self.backend_record.id,
                 filters={'filter[id_customer]': '1'},
-                priority=10,
             )
 
         domain = [('prestashop_id', '=', 1)]
@@ -161,7 +161,7 @@ class TestImportPartner(PrestashopTransactionCase):
         # by a mock (individual import is tested elsewhere)
         cassette_name = 'test_import_partner_address_batch'
         with recorder.use_cassette(cassette_name) as cassette, \
-                mock.patch(record_job_path) as import_record_mock:
+                mock.patch(delay_record_path) as delay_record_mock:
 
             self.env['prestashop.address'].import_batch(
                 self.backend_record,
@@ -178,7 +178,8 @@ class TestImportPartner(PrestashopTransactionCase):
             query = self.parse_qs(cassette.requests[0].uri)
             self.assertDictEqual(expected_query, query)
 
-            self.assertEqual(2, import_record_mock.delay.call_count)
+            delay_record_instance = delay_record_mock.return_value
+            self.assertEqual(2, delay_record_instance.import_record.call_count)
 
     @assert_no_job_delayed
     def test_import_partner_address_record(self):
@@ -193,8 +194,8 @@ class TestImportPartner(PrestashopTransactionCase):
             shop_id=self.shop.id,
         )
         with recorder.use_cassette('test_import_partner_address_record_1'):
-            import_record(self.conn_session, 'prestashop.address',
-                          self.backend_record.id, 1)
+            self.env['prestashop.address'].import_record(
+                self.backend_record, 1)
 
         domain = [('prestashop_id', '=', 1)]
         address_bindings = self.env['prestashop.address'].search(domain)

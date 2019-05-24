@@ -14,6 +14,7 @@ from odoo.addons.queue_job.job import job
 from odoo.addons.component.core import Component
 from odoo.addons.connector.components.mapper import (
     mapping, external_to_m2o, only_create)
+from odoo.exceptions import ValidationError
 
 
 import datetime
@@ -91,11 +92,14 @@ class TemplateMapper(Component):
             if ps_tags:
                 return {'tags': ','.join(x['name'] for x in ps_tags)}
 
-    @mapping
-    def name(self, record):
-        if record['name']:
-            return {'name': record['name']}
-        return {'name': 'noname'}
+    #@mapping
+    #def name(self, record):
+    #    if record['name']:
+    #        return {
+    #            'name': record['name'],
+    #            'description_sale': record['name'],
+    #        }
+    #    return {'name': 'noname'}
 
     @only_create
     @mapping

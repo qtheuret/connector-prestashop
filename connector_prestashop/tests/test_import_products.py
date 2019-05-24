@@ -44,7 +44,7 @@ class TestImportProduct(PrestashopTransactionCase):
             '.common.set_product_image_variant',
             new=self.mock_delay_import_image
         )
-        self.patch_delay_import_image.start()
+        self.patch_delay_record.start()
 
         self.mock_delay_import_image = mock.MagicMock()
         self.patch_delay_import_image = mock.patch(
@@ -64,8 +64,7 @@ class TestImportProduct(PrestashopTransactionCase):
 
     def tearDown(self):
         super(TestImportProduct, self).tearDown()
-        self.patch_delay_import_image.stop()
-        self.patch_delay_set_image.stop()
+        self.patch_delay_record.stop()
 
     @freeze_time('2016-09-13 00:00:00')
     @assert_no_job_delayed
@@ -92,8 +91,7 @@ class TestImportProduct(PrestashopTransactionCase):
                            '.binding.common.import_record')
         # execute the batch job directly and replace the record import
         # by a mock (individual import is tested elsewhere)
-        with recorder.use_cassette('test_import_product_batch') as cassette, \
-                mock.patch(record_job_path) as import_record_mock:
+        with recorder.use_cassette('test_import_product_batch') as cassette:
 
             self.env['prestashop.product.template'].import_products(
                 self.backend_record,
@@ -116,7 +114,8 @@ class TestImportProduct(PrestashopTransactionCase):
             self.assertEqual('/api/products', self.parse_path(request.uri))
             self.assertDictEqual(expected_query, self.parse_qs(request.uri))
 
-            self.assertEqual(18, import_record_mock.delay.call_count)
+            self.assertEqual(
+                18, self.instance_delay_record.import_record.call_count)
 
     @assert_no_job_delayed
     def test_import_product_record_category(self):

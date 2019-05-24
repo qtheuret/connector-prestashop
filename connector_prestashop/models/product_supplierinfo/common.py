@@ -9,6 +9,7 @@ from ...components.backend_adapter import (
 )
 
 
+# pylint: disable=consider-merging-classes-inherited
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 

@@ -14,6 +14,10 @@ from ...components.importer import (
 )
 from odoo.addons.component.core import Component
 
+class RefundImporter(Component):
+    _name = 'prestashop.refund.importer'
+    _inherit = 'prestashop.importer'
+    _apply_on = 'prestashop.refund'
 
 class RefundImporter(Component):
     _name = 'prestashop.refund.importer'
