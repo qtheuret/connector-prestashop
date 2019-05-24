@@ -69,12 +69,12 @@ class PrestashopProductTemplate(models.Model):
         string='Computed Quantity',
         help="Last computed quantity to send to PrestaShop."
     )
-    description_html = fields.Html(
+    description_html = fields.Text(
         string='Description',
         translate=True,
         help="HTML description from PrestaShop",
     )
-    description_short_html = fields.Html(
+    description_short_html = fields.Text(
         string='Short Description',
         translate=True,
     )
@@ -117,6 +117,7 @@ class PrestashopProductTemplate(models.Model):
         ('2', 'Default prestashop')],
         string='If stock shortage'
     )
+    no_export = fields.Boolean('No export to PrestaShop', default=True)
 
     @api.multi
     def recompute_prestashop_qty(self):

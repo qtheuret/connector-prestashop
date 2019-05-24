@@ -1,74 +1,104 @@
 # -*- coding: utf-8 -*-
-# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
-from openerp.addons.connector.unit.mapper import mapping
+from slugify import slugify
 
-from openerp.addons.connector_prestashop.unit.exporter import (
-    PrestashopExporter,
-    export_record,
-)
-from openerp.addons.connector_prestashop.unit.mapper import (
-    TranslationPrestashopExportMapper,
-)
-from ...consumer import get_slug
-from openerp.addons.connector_prestashop.backend import prestashop
+from odoo import fields, _
+
+from odoo.addons.component.core import Component
+from odoo.addons.connector.components.mapper import mapping, external_to_m2o
+
+import datetime
+import logging
+_logger = logging.getLogger(__name__)
+try:
+    from prestapyt import PrestaShopWebServiceError
+except:
+    _logger.debug('Cannot import from `prestapyt`')
 
 
-@prestashop
-class ProductCategoryExporter(PrestashopExporter):
+class ProductCategoryMapper(Component):
+    _name = 'prestashop.product.category.export.mapper'
+    _inherit = 'translation.prestashop.export.mapper'
+    _apply_on = 'prestashop.product.category'
+
     _model_name = 'prestashop.product.category'
 
-    def _export_dependencies(self):
-        """ Export the dependencies for the category"""
-        category_binder = self.binder_for('prestashop.product.category')
-        categories_obj = self.session.env['prestashop.product.category']
-        for category in self.binding:
-            self.export_parent_category(
-                category.odoo_id.parent_id, category_binder, categories_obj)
-
-    def export_parent_category(self, category, binder, ps_categ_obj):
-        if not category:
-            return
-        ext_id = binder.to_backend(category.id, wrap=True)
-        if ext_id:
-            return ext_id
-        res = {
-            'backend_id': self.backend_record.id,
-            'odoo_id': category.id,
-            'link_rewrite': get_slug(category.name),
-        }
-        category_ext_id = ps_categ_obj.with_context(
-            connector_no_export=True).create(res)
-        parent_cat_id = export_record(
-            self.session, 'prestashop.product.category', category_ext_id.id)
-        return parent_cat_id
-
-
-@prestashop
-class ProductCategoryExportMapper(TranslationPrestashopExportMapper):
-    _model_name = 'prestashop.product.category'
-
-    direct = [
-        ('sequence', 'position'),
-        ('default_shop_id', 'id_shop_default'),
-        ('active', 'active'),
-        ('position', 'position')
-    ]
-    # handled by base mapping `translatable_fields`
     _translatable_fields = [
         ('name', 'name'),
-        ('link_rewrite', 'link_rewrite'),
         ('description', 'description'),
         ('meta_description', 'meta_description'),
         ('meta_keywords', 'meta_keywords'),
         ('meta_title', 'meta_title'),
     ]
 
+    direct = [
+        # ('active', 'active'),
+        ('position', 'position'),
+    ]
+
+    @mapping
+    def link_rewrite(self, record):
+        value = {'language': []}
+        records_by_lang = self._get_record_by_lang(record)
+        for language_id, trans_record in records_by_lang.items():
+            value['language'].append({
+                'attrs': {'id': str(language_id)},
+                'value': record.link_rewrite or slugify(record.name),
+            })
+        return {'link_rewrite': value}
+
+    @mapping
+    def active(self, record):
+        return {'active': 1}
+
     @mapping
     def parent_id(self, record):
-        if not record['parent_id']:
+        if not record.parent_id:
             return {'id_parent': 2}
         category_binder = self.binder_for('prestashop.product.category')
-        ext_categ_id = category_binder.to_backend(
-            record.parent_id.id, wrap=True)
-        return {'id_parent': ext_categ_id}
+        ext_categ_id = category_binder.to_external(
+            record.parent_id.id, wrap=True
+        )
+        return {
+            'id_parent': ext_categ_id,
+        }
+
+    @mapping
+    def data_add(self, record):
+        if record.create_date:
+            return {'date_add': fields.Date.from_string(record.create_date).strftime('%Y-%m-%d %H:%M:%S')}
+        else:
+            return {'date_add': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+    @mapping
+    def data_upd(self, record):
+        if record.write_date:
+            return {'date_upd': fields.Date.from_string(record.write_date).strftime('%Y-%m-%d %H:%M:%S')}
+        else:
+            return {'date_upd': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+
+class ProductCategoryExporter(Component):
+    _name = 'prestashop.product.category.exporter'
+    _usage = 'prestashop.product.category.exporter'
+    _inherit = 'translation.prestashop.exporter'
+    _apply_on = 'prestashop.product.category'
+    _model_name = 'prestashop.product.category'
+
+    _translatable_fields = {
+        'prestashop.product.category': [
+            'name',
+            'description',
+            'link_rewrite',
+            'meta_description',
+            'meta_keywords',
+            'meta_title'
+        ],
+    }
+
+    def _export_dependencies(self):
+        """ Export the simple delivery before export lines """
+        record = self.binding and self.binding.odoo_id
+        if record and record.parent_id:
+            self._export_dependency(record.parent_id, 'prestashop.product.category')

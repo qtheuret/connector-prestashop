@@ -16,6 +16,8 @@
                         <field name="meta_keywords"/>
                         <field name="tags"/>
                         <field name="online_only"/>
+                        <field name="delivery_in_stock" />
+                        <field name="delivery_out_stock" />
                         <field name="additional_shipping_cost"/>
                         <field name="available_now"/>
                         <field name="available_later"/>
@@ -25,5 +27,34 @@
                 </xpath>
             </field>
         </record>
+
+        <record id="prestashop_product_product_tree" model="ir.ui.view">
+            <field name="name">connector_prestashop.product.template.tree
+            </field>
+            <field name="model">prestashop.product.template</field>
+            <field name="inherit_id"
+                   ref="connector_prestashop.product_connector_presta_tree_view"/>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <xpath expr="/tree/button[@name='resync']" position="replace">
+                    <button name="resync_export"
+                            type="object"
+                            string="Resync" />
+                </xpath>
+            </field>
+        </record>
+
+        <record id="prestashop_combination_connector_presta_tree_view" model="ir.ui.view">
+            <field name="model">prestashop.product.combination</field>
+            <field name="inherit_id" ref="connector_prestashop.combination_connector_presta_tree_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="/tree/button[@name='resync']" position="replace">
+                    <button name="resync_export"
+                            type="object"
+                            string="Resync" />
+                </xpath>
+            </field>
+        </record>
+
     </data>
 </openerp>

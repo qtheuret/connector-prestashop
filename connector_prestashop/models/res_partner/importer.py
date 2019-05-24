@@ -34,7 +34,7 @@ class PartnerImportMapper(Component):
         binder = self.binder_for('prestashop.groups.pricelist')
         pricelist = binder.to_internal(record['id_default_group'], unwrap=True)
         if not pricelist:
-            return {}
+            return {'property_product_pricelist': self.backend_record.pricelist_id.id}
         return {'property_product_pricelist': pricelist.id}
 
     @mapping

@@ -2,8 +2,38 @@
 # © 2016 Sergio Teruel <sergio.teruel@tecnativa.com>
 # License AGPL-3 - See http://www.gnu.org/licenses/agpl-3.0.html
 
-from openerp import models, fields
+from openerp import models, fields, api
 import openerp.addons.decimal_precision as dp
+from odoo.addons.component.core import Component
+
+from odoo.addons.queue_job.job import job, related_action
+
+
+class ProductTemplate(models.Model):
+    _inherit = 'product.template'
+
+    def create_prestashop_bindings(self, backend_id):
+        shop_id = False
+        for record in self:
+            if not record.prestashop_bind_ids.filtered(lambda s: s.backend_id.id == backend_id):
+                if not shop_id:
+                    shops = self.env['prestashop.shop'].search([('backend_id', '=', backend_id)])
+                    if shops:
+                        shop_id = shops[0].id
+                self.env['prestashop.product.template'].create({
+                    'backend_id': backend_id,
+                    'odoo_id': record.id,
+                    'default_shop_id': shop_id,
+                })
+
+
+class TemplateAdapter(Component):
+    _name = 'prestashop.product.template.adapter'
+    _inherit = 'prestashop.adapter'
+    _apply_on = 'prestashop.product.template'
+    _prestashop_model = 'products'
+    _export_node_name = 'product'
+    _export_node_name_res = 'product'
 
 
 class PrestashopProductTemplate(models.Model):
@@ -43,4 +73,14 @@ class PrestashopProductTemplate(models.Model):
         string='Minimal Quantity',
         help='Minimal Sale quantity',
         default=1,
+    )
+    delivery_in_stock = fields.Char(
+        string='Delivery time of in-stock products',
+        size=255,
+        translate=True,
+    )
+    delivery_out_stock = fields.Char(
+        string='Delivery time of out-of-stock products with allowed orders',
+        size=255,
+        translate=True,
     )

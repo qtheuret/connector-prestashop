@@ -99,7 +99,7 @@
                     <field name="no_export"/>
                     <field name="link_rewrite"/>
                     <field name="description_short_html"/>
-                    <field name="description_html"/>
+                    <field name="description_html" widget="html"/>
                 </group>
                 <group col="4" colspan="4">
                     <field name="date_add"/>

@@ -55,13 +55,13 @@ class ProductProduct(models.Model):
                         combination_binding.recompute_prestashop_qty()
         return True
     
-    # it's not compatible with product_variant_configurator for the variable depth 
-    @api.depends('attribute_value_ids.price_ids.price_extra', 'attribute_value_ids.price_ids.product_tmpl_id', 'impact_price')
-    def _compute_product_price_extra(self):
-        # TDE FIXME: do a real multi and optimize a bit ?
-        super(ProductProduct, self)._compute_product_price_extra()
-        for product in self:
-            product.price_extra += product.impact_price
+#    # it's not compatible with product_variant_configurator for the variable depth 
+#    @api.depends('attribute_value_ids.price_ids.price_extra', 'attribute_value_ids.price_ids.product_tmpl_id', 'impact_price')
+#    def _compute_product_price_extra(self):
+#        # TDE FIXME: do a real multi and optimize a bit ?
+#        super(ProductProduct, self)._compute_product_price_extra()
+#        for product in self:
+#            product.price_extra += product.impact_price
             
 
     @api.multi
@@ -148,6 +148,7 @@ class PrestashopProductCombination(models.Model):
         help='Last computed quantity to send on PrestaShop.'
     )
     reference = fields.Char(string='Original reference')
+    no_export = fields.Boolean('No export to PrestaShop', default=True)
 
     @api.multi
     def recompute_prestashop_qty(self):
@@ -268,6 +269,7 @@ class ProductCombinationAdapter(Component):
     _apply_on = 'prestashop.product.combination'
     _prestashop_model = 'combinations'
     _export_node_name = 'combination'
+    _export_node_name_res = 'combination'
 
 
 class ProductCombinationOptionAdapter(Component):
@@ -277,6 +279,7 @@ class ProductCombinationOptionAdapter(Component):
 
     _prestashop_model = 'product_options'
     _export_node_name = 'product_options'
+    _export_node_name_res = 'product_option'
 
 
 class ProductCombinationOptionValueAdapter(Component):
@@ -286,3 +289,4 @@ class ProductCombinationOptionValueAdapter(Component):
 
     _prestashop_model = 'product_option_values'
     _export_node_name = 'product_option_value'
+    _export_node_name_res = 'product_option_value'

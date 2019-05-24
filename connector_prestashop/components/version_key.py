@@ -109,16 +109,17 @@ class VersionKey1750(Component):
     _usage = 'prestashop.version.key.1.7.5.0'
 
     keys = {
-        'product_option_value': 'product_option_values',
+        'product_option_value': 'product_option_value',
         'category': 'categories',
-        'image': 'images',
+        'image': 'image',
         'order_slip': 'order_slip',
         'order_slip_detail': 'order_slip_details',
+        'order_discounts': 'cart_rules',
+        'order_row': 'order_row',
         'group': 'groups',
-        'order_row': 'order_rows',
-        'tax': 'taxes',
-        'combinations': 'combinations',
+        'tax': 'tax',
         'product_features': 'product_features',
+        'combinations': 'combination',
         'tag': 'tags',
         'messages': 'customer_messages',
         'manufacturers': 'manufacturers',
