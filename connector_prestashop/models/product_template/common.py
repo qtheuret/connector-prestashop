@@ -74,7 +74,7 @@ class PrestashopProductTemplate(models.Model):
         translate=True,
         help="HTML description from PrestaShop",
     )
-    description_short_html = fields.Html(
+    description_short_html = fields.Text(
         string='Short Description',
         translate=True,
     )
