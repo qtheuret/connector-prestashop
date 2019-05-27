@@ -105,3 +105,7 @@ class PrestashopProductTemplate(models.Model):
         size=255,
         translate=True,
     )
+    id_group_shop = fields.Many2one(
+        comodel_name='prestashop.shop.group',
+        string='Shops group',
+    )

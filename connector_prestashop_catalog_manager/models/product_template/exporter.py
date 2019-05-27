@@ -246,3 +246,17 @@ class ProductTemplateExporter(Component):
         if self.binding.prestashop_id:
             self.binding.import_record(self.binding.backend_id, self.binding.prestashop_id)
         return super(ProductTemplateExporter, self)._run(fields=fields, **kwargs)
+
+    def _update(self, data):
+        """ Update an PrestaShop record """
+        assert self.prestashop_id
+
+        id_group_shop = None
+        if self.binding.id_group_shop:
+            id_group_shop = self.binding.id_group_shop.prestashop_id
+        else:
+            id_group_shops = self.env['prestashop.shop.group'].search([('backend_id', '=', self.binding.backend_id.id)])
+            if id_group_shops:
+                id_group_shop = id_group_shops[0].prestashop_id
+
+        return self.backend_adapter.write(self.prestashop_id, data, {'id_group_shop': id_group_shop})

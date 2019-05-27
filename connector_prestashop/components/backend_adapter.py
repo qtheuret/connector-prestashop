@@ -210,16 +210,17 @@ class GenericAdapter(AbstractComponent):
             return res['prestashop'][self._export_node_name_res]['id']
         return res
 
-    def write(self, id, attributes=None):
+    def write(self, id, attributes=None, options=None):
         """ Update records on the external system """
         attributes['id'] = id
         _logger.debug(
             'method write, model %s, attributes %s',
             self._prestashop_model,
-            unicode(attributes)
+            unicode(attributes),
+            options,
         )
         res = self.client.edit(
-            self._prestashop_model, {self._export_node_name: attributes})
+            self._prestashop_model, {self._export_node_name: attributes}, options=options)
         if self._export_node_name_res:
             return res['prestashop'][self._export_node_name_res]['id']
         return res
