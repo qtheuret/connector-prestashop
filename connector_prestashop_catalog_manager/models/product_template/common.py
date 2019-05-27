@@ -12,6 +12,27 @@ from odoo.addons.queue_job.job import job, related_action
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
+    @api.model
+    def create(self, vals):
+        res = super(ProductTemplate, self).create(vals)
+
+        if not self.env.context.get('create_bindings'):
+            for backend in self.env['prestashop.backend'].search([]):
+                res.create_prestashop_bindings(backend.id)
+
+        return res
+
+    @api.multi
+    def write(self, vals):
+        res = super(ProductTemplate, self).write(vals)
+
+        if not self.env.context.get('create_bindings'):
+            for backend in self.env['prestashop.backend'].search([]):
+                self.create_prestashop_bindings(backend.id)
+
+        return res
+
+
     def create_prestashop_bindings(self, backend_id):
         shop_id = False
         for record in self:
@@ -20,7 +41,7 @@ class ProductTemplate(models.Model):
                     shops = self.env['prestashop.shop'].search([('backend_id', '=', backend_id)])
                     if shops:
                         shop_id = shops[0].id
-                self.env['prestashop.product.template'].create({
+                self.env['prestashop.product.template'].with_context({'create_bindings': True}).create({
                     'backend_id': backend_id,
                     'odoo_id': record.id,
                     'default_shop_id': shop_id,

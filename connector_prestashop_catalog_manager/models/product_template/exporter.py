@@ -208,6 +208,14 @@ class ProductTemplateMapper(Component):
             return {'reference': record.default_code[0:32]}
 
     @mapping
+    def minimal_quantity(self, record):
+        return {'minimal_quantity': 1}
+
+    @mapping
+    def low_stock_alert(self, record):
+        return {'low_stock_alert': 1}
+
+    @mapping
     def data_add(self, record):
         if record.create_date:
             return {'date_add': fields.Date.from_string(record.create_date).strftime('%Y-%m-%d %H:%M:%S')}
@@ -235,5 +243,6 @@ class ProductTemplateExporter(Component):
             self._export_dependency(record.prestashop_default_category_id, 'prestashop.product.category')
 
     def _run(self, fields=None, **kwargs):
-        self.binding.import_record(self.binding.backend_id, self.binding.prestashop_id)
+        if self.binding.prestashop_id:
+            self.binding.import_record(self.binding.backend_id, self.binding.prestashop_id)
         return super(ProductTemplateExporter, self)._run(fields=fields, **kwargs)
