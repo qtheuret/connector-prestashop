@@ -90,9 +90,9 @@ class PrestashopBinding(models.AbstractModel):
     def resync_export(self):
         for record in self:
             if self.env.context.get('connector_delay'):
-                record.with_delay().export_record()
+                record.witch_context({'lang': 'en_US'}).with_delay().export_record()
             for record in self:
-                record.export_record()
+                record.with_context({'lang': 'en_US'}).export_record()
 
         return True
 
