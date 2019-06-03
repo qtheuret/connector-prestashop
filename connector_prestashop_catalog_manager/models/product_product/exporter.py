@@ -153,6 +153,35 @@ class ProductProductExporter(Component):
             for attr in record.attribute_value_ids:
                 self._export_dependency(attr, 'prestashop.product.combination.option.value')
 
+    def _update(self, data):
+        """ Update an PrestaShop record """
+        assert self.prestashop_id
+
+        id_group_shop = None
+        if self.binding.main_template_id.id_group_shop:
+            id_group_shop = self.binding.main_template_id.id_group_shop.prestashop_id
+        else:
+            id_group_shops = self.env['prestashop.shop.group'].search([('backend_id', '=',
+                                                                        self.binding.backend_id.id)])
+            if id_group_shops:
+                id_group_shop = id_group_shops[0].prestashop_id
+
+        return self.backend_adapter.write(self.prestashop_id, data, {'id_group_shop':
+                                                                     id_group_shop})
+
+    def _create(self, data):
+        """ Create the Prestashop record """
+        id_group_shop = None
+        if self.binding.main_template_id.id_group_shop:
+            id_group_shop = self.binding.main_template_id.id_group_shop.prestashop_id
+        else:
+            id_group_shops = self.env['prestashop.shop.group'].search([('backend_id', '=',
+                                                                        self.binding.backend_id.id)])
+            if id_group_shops:
+                id_group_shop = id_group_shops[0].prestashop_id
+
+        return self.backend_adapter.create(data, {'id_group_shop': id_group_shop})
+
 
 class ProductAttributeMapper(Component):
     _name = 'prestashop.product.combination.option.export.mapper'

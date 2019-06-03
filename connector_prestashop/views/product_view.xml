@@ -67,11 +67,11 @@
            <page name="connector" position="attributes">
                 <attribute name="invisible">0</attribute>
            </page>
-           <page name="connector" position="inside">
+		   <!--           <page name="connector" position="inside">
                 <group string="PrestaShop Bindings">
                     <field name="prestashop_bind_ids" nolabel="1"/>
                 </group>
-           </page>
+		   </page>-->
        </field>
     </record>
 
@@ -145,7 +145,8 @@
                 <group col="2">
                     <field name="backend_id"/>
                     <field name="no_export"/>
-                    <field name="quantity"/>
+					<field name="quantity"/>
+					<field name="main_template_id" domain="[('odoo_id', '=', parent.product_tmpl_id)]" />
                 </group>
             </form>
        </field>

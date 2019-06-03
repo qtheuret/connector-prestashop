@@ -198,14 +198,14 @@ class GenericAdapter(AbstractComponent):
         first_key = res.keys()[0]
         return res[first_key]
 
-    def create(self, attributes=None):
+    def create(self, attributes=None, options=None):
         """ Create a record on the external system """
         _logger.debug(
             'method create, model %s, attributes %s',
             self._prestashop_model, unicode(attributes))
         res = self.client.add(self._prestashop_model, {
             self._export_node_name: attributes
-        })
+        }, options=options)
         if self._export_node_name_res:
             return res['prestashop'][self._export_node_name_res]['id']
         return res
