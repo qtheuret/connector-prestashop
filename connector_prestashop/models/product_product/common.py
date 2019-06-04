@@ -169,7 +169,7 @@ class PrestashopProductCombination(models.Model):
                                      compute_child=False)
         for product_binding in self_loc:
             new_qty = product_binding._prestashop_qty()
-            if product_binding.quantity != new_qty:
+            if product_binding.quantity != new_qty or self.env.context.get('force_recompute'):
                 product_binding.quantity = new_qty
         return True
 
@@ -191,7 +191,9 @@ class PrestashopProductCombination(models.Model):
 
     @api.model
     @job(default_channel='root.prestashop')
-    def export_product_quantities(self, backend):
+    def export_product_quantities(self, backend, force=False):
+        if force:
+            self = self.with_context({'force_recompute': True})
         self.search([
             ('backend_id', '=', backend.id),
         ]).recompute_prestashop_qty()

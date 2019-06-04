@@ -299,9 +299,9 @@ class PrestashopBackend(models.Model):
     def update_product_stock_qty(self):
         for backend_record in self:
             backend_record.env['prestashop.product.template']\
-                .with_delay().export_product_quantities(backend=backend_record)
+                .with_delay().export_product_quantities(backend=backend_record, force=True)
             backend_record.env['prestashop.product.combination']\
-                .with_delay().export_product_quantities(backend=backend_record)
+                .with_delay().export_product_quantities(backend=backend_record, force=True)
         return True
 
     @api.multi

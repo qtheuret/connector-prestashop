@@ -130,6 +130,7 @@
                 <button name="recompute_prestashop_qty"
                     class="oe_highlight"
                     type="object"
+                    context="{'force_recompute': True}"
                     string="Export quantity"/>
                 <button name="resync"
                     type="object"
@@ -164,6 +165,7 @@
                 <button name="recompute_prestashop_qty"
                     class="oe_highlight"
                     type="object"
+                    context="{'force_recompute': True}"
                     string="Export quantity"/>
                 <button name="resync"
                     type="object"

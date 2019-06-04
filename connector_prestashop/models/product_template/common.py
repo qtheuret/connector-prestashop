@@ -147,7 +147,7 @@ class PrestashopProductTemplate(models.Model):
         for product in self_loc:
             if product.type == 'product':
                 new_qty = product._prestashop_qty()
-                if product.quantity != new_qty:
+                if product.quantity != new_qty or self.env.context.get('force_recompute'):
                     product.quantity = new_qty
         return True
 
@@ -191,7 +191,9 @@ class PrestashopProductTemplate(models.Model):
             return exporter.run(self, fields)
 
     @job(default_channel='root.prestashop')
-    def export_product_quantities(self, backend=None):
+    def export_product_quantities(self, backend=None, force=False):
+        if force:
+            self = self.with_context({'force_recompute': True})
         self.search([('backend_id', '=', backend.id)]
                     ).recompute_prestashop_qty()
 
