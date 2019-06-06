@@ -52,7 +52,7 @@ class ProductTemplateMapper(Component):
 
     @mapping
     def always_available(self, record):
-        return {'active': record.available_for_order and '1' or '0'}
+        return {'active': record.always_available and '1' or '0'}
 
     @mapping
     def additional_delivery_times(self, record):

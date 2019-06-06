@@ -245,7 +245,6 @@ class TemplateMapper(Component):
                 record.get('description_short', '')),
         }
 
-    @only_create
     @mapping
     def active(self, record):
         return {'always_available': bool(int(record['active']))}

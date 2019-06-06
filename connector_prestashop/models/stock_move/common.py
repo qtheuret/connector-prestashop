@@ -36,9 +36,9 @@ class StockQuant(models.Model):
     @api.multi
     def write(self, vals):
         location_obj = self.env['stock.location']
-        ps_locations = location_obj.get_prestashop_stock_locations()
+        ps_locations = [l.id for l in location_obj.get_prestashop_stock_locations()]
         for quant in self:
-            location = quant.location_id
+            location = vals.get('location_id', quant.location_id.id)
             super(StockQuant, self).write(vals)
             if location in ps_locations:
                 quant.invalidate_cache()
