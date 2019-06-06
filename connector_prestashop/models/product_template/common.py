@@ -241,7 +241,7 @@ class ProductInventoryAdapter(Component):
             first_key = res.keys()[0]
             stock = res[first_key]
             stock['quantity'] = int(quantity['quantity'])
-            stock['out_of_stock'] = int(quantity['out_of_stock'])
+            #stock['out_of_stock'] = int(quantity['out_of_stock'])
             client.edit(self._prestashop_model, {
                 self._export_node_name: stock
             })
@@ -279,7 +279,7 @@ class PrestashopProductQuantityListener(Component):
     def _get_inventory_fields(self):
         # fields which should not trigger an export of the products
         # but an export of their inventory
-        return ('quantity', 'out_of_stock')
+        return ('quantity')
 
     @skip_if(lambda self, record, **kwargs: self.no_connector_export(record))
     def on_record_write(self, record, fields=None):
