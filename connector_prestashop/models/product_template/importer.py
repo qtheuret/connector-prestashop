@@ -51,6 +51,9 @@ class TemplateMapper(Component):
         ('reference', 'reference'),
         ('available_for_order', 'available_for_order'),
         ('on_sale', 'on_sale'),
+        ('meta_title', 'meta_title'),
+        ('meta_description', 'meta_description'),
+        ('meta_keywords', 'meta_keywords'),
     ]
 
     def _apply_taxes(self, tax, price):
