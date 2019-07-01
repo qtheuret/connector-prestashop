@@ -107,7 +107,6 @@ class ProductCombinationMapper(Component):
 
     from_main = []
 
-    @only_create
     @mapping
     def combination_default(self, record):
         return {'default_on': bool(int(record['default_on'] or 0))}
@@ -117,7 +116,6 @@ class ProductCombinationMapper(Component):
         template = self.get_main_template_binding(record)
         return {'product_tmpl_id': template.odoo_id.id}
 
-    @only_create
     @mapping
     def from_main_template(self, record):
         main_template = self.get_main_template_binding(record)
@@ -156,7 +154,6 @@ class ProductCombinationMapper(Component):
             assert option_value_binding, "must have a binding for the option"
             yield option_value_binding.odoo_id
 
-    @only_create
     @mapping
     def attribute_value_ids(self, record):
         results = []
@@ -164,7 +161,6 @@ class ProductCombinationMapper(Component):
             results.append(option_value_object.id)
         return {'attribute_value_ids': [(6, 0, results)]}
 
-    @only_create
     @mapping
     def main_template_id(self, record):
         template_binding = self.get_main_template_binding(record)
@@ -181,7 +177,6 @@ class ProductCombinationMapper(Component):
         return template_ids and not combination_binder.to_external(
             template_ids, wrap=True)
 
-    @only_create
     @mapping
     def default_code(self, record):
         code = record.get('reference')
@@ -196,7 +191,6 @@ class ProductCombinationMapper(Component):
             current_code = '%s_%s' % (code, i)
         return {'default_code': current_code}
 
-    @only_create
     @mapping
     def barcode(self, record):
         barcode = record.get('barcode') or record.get('ean13')
@@ -232,7 +226,6 @@ class ProductCombinationMapper(Component):
             if tax.price_include:
                 return price * factor_tax
 
-    @only_create
     @mapping
     def specific_price(self, record):
         product = self.binder_for(

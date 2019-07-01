@@ -456,7 +456,6 @@ class TranslatableRecordImporter(AbstractComponent):
             _fields = [x for x in _fields if x in fields]
         for field in _fields:
             for language in record[field]['language']:
-                print(language)
                 current_id = language['attrs']['id']
                 code = languages.get(current_id)
                 if not code:

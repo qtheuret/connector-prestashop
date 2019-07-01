@@ -159,6 +159,8 @@ class SaleOrderImportMapper(Component):
         return orders
 
     def _get_discounts_lines(self, record):
+        # Return empty values because of a missing object in Prestashop API
+        # See https://github.com/PrestaShop/PrestaShop/issues/13394 for more information
         return {}
         if record['total_discounts'] == '0.00':
             return []
