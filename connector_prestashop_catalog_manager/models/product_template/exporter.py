@@ -43,7 +43,6 @@ class ProductTemplateMapper(Component):
         ('sale_ok', 'available_for_order'),
         ('weight', 'weight'),
         ('barcode', 'ean13'),
-#        ('immediately_usable_qty', 'quantity'),
     ]
 
     @mapping
@@ -243,6 +242,8 @@ class ProductTemplateExporter(Component):
             self._export_dependency(record.prestashop_default_category_id, 'prestashop.product.category')
 
     def _run(self, fields=None, **kwargs):
+        # Import the record before export it because Prestashop put default value
+        # for fields not given in request.
         if self.binding.prestashop_id:
             self.binding.import_record(self.binding.backend_id, self.binding.prestashop_id)
         return super(ProductTemplateExporter, self)._run(fields=fields, **kwargs)
