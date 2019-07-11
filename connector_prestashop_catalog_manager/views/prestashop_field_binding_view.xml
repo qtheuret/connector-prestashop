@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="prestashop_field_binding_tree_view" model="ir.ui.view">
+        <field name="name">prestashop.field.binding.tree.view</field>
+        <field name="model">prestashop.field.binding</field>
+        <field name="arch" type="xml">
+            <tree string="PrestaShop Field Bindings" editable="top">
+                <field name="backend_id" />
+                <field name="prestashop_model" />
+                <field name="prestashop_field" />
+                <field name="odoo_model" />
+                <field name="odoo_field" domain="[('model_id', '=', odoo_model)]" />
+                <field name="direction" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="prestashop_field_binding_search_view" model="ir.ui.view">
+        <field name="name">prestashop.field.binding.search.view</field>
+        <field name="model">prestashop.field.binding</field>
+        <field name="arch" type="xml">
+            <search sting="PrestaShop Field Bindings">
+                <field name="backend_id" />
+                <field name="prestashop_model" />
+                <field name="prestashop_field" />
+                <field name="odoo_model" />
+                <field name="odoo_field" />
+            </search>
+        </field>
+    </record>
+
+    <record id="action_prestashop_field_binding" model="ir.actions.act_window">
+        <field name="name">Field Bindings</field>
+        <field name="res_model">prestashop.field.binding</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+    <menuitem
+        id="menu_prestashop_field_bindings"
+        action="action_prestashop_field_binding"
+        parent="connector_prestashop.menu_prestashop_root" />
+
+</odoo>

@@ -22,6 +22,7 @@
     "category": "Connector",
     "data": [
         "views/prestashop_backend_view.xml",
+        "views/prestashop_field_binding_view.xml",
         'views/product_attribute_view.xml',
         'views/product_view.xml',
     ],

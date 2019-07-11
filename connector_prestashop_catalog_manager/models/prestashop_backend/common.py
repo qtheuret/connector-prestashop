@@ -48,3 +48,13 @@ class PrestashopBackend(models.Model):
     @api.model
     def _scheduler_export_products(self, domain=None):
         self.search(domain or []).export_products()
+
+    @api.multi
+    def synchronize_schemas(self):
+        """
+        Get the schemas for models to fill the list of PrestaShop fields
+        :return:
+        """
+        for backend_record in self:
+            backend_record.env['prestashop.product.template'].get_schema(backend=backend_record, force=True)
+        return True
