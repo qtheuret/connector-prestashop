@@ -114,7 +114,7 @@ class VersionKey1750(Component):
         'image': 'image',
         'order_slip': 'order_slip',
         'order_slip_detail': 'order_slip_details',
-        'order_discounts': 'cart_rules',
+        'order_discounts': 'order_cart_rules',
         'order_row': 'order_row',
         'group': 'groups',
         'tax': 'tax',
