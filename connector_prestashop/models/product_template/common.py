@@ -279,7 +279,7 @@ class PrestashopProductQuantityListener(Component):
     def _get_inventory_fields(self):
         # fields which should not trigger an export of the products
         # but an export of their inventory
-        return ('quantity')
+        return ('quantity',)
 
     @skip_if(lambda self, record, **kwargs: self.no_connector_export(record))
     def on_record_write(self, record, fields=None):
