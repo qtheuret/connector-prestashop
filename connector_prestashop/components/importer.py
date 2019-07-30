@@ -119,7 +119,8 @@ class PrestashopImporter(AbstractComponent):
         return dict(self._context, connector_no_export=True, **kwargs)
 
     def _create_context(self):
-        return {'connector_no_export': True}
+        return {'connector_no_export': True,
+                'from_import': True}
 
     def _create_data(self, map_record):
         return map_record.values(for_create=True)
@@ -142,7 +143,8 @@ class PrestashopImporter(AbstractComponent):
         """ Update an OpenERP record """
         # special check on data before import
         self._validate_data(data)
-        binding.with_context(connector_no_export=True).write(data)
+        binding.with_context(connector_no_export=True,
+                             from_import=True).write(data)
         _logger.debug(
             '%d updated from prestashop %s', binding, self.prestashop_id)
         return
@@ -278,7 +280,7 @@ class PrestashopImporter(AbstractComponent):
         (change current user, values in context, ...)
 
         """
-
+        
         map_record = self._map_data()
 
         if binding:

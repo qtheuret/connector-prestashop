@@ -127,6 +127,24 @@ class PrestashopProductTemplate(models.Model):
     )
     no_export = fields.Boolean('No export to PrestaShop', default=True)
 
+    meta_title = fields.Char(
+        string='Meta Title',
+        translate=True
+    )
+    meta_description = fields.Char(
+        string='Meta Description',
+        translate=True
+    )
+    meta_keywords = fields.Char(
+        string='Meta Keywords',
+        translate=True
+    )
+    tags = fields.Char(
+        string='Tags',
+        translate=True
+    )
+
+
     @api.multi
     def recompute_prestashop_qty(self):
         # group products by backend
