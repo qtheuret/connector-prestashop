@@ -281,16 +281,6 @@ class PrestashopBackend(models.Model):
                 backend_record=backend_record, since_date=since_date)
         return True
 
-    
-    @api.multi
-    def import_categories_since(self):
-        for backend_record in self:
-            since_date = backend_record.import_partners_since
-            self.env['prestashop.res.partner.category'].with_delay(
-            ).import_customers_since(
-                backend_record=backend_record, since_date=since_date)
-        return True
-
     @api.multi
     def import_products(self):
         for backend_record in self:
