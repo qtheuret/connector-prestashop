@@ -19,7 +19,7 @@ class PartnerImportMapper(Component):
     direct = [
         ('date_add', 'date_add'),
         ('date_upd', 'date_upd'),
-        ('email', 'email'),
+#         ('email', 'email'),
         ('newsletter', 'newsletter'),
         ('company', 'company'),
         ('active', 'active'),
@@ -28,6 +28,19 @@ class PartnerImportMapper(Component):
         (external_to_m2o('id_shop'), 'shop_id'),
         (external_to_m2o('id_default_group'), 'default_category_id'),
     ]
+
+    @only_create
+    @mapping
+    def odoo_id(self, record):
+        email = record['email']
+        if self.backend_record.matching_customer:
+            part = self.env['res.partner'].search([('email', '=', email), 
+                                                   ('parent_id', '=', False), 
+                                                   ('is_company', '=', True)])
+            if part :
+                return {'odoo_id': part[0].id}
+        
+        return {}
 
     @mapping
     def pricelist(self, record):
@@ -162,7 +175,7 @@ class AddressImportMapper(Component):
     @mapping
     def customer(self, record):
         return {'customer': True}
-
+    
     @mapping
     def country(self, record):
         if record.get('id_country'):
