@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
 import re
+import logging
 
 from odoo import _
 
@@ -10,6 +11,7 @@ from odoo.addons.component.core import Component
 from odoo.addons.connector.components.mapper import (
     mapping, external_to_m2o, only_create)
 
+_logger = logging.getLogger(__name__)
 
 class PartnerImportMapper(Component):
     _name = 'prestashop.res.partner.mapper'

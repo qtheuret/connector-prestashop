@@ -24,7 +24,8 @@ class PrestashopBackend(models.Model):
         '1.6.0.11': 'prestashop.version.key.1.6.0.9',
         '1.6.1.2': 'prestashop.version.key.1.6.1.2',
         '1.6.1.9': 'prestashop.version.key.1.6.1.9',
-        '1.7.5.0': 'prestashop.version.key.1.7.5.0'
+        '1.7.5.0': 'prestashop.version.key.1.7.5.0',
+        '1.7.x.0': 'prestashop.version.key.1.7.x.0'
     }
 
     @api.model
@@ -42,6 +43,7 @@ class PrestashopBackend(models.Model):
             ('1.6.1.2', '=1.6.1.2'),
             ('1.6.1.9', '=1.6.1.9'),
             ('1.7.5.0', '=1.7.5.0'),
+            ('1.7.x.0', '=1.7.x.0'),
         ]
 
     @api.model
@@ -275,6 +277,16 @@ class PrestashopBackend(models.Model):
         for backend_record in self:
             since_date = backend_record.import_partners_since
             self.env['prestashop.res.partner'].with_delay(
+            ).import_customers_since(
+                backend_record=backend_record, since_date=since_date)
+        return True
+
+    
+    @api.multi
+    def import_categories_since(self):
+        for backend_record in self:
+            since_date = backend_record.import_partners_since
+            self.env['prestashop.res.partner.category'].with_delay(
             ).import_customers_since(
                 backend_record=backend_record, since_date=since_date)
         return True
