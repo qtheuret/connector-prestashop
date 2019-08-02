@@ -95,14 +95,14 @@ class TemplateMapper(Component):
             if ps_tags:
                 return {'tags': ','.join(x['name'] for x in ps_tags)}
 
-    #@mapping
-    #def name(self, record):
-    #    if record['name']:
-    #        return {
-    #            'name': record['name'],
-    #            'description_sale': record['name'],
-    #        }
-    #    return {'name': 'noname'}
+
+    @mapping
+    def name(self, record):
+        if record['name']:
+            return {
+                'name': record['name']
+            }
+        return {'name': 'noname'}
 
     @only_create
     @mapping
@@ -131,6 +131,8 @@ class TemplateMapper(Component):
 #             [('default_code', '=', record['reference'])], limit=1)
 #         if product:
 #             return {'odoo_id': product.id}
+#         res = self.default_code(record)
+        res = {}
         if self.backend_record.matching_product_template:
             if self.has_combinations(record):
                 # Browse combinations for matching products and find if there
@@ -169,7 +171,8 @@ class TemplateMapper(Component):
                         template |= product.product_tmpl_id
                 _logger.debug('template %s' % template)
                 if len(template) == 1:
-                    return {'odoo_id': template.id}
+                    res.update({'odoo_id': template.id})
+                    return res
                 if len(template) > 1:
                     raise ValidationError(_(
                         'Error! Multiple templates are found with '
@@ -183,7 +186,9 @@ class TemplateMapper(Component):
                             product = self.env['product.template'].search(
                                 [('default_code', '=', code)], limit=1)
                             if product:
-                                return {'odoo_id': product.id}
+                                res.update({'odoo_id': product.id})
+                                return res
+                                
 
                 if self.backend_record.matching_product_ch == 'barcode':
                     code = record.get('ean13')
@@ -191,7 +196,8 @@ class TemplateMapper(Component):
                         product = self.env['product.template'].search(
                             [('barcode', '=', code)], limit=1)
                         if product:
-                            return {'odoo_id': product.id}
+                            res.update({'odoo_id': product.id})
+                            return res
         return {}
 
     def _template_code_exists(self, code):
@@ -214,6 +220,10 @@ class TemplateMapper(Component):
             )
         if not self._template_code_exists(code):
             return {'default_code': code}
+        elif self.backend_record.matching_product_ch == 'reference' and \
+            self.backend_record.matching_product_template:
+            return {}
+        
         i = 1
         current_code = '%s_%d' % (code, i)
         while self._template_code_exists(current_code):
@@ -534,6 +544,7 @@ class ProductTemplateImporter(Component):
         """
         super(ProductTemplateImporter, self).__init__(environment)
         self.default_category_error = False
+
 
     def _after_import(self, binding):
         super(ProductTemplateImporter, self)._after_import(binding)
