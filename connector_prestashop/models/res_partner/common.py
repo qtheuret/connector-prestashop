@@ -21,6 +21,14 @@ class ResPartner(models.Model):
         string='PrestaShop Address Bindings',
     )
 
+    @api.model
+    def create(self, vals):
+        res = super(ResPartner, self).create(vals)
+        if not vals.get('lang') and res.parent_id:
+            res.lang = res.parent_id.lang
+
+        return res
+
 
 class PrestashopPartnerMixin(models.AbstractModel):
     _name = 'prestashop.partner.mixin'
