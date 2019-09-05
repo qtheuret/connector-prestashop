@@ -2,33 +2,18 @@
    :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
    :alt: License: AGPL-3
 
-=================================
-Connector PrestaShop Manufacturer
-=================================
+========================
+Connector PrestaShop BoM
+========================
 
 This module extends the functionality of connector_prestashop module to allow
-you to import manufacturers
+recomputing of PrestaShop quantities when using BoM
 
 Installation
 ============
 
-This module depends of product_manufacturer from
-https://github.com/OCA/product-attribute repository
-
 Usage
 =====
-
-To use this module, you need to:
-
-#. Go to PrestaShop backend and click in import manufacturer button.
-#. Wait for the import in background has been done.
-
-Also exists a cron for execute the import named
-*'PrestaShop - Import Manufacturers'*.
-
-.. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas
-   :alt: Try me on Runbot
-   :target: https://runbot.odoo-community.org/runbot/108/8.0
 
 Bug Tracker
 ===========
@@ -50,8 +35,7 @@ Images
 Contributors
 ------------
 
-* Sergio Teruel <sergio.teruel@tecnativa.com>
-* Simone Orsi <simone.orsi@camptocamp.com>
+* Quentin THEURET <contact@kerpeo.com>
 
 Maintainer
 ----------
