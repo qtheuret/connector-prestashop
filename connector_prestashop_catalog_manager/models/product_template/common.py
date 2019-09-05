@@ -16,7 +16,8 @@ class ProductTemplate(models.Model):
     def create(self, vals):
         res = super(ProductTemplate, self).create(vals)
 
-        if not self.env.context.get('create_bindings'):
+        if not self.env.context.get('create_bindings') and \
+            not self.env.context.get('from_import'):
             for backend in self.env['prestashop.backend'].search([]):
                 res.create_prestashop_bindings(backend.id)
 
@@ -26,7 +27,8 @@ class ProductTemplate(models.Model):
     def write(self, vals):
         res = super(ProductTemplate, self).write(vals)
 
-        if not self.env.context.get('create_bindings'):
+        if not self.env.context.get('create_bindings') and \
+            not self.env.context.get('from_import'):
             for backend in self.env['prestashop.backend'].search([]):
                 self.create_prestashop_bindings(backend.id)
 
@@ -60,22 +62,6 @@ class TemplateAdapter(Component):
 class PrestashopProductTemplate(models.Model):
     _inherit = 'prestashop.product.template'
 
-    meta_title = fields.Char(
-        string='Meta Title',
-        translate=True
-    )
-    meta_description = fields.Char(
-        string='Meta Description',
-        translate=True
-    )
-    meta_keywords = fields.Char(
-        string='Meta Keywords',
-        translate=True
-    )
-    tags = fields.Char(
-        string='Tags',
-        translate=True
-    )
     online_only = fields.Boolean(string='Online Only')
     additional_shipping_cost = fields.Float(
         string='Additional Shipping Price',
