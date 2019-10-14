@@ -35,9 +35,9 @@ class ProductProductExportMapper(Component):
         if record.barcode:
             return {'ean13': record.barcode}
 
-    @mapping
-    def wholesale_price(self, record):
-        return {'wholesale_price': record.standard_price or 0.00}
+#    @mapping
+#    def wholesale_price(self, record):
+#        return {'wholesale_price': record.standard_price or 0.00}
 
     def _get_factor_tax(self, tax):
         return (1 + tax.amount / 100) if tax.price_include else 1.0

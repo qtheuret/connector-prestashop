@@ -23,7 +23,6 @@ class ProductProduct(models.Model):
                 ('product_id', '=', product.id),
             ])
             for l in bom_lines:
-                print(l.bom_id.product_id.name)
                 l.bom_id.product_id.update_prestashop_qty()
 
         return res
