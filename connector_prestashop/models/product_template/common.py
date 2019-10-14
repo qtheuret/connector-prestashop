@@ -71,7 +71,7 @@ class PrestashopProductTemplate(models.Model):
     # prestashop_product_product and product_product
     always_available = fields.Boolean(
         string='Active',
-        default=True,
+        default=False,
         help='If checked, this product is considered always available')
     quantity = fields.Float(
         string='Computed Quantity',
