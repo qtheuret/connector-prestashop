@@ -31,18 +31,17 @@ class PartnerImportMapper(Component):
         (external_to_m2o('id_default_group'), 'default_category_id'),
     ]
 
-#    @only_create
-#    @mapping
-#    def odoo_id(self, record):
-#        email = record['email']
-#        if self.backend_record.matching_customer:
-#            part = self.env['res.partner'].search([('email', '=', email), 
-#                                                   ('parent_id', '=', False), 
-#                                                   ('is_company', '=', True)])
-#            if part :
-#                return {'odoo_id': part[0].id}
-#        
-#        return {}
+    @only_create
+    @mapping
+    def odoo_id(self, record):
+        email = record['email']
+        if self.backend_record.matching_customer:
+            part = self.env['res.partner'].search([('email', '=', email),
+                                                  ('parent_id', '=', False),])
+            if part :
+                return {'odoo_id': part[0].id}
+
+        return {}
 
     @mapping
     def pricelist(self, record):
