@@ -100,7 +100,7 @@ class PartnerImportMapper(Component):
         # This is sad because we _have_ to have a company partner if we want to
         # store multiple adresses... but... well... we have customers who want
         # to be billed at home and be delivered at work... (...)...
-        return {'is_company': True}
+        return {'is_company': False}
 
     @mapping
     def company_id(self, record):
