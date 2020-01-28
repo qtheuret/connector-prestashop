@@ -116,18 +116,19 @@ class ProductTemplateMapper(Component):
             })
         return {'name': value}
 
-    @mapping
-    def description(self, record):
-        value = {'language': []}
-        records_by_lang = self._get_record_by_lang(record)
-        for language_id, trans_record in records_by_lang.items():
-            _logger.debug(trans_record.description_html)
-            h = HTMLParser()
-            value['language'].append({
-                'attrs': {'id': str(language_id)},
-                'value': (trans_record.description_html and h.unescape(trans_record.description_html) or ''),
-            })
-        return {'description': value}
+#    @mapping
+#    @only_create
+#    def description(self, record):
+#        value = {'language': []}
+#        records_by_lang = self._get_record_by_lang(record)
+#        for language_id, trans_record in records_by_lang.items():
+#            _logger.debug(trans_record.description_html)
+#            h = HTMLParser()
+#            value['language'].append({
+#                'attrs': {'id': str(language_id)},
+#                'value': (trans_record.description_html and h.unescape(trans_record.description_html) or ''),
+#            })
+#        return {'description': value}
 
     @mapping
     def dimensions(self, record):
