@@ -43,7 +43,7 @@ class TemplateMapper(Component):
     _apply_on = 'prestashop.product.template'
 
     direct = [
-        ('weight', 'weight'),
+        #('weight', 'weight'),
         ('wholesale_price', 'wholesale_price'),
         ('wholesale_price', 'standard_price'),
         (external_to_m2o('id_shop_default'), 'default_shop_id'),

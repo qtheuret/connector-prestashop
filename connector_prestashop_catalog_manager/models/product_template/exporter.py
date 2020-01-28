@@ -88,6 +88,8 @@ class ProductTemplateMapper(Component):
     @mapping
     def list_price(self, record):
         tax = record.taxes_id
+        if len(record.product_variant_ids) > 1:
+            return {'price': '0.00'}
         if tax.price_include and tax.amount_type == 'percent':
             # 6 is the rounding precision used by PrestaShop for the
             # tax excluded price.  we can get back a 2 digits tax included
