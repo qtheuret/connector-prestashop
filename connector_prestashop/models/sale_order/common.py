@@ -18,6 +18,9 @@ class SaleOrder(models.Model):
         inverse_name='odoo_id',
         string='PrestaShop Bindings',
     )
+    recyclable = fields.Boolean(
+        string='En attente',
+    )
 
 
 class PrestashopSaleOrder(models.Model):
