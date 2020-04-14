@@ -148,7 +148,6 @@ class SaleOrderImportMapper(Component):
         ('total_paid', 'total_amount'),
         ('total_shipping_tax_incl', 'total_shipping_tax_included'),
         ('total_shipping_tax_excl', 'total_shipping_tax_excluded'),
-        ('recyclable', 'recyclable'),
     ]
 
     def _get_sale_order_lines(self, record):
@@ -207,6 +206,10 @@ class SaleOrderImportMapper(Component):
             ('company_id', '=', self.backend_record.company_id.id),
         ], limit=1)
         return len(sale_order) == 1
+
+    @mapping
+    def recyclable(self, record):
+        return {'recyclable': record['recyclable'] == '1' and True or False}
 
     @mapping
     def name(self, record):
