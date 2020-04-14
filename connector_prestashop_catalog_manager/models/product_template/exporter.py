@@ -34,9 +34,9 @@ class ProductTemplateMapper(Component):
         ('name', 'name'),
         ('delivery_in_stock', 'delivery_in_stock'),
         ('delivery_out_stock', 'delivery_out_stock'),
-        ('meta_title', 'meta_title'),
-        ('meta_description', 'meta_description'),
-        ('meta_keywords', 'meta_keywords'),
+        #('meta_title', 'meta_title'),
+        #('meta_description', 'meta_description'),
+        #('meta_keywords', 'meta_keywords'),
     ]
 
     direct = [
@@ -54,14 +54,14 @@ class ProductTemplateMapper(Component):
     def always_available(self, record):
         return {'active': record.always_available and '1' or '0'}
 
-    @mapping
-    def additional_delivery_times(self, record):
-        if record.delivery_in_stock or record.delivery_out_stock:
-            return {
-                'additional_delivery_times': 2,
-            }
-        else:
-            return {'additional_delivery_times': 0}
+    #@mapping
+    #def additional_delivery_times(self, record):
+    #    if record.delivery_in_stock or record.delivery_out_stock:
+    #        return {
+    #            'additional_delivery_times': 2,
+    #        }
+    #    else:
+    #        return {'additional_delivery_times': 0}
 
     @mapping
     def on_sale(self, record):

@@ -45,7 +45,7 @@ class TemplateMapper(Component):
     direct = [
         #('weight', 'weight'),
         ('wholesale_price', 'wholesale_price'),
-        ('wholesale_price', 'standard_price'),
+        #('wholesale_price', 'standard_price'),
         (external_to_m2o('id_shop_default'), 'default_shop_id'),
         ('link_rewrite', 'link_rewrite'),
         ('reference', 'reference'),
