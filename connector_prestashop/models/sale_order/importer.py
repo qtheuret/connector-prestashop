@@ -209,7 +209,7 @@ class SaleOrderImportMapper(Component):
 
     @mapping
     def recyclable(self, record):
-        return {'recyclable': record['recyclable'] == '1' and True or False}
+        return {'recyclable': record.get('recyclable', '0') == '1' and True or False}
 
     @mapping
     def name(self, record):
