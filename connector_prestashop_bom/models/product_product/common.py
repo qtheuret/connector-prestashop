@@ -24,6 +24,9 @@ class ProductProduct(models.Model):
             ])
             for l in bom_lines:
                 l.bom_id.product_id.update_prestashop_qty()
+                for prestashop_product in \
+                        l.bom_id.product_id.product_tmpl_id.prestashop_bind_ids:
+                    prestashop_product.recompute_prestashop_qty()
 
         return res
 
