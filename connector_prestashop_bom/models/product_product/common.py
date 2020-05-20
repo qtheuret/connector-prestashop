@@ -23,10 +23,12 @@ class ProductProduct(models.Model):
                 ('product_id', '=', product.id),
             ])
             for l in bom_lines:
-                l.bom_id.product_id.update_prestashop_qty()
-                for prestashop_product in \
-                        l.bom_id.product_id.product_tmpl_id.prestashop_bind_ids:
-                    prestashop_product.recompute_prestashop_qty()
+                if l.bom_id.product_id:
+                    l.bom_id.product_id.update_prestashop_qty()
+                if l.bom_id.product_tmpl_id:
+                    for prestashop_product in \
+                        l.bom_id.product_tmpl_id.prestashop_bind_ids:
+                        prestashop_product.recompute_prestashop_qty()
 
         return res
 
