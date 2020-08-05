@@ -21,4 +21,5 @@ class CombinationInventoryExporter(Component):
         return {
             'quantity': int(product.quantity),
             'out_of_stock': int(product.main_template_id.out_of_stock),
+            'available_date_attribute': product.next_available_date.strftime('%Y-%m-%d'),
         }
